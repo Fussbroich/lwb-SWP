@@ -10,10 +10,13 @@ type MiniBillardSpiel interface {
 	GibTaschen() []Tasche
 	GibKugeln() []Kugel
 	GibStoßkugel() Kugel
+	EntferneKugel(Kugel)
 	GibBahnDreiecke() [][3]hilf.Vec2
 	UpdateObjekte()
 	Anstoß(hilf.Vec2)
 	IstStillstand() bool
+	SetzeVerloren()
+	IstVerloren() bool
 }
 
 type spiel struct {
@@ -26,7 +29,6 @@ type spiel struct {
 	taschen      []Tasche
 	stillstand   bool
 	verloren     bool
-	gewonnen     bool
 }
 
 func NewSpiel(länge, breite float64) *spiel {
@@ -67,24 +69,20 @@ func (s *spiel) setzeKugeln(k ...Kugel) {
 	s.stoßkugel = k[0]
 }
 
+func (s *spiel) EntferneKugel(k Kugel) {
+	if k == s.stoßkugel && len(s.kugeln) > 1 {
+		s.verloren = true
+	}
+	var ksNeu []Kugel
+	for _, k2 := range s.kugeln {
+		if !(k2 == k) {
+			ksNeu = append(ksNeu, k)
+		}
+	}
+	s.kugeln = ksNeu
+}
+
 func (s *spiel) GibKugeln() []Kugel {
-	var eingelochte bool
-	for _, k := range s.kugeln {
-		if k.IstEingelocht() {
-			eingelochte = true
-			break
-		}
-	}
-	//entferne eingelochte
-	if eingelochte {
-		var ksNeu []Kugel
-		for _, k := range s.kugeln {
-			if !k.IstEingelocht() {
-				ksNeu = append(ksNeu, k)
-			}
-		}
-		s.kugeln = ksNeu
-	}
 	return s.kugeln
 }
 
@@ -102,33 +100,10 @@ func (s *spiel) GibBahnDreiecke() [][3]hilf.Vec2 {
 }
 
 func (s *spiel) UpdateObjekte() {
-	// prüfe Kollisionen
-	ks := s.kugeln
-	for i, k1 := range ks {
-		for j, k2 := range ks {
-			if i != j {
-				k1.PrüfeKugelKollision(k2)
-			}
-		}
-	}
-	// Prüfe Berührung jeder Kugel mit der Bande.
-	bs := s.GibBanden()
-	for _, k := range ks {
-		for _, b := range bs {
-			k.PrüfeBandenKollision(b)
-		}
-	}
-	// Bewege alle Kugeln einen Tick weiter.
-	for _, k := range ks {
-		k.Bewegen()
-	}
-	//prüfe eingelochte
-	for _, k := range ks {
-		k.PrüfeEingelocht(s.GibTaschen())
-	}
-	//prüfe Stillstand
 	still := true
-	for _, k := range ks {
+	for _, k := range s.kugeln {
+		k.Bewegen(s)
+		//prüfe Stillstand
 		if !k.GibV().IstNull() {
 			still = false
 		}
@@ -138,6 +113,14 @@ func (s *spiel) UpdateObjekte() {
 
 func (s *spiel) IstStillstand() bool {
 	return s.stillstand
+}
+
+func (s *spiel) IstVerloren() bool {
+	return s.verloren
+}
+
+func (s *spiel) SetzeVerloren() {
+	s.verloren = true
 }
 
 func pos(x, y float64) hilf.Vec2 {
