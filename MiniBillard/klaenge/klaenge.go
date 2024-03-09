@@ -10,7 +10,7 @@ import "gfx"
 // 	pulsweite (für Rechtecksignale) gibt den Prozentsatz (0<=p<=1) für den HIGH-Teil an.
 
 func MassivePulseLoopSound() {
-	gfx.SetzeKlangparameter(22050, 2, 2, 1, 1.0)
+	gfx.SetzeKlangparameter(22050, 2, 2, 1, 0.3)
 	gfx.SpieleSound("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\11 SWP\\lwb-SWP\\MiniBillard\\klaenge\\massivePulseLoop.wav")
 }
 
