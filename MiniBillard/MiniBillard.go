@@ -13,22 +13,37 @@ var (
 	updateLäuft bool
 )
 
-func updateProzess(spiel welt.MiniBillardSpiel) {
-	lasttime := time.Now()
-	for {
-		for time.Since(lasttime) < (time.Millisecond * 15) {
-			time.Sleep(time.Microsecond * 5)
+func starteUpdateProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
+	takt := time.NewTicker(8 * time.Millisecond)
+
+	updater := func() {
+		for {
+			select {
+			case <-stop:
+				println("Stoppe Spiel-Logik")
+				takt.Stop()
+				return
+			case <-takt.C:
+				updateLäuft = true
+				spiel.BewegeKugeln()
+				updateLäuft = false
+			}
 		}
-		updateLäuft = true
-		lasttime = time.Now()
-		spiel.BewegeKugeln()
-		updateLäuft = false
 	}
+
+	// starte Prozess
+	println("Starte Spiel-Logik")
+	go updater()
 }
 
-func zeichenProzess(spiel welt.MiniBillardSpiel) {
-	for {
-		time.Sleep(time.Millisecond)
+func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
+	takt := time.NewTicker(20 * time.Millisecond)
+
+	l, b := spiel.GibGröße()
+	gfx.Fenster(uint16(l), uint16(b))
+	gfx.Fenstertitel("Mini Billard")
+
+	zeichne := func() {
 		gfx.UpdateAus()
 		gfx.Cls()
 		gfx.Stiftfarbe(225, 255, 255)
@@ -73,12 +88,33 @@ func zeichenProzess(spiel welt.MiniBillardSpiel) {
 		}
 		gfx.UpdateAn()
 	}
+
+	viewer := func() {
+		for {
+			select {
+			case <-stop:
+				println("Stoppe Zeichenprozess")
+				takt.Stop()
+				if gfx.FensterOffen() {
+					gfx.FensterAus()
+				}
+				return
+			case <-takt.C:
+				zeichne()
+			}
+		}
+	}
+
+	// starte Prozess
+	println("Starte Zeichenprozess")
+	go viewer()
 }
 
-func maussteuerung(spiel welt.MiniBillardSpiel) {
-	for {
-		time.Sleep(time.Millisecond)
-		if spiel.IstStillstand() {
+func starteMaussteuerung(spiel welt.MiniBillardSpiel, stop chan bool) {
+	takt := time.NewTicker(5 * time.Millisecond)
+
+	maustest := func() {
+		if spiel.IstStillstand() && gfx.FensterOffen() {
 			kS := spiel.GibStoßkugel()
 			taste, _, mausX, mausY := gfx.MausLesen1()
 			vAnstoß = (hilf.V2(float64(mausX), float64(mausY))).Minus(kS.GibPos()).Mal(1.0 / 15)
@@ -91,12 +127,22 @@ func maussteuerung(spiel welt.MiniBillardSpiel) {
 			}
 		}
 	}
-}
+	mousecontroller := func() {
+		for {
+			select {
+			case <-stop:
+				println("Stoppe Maussteuerung")
+				takt.Stop()
+				return
+			case <-takt.C:
+				maustest()
+			}
+		}
+	}
 
-func starteSpiel(spiel welt.MiniBillardSpiel) {
-	go maussteuerung(spiel)
-	go updateProzess(spiel)
-	go zeichenProzess(spiel)
+	// starte Prozess
+	println("Starte Maussteuerung")
+	go mousecontroller()
 }
 
 func main() {
@@ -105,20 +151,28 @@ func main() {
 	//spiel := welt.NewStandardSpielNewtonLinie(800, 400)
 	spiel := welt.NewStandardSpiel(600, 300)
 	//spiel := welt.NewNewtonRauteSpiel(600, 350)
-	l, b := spiel.GibGröße()
-	gfx.Fenster(uint16(l), uint16(b))
-	gfx.Fenstertitel("Mini Billard")
 
-	starteSpiel(spiel)
+	stopViewer, stopUpdater, stopController := make(chan bool), make(chan bool), make(chan bool)
+	starteZeichenProzess(spiel, stopViewer)
+	starteUpdateProzess(spiel, stopUpdater)
+	starteMaussteuerung(spiel, stopController)
 
 	for {
-		t, g, _ := gfx.TastaturLesen1()
-		if g == 1 {
-			switch t {
-			case 113:
+		taste, gedrückt, _ := gfx.TastaturLesen1()
+		if gedrückt == 1 {
+			println("Taste", taste, "gedrückt")
+			switch taste {
+			case 114: // Taste R
+				spiel.Nochmal()
+			case 113: // Taste Q
+				stopController <- true
+				stopUpdater <- true
+				stopViewer <- true
+				if gfx.FensterOffen() {
+					gfx.FensterAus()
+				}
 				return
 			}
 		}
-
 	}
 }
