@@ -2,19 +2,6 @@ package hilf
 
 import "math"
 
-/*
-type Vec2 interface {
-	Betrag() float64
-	Normiert() Vec2
-	SkalarproduktMit(Vec2) float64
-	Addiere(Vec2) Vec2
-	Subtrahiere(Vec2) Vec2
-	MultiMitSkalar(float64) Vec2
-	ProjiziertAuf(Vec2) Vec2
-	X() float64
-	Y() float64
-}
-*/
 type Vec2 struct {
 	x, y float64
 }
@@ -76,7 +63,6 @@ func (v Vec2) Mal(f float64) Vec2 {
 	return Vec2{x: v.x * f, y: v.y * f}
 }
 
-// siehe https://www.aleph1.info/?call=Puc&permalink=hm1_4_3_Z4
 func (v Vec2) ProjiziertAuf(u Vec2) Vec2 {
 	uNorm := u.Normiert()
 	return uNorm.Mal(uNorm.Punkt(v))
