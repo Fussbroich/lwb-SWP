@@ -86,16 +86,26 @@ func (k *kugel) prüfeBandenKollision(länge, breite float64) {
 	// Kugel vorher
 	vx, vy := k.v.X(), k.v.Y()
 	xK, yK := k.pos.X(), k.pos.Y()
+
 	var hit bool
 	// reflektiere die Kugel
-	if xK < k.r || xK > länge-k.r {
+	if xK+vx < k.r {
 		vx *= -1
 		hit = true
 	}
-	if yK < k.r || yK > breite-k.r {
+	if xK+vx > länge-k.r {
+		vx *= -1
+		hit = true
+	}
+	if yK+vy < k.r {
 		vy *= -1
 		hit = true
 	}
+	if yK+vy > breite-k.r {
+		vy *= -1
+		hit = true
+	}
+
 	if hit {
 		klaenge.BallHitsRailSound()
 		k.v = hilf.V2(vx, vy)

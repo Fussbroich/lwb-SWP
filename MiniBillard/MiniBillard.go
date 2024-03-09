@@ -15,7 +15,7 @@ var (
 )
 
 func starteUpdateProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
-	takt := time.NewTicker(8 * time.Millisecond)
+	takt := time.NewTicker(12 * time.Millisecond)
 
 	updater := func() {
 		defer func() { println("MiniBillard: Halte Spiel-Takt an"); takt.Stop() }()
