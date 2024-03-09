@@ -116,7 +116,7 @@ func (k *kugel) PrüfeBandenKollision(b Bande) {
 	//	}
 	// reflektiere die Kugel 1mal
 	//println("brrrrrrrrr")
-	hilf.Bobb()
+	hilf.BallHitsRailSound()
 	norm := lot.Normiert()
 	vp := vK.ProjiziertAuf(norm)
 	vo := vK.Minus(vp)

@@ -19,7 +19,6 @@ func BallInPocketSound() {
 	gfx.SpieleSound("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\11 SWP\\lwb-SWP\\MiniBillard\\hilf\\ballIntoPocket.wav")
 }
 
-func Bobb() {
-	// gfx.SetzeHuellkurve(0.03, 2, 0.5, 0)
-	// gfx.SpieleNote("1F", 0.1, 0)
+func BallHitsRailSound() {
+	// hört man eh' nicht
 }
