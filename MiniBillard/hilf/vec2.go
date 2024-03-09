@@ -23,7 +23,7 @@ func G2(x, r Vec2) Gerade2 {
 	return Gerade2{x: x, r: r}
 }
 
-func (g Gerade2) GibPosFür(t float64) Vec2 {
+func (g Gerade2) PosBei(t float64) Vec2 {
 	return g.x.Plus(g.r.Mal(t))
 }
 

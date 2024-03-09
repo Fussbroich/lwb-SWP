@@ -17,10 +17,11 @@ func starteUpdateProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 	takt := time.NewTicker(8 * time.Millisecond)
 
 	updater := func() {
+		defer func() { println("MiniBillard: Halte Spiel-Takt an"); takt.Stop() }()
 		for {
 			select {
 			case <-stop:
-				println("Stoppe Spiel-Logik")
+				println("MiniBillard: Stoppe Spiel-Logik")
 				takt.Stop()
 				return
 			case <-takt.C:
@@ -90,10 +91,11 @@ func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 	}
 
 	viewer := func() {
+		defer func() { println("MiniBillard: Halte Zeichen-Takt an"); takt.Stop() }()
 		for {
 			select {
 			case <-stop:
-				println("Stoppe Zeichenprozess")
+				println("MiniBillard: Stoppe Zeichenprozess")
 				takt.Stop()
 				if gfx.FensterOffen() {
 					gfx.FensterAus()
@@ -112,10 +114,13 @@ func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 
 func starteMaussteuerung(spiel welt.MiniBillardSpiel, stop chan bool) {
 	takt := time.NewTicker(5 * time.Millisecond)
-
 	maustest := func() {
-		if spiel.IstStillstand() && gfx.FensterOffen() {
+		if !gfx.FensterOffen() {
+			return
+		}
+		if spiel.IstStillstand() {
 			kS := spiel.GibStoßkugel()
+			// TODO: hier hängt der Prozess, solange die Maus nicht im Fenster ist
 			taste, _, mausX, mausY := gfx.MausLesen1()
 			vAnstoß = (hilf.V2(float64(mausX), float64(mausY))).Minus(kS.GibPos()).Mal(1.0 / 15)
 			vabs := vAnstoß.Betrag()
@@ -128,11 +133,11 @@ func starteMaussteuerung(spiel welt.MiniBillardSpiel, stop chan bool) {
 		}
 	}
 	mousecontroller := func() {
+		defer func() { println("MiniBillard: Halte Controller-Takt an"); takt.Stop() }()
 		for {
 			select {
 			case <-stop:
 				println("Stoppe Maussteuerung")
-				takt.Stop()
 				return
 			case <-takt.C:
 				maustest()
@@ -148,8 +153,9 @@ func starteMaussteuerung(spiel welt.MiniBillardSpiel, stop chan bool) {
 func main() {
 	//spiel := welt.NewHexaBahnSpiel(600)
 	//spiel := welt.NewLBahnSpiel(600)
-	//spiel := welt.NewStandardSpielNewtonLinie(800, 400)
-	spiel := welt.NewStandardSpiel(600, 300)
+	spiel := welt.New3BallLinieStandardSpiel(800)
+	//spiel := welt.New3BallStandardSpiel(800)
+
 	//spiel := welt.NewNewtonRauteSpiel(600, 350)
 
 	stopViewer, stopUpdater, stopController := make(chan bool), make(chan bool), make(chan bool)
@@ -160,17 +166,13 @@ func main() {
 	for {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
 		if gedrückt == 1 {
-			println("Taste", taste, "gedrückt")
 			switch taste {
-			case 114: // Taste R
-				spiel.Nochmal()
-			case 113: // Taste Q
-				stopController <- true
-				stopUpdater <- true
+			case 'r': // reset
+				spiel.Nochmal() // setze Kugeln wie vor dem letzten Anstoß
+			case 'q': // quit
 				stopViewer <- true
-				if gfx.FensterOffen() {
-					gfx.FensterAus()
-				}
+				stopUpdater <- true
+				stopController <- true
 				return
 			}
 		}
