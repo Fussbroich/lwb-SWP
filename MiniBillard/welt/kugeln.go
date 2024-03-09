@@ -73,7 +73,7 @@ func (k *kugel) PrüfeEingelocht(ts []Tasche) {
 	}
 	for _, t := range ts {
 		if t.GibPos().Minus(k.GibPos()).Betrag() < t.GibRadius() {
-			hilf.Klonk()
+			hilf.BallInPocketSound()
 			k.eingelocht = true
 			k.SetzeV(hilf.V2(0, 0))
 			return
@@ -142,7 +142,7 @@ func (k1 *kugel) PrüfeKugelKollision(k2 Kugel) {
 	if norm12.Betrag() >= (k1.r + k2.GibRadius()) {
 		return
 	}
-	hilf.Klack()
+	hilf.BallHitsBallSound()
 	n12 := norm12.Normiert()
 	v1p := v1.ProjiziertAuf(n12)
 	v1o := v1.Minus(v1p)
