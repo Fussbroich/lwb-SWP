@@ -26,7 +26,6 @@ type kugel struct {
 	cG         uint8
 	cB         uint8
 	istKollMit Kugel
-	hatBerührt Bande
 	eingelocht bool
 }
 
@@ -54,9 +53,7 @@ func (k *kugel) BewegenIn(s MiniBillardSpiel) {
 		}
 	}
 	// Prüfe Berührung mit der Bande.
-	for _, b := range s.GibBanden() {
-		k.prüfeBandenKollision(b)
-	}
+	k.prüfeBandenKollision(s.GibGröße())
 	// Bewege Kugel einen Tick weiter.
 	k.pos = k.pos.Plus(k.v)
 	vabs := k.v.Betrag()
@@ -66,7 +63,6 @@ func (k *kugel) BewegenIn(s MiniBillardSpiel) {
 	} else {
 		k.v = hilf.V2(0, 0)
 	}
-	k.hatBerührt = nil
 	k.istKollMit = nil
 	// Prüfe, ob Kugel eingelocht wurde.
 	for _, t := range s.GibTaschen() {
@@ -83,68 +79,66 @@ func (k *kugel) IstEingelocht() bool {
 	return k.eingelocht
 }
 
-func (k *kugel) prüfeBandenKollision(b Bande) {
-	if k.hatBerührt == b {
-		return
-	}
+func (k *kugel) prüfeBandenKollision(länge, breite float64) {
 	if k.IstEingelocht() {
 		return
 	}
 	// Kugel vorher
-	pK := k.GibPos()
-	vK := k.GibV()
-	//Bande
-	pBVon := b.GibVon()
-	pBNach := b.GibNach()
-	vBRicht := pBNach.Minus(pBVon).Normiert()
-	//Stoßnormale (Lot von Kugel K zur Bande b)
-	t := -((pBVon.Minus(pK)).Punkt(vBRicht) / vBRicht.Punkt(vBRicht))
-	lotFußpunkt := pBVon.Plus(vBRicht.Mal(t))
-	lot := lotFußpunkt.Minus(pK)
-
-	// Kugel berührt gar nicht
-	if lot.Betrag() > (k.GibRadius()) {
-		return //Kugel zu weit weg
+	vx, vy := k.v.X(), k.v.Y()
+	xK, yK := k.pos.X(), k.pos.Y()
+	var hit bool
+	// reflektiere die Kugel
+	if xK < k.r || xK > länge-k.r {
+		vx *= -1
+		hit = true
 	}
-	// TODO: hier passiert Mist
-	//	bLänge := pBNach.Minus(pBVon).Betrag()
-	//	if t < 0 || lotFußpunkt.Minus(pBVon).Betrag() > bLänge {
-	//		println("Kugel nicht zwischen den Endpunkten der Bande")
-	//		return
-	//	}
-	// reflektiere die Kugel 1mal
-	klaenge.BallHitsRailSound()
-	norm := lot.Normiert()
-	vp := vK.ProjiziertAuf(norm)
-	vo := vK.Minus(vp)
-	// Kugel nachher
-	u := vo.Plus(vp.Mal(-1))
-	k.SetzeV(u)
-	k.hatBerührt = b
+	if yK < k.r || yK > breite-k.r {
+		vy *= -1
+		hit = true
+	}
+	if hit {
+		klaenge.BallHitsRailSound()
+		k.v = hilf.V2(vx, vy)
+	}
 }
 
 func (k1 *kugel) prüfeKugelKollision(k2 Kugel) {
 	if k1.istKollMit == k2 {
 		return
 	}
-	if k1.eingelocht || k2.IstEingelocht() {
+	if k1.IstEingelocht() || k2.IstEingelocht() {
 		return
 	}
-	pos1 := k1.pos
-	pos2 := k2.GibPos()
-	v1 := k1.v
+	v1 := k1.GibV()
 	v2 := k2.GibV()
-	norm12 := pos2.Plus(v2).Minus(pos1.Plus(v1))
-	// Kugeln berühren sich gar nicht.
-	if norm12.Betrag() >= (k1.r + k2.GibRadius()) {
+	dist := k2.GibPos().Plus(v2).Minus(k1.pos.Plus(v1))
+	// Kugeln werden sich gar nicht berühren.
+	if dist.Betrag() > (k1.r + k2.GibRadius()) {
 		return
 	}
+	// Kugeln überlappen!
+	//	/* TODO: was kann man tun, damit sich die Kugeln nicht gegenseitig einfangen?
+	//if dist.Betrag() < (k1.r + k2.GibRadius()) {
+	//println("Überlappung", k1.r+k2.GibRadius()-dist.Betrag())
+	/*
+		for dist.Betrag() <= (k1.r + k2.GibRadius()) {
+		// treibe Kugeln auseinander
+		}
+		return
+	*/
+	//}
+	//	*/
+
+	// Kugeln berühren sich
 	klaenge.BallHitsBallSound()
-	n12 := norm12.Normiert()
+	// die Stoßnormale geht durch die Mittelpunkte der Kugeln
+	n12 := dist.Normiert()
+	// Zerlege Geschwindigkeiten in eine parallele und eine orthogonale Komponente
 	v1p := v1.ProjiziertAuf(n12)
 	v1o := v1.Minus(v1p)
 	v2p := v2.ProjiziertAuf(n12)
 	v2o := v2.Minus(v2p)
+	// Tausche Geschwindigkeiten aus
 	u1 := v2p.Plus(v1o)
 	u2 := v1p.Plus(v2o)
 	k1.SetzeV(u1)

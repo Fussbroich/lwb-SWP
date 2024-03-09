@@ -42,31 +42,24 @@ func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 	takt := time.NewTicker(20 * time.Millisecond)
 
 	l, b := spiel.GibGröße()
+
 	gfx.Fenster(uint16(l), uint16(b))
 	gfx.Fenstertitel("Mini Billard")
 
 	zeichne := func() {
 		gfx.UpdateAus()
 		gfx.Cls()
-		gfx.Stiftfarbe(225, 255, 255)
 		l, b := spiel.GibGröße()
-		gfx.Vollrechteck(0, 0, uint16(l), uint16(b))
-		// zeichne den Bahnbelag
+		// zeichne den Belag
 		gfx.Stiftfarbe(60, 179, 113)
-		for _, d := range spiel.GibBahnDreiecke() {
-			hilf.ZeichneVollDreieck(d[0], d[1], d[2])
-		}
+		gfx.Vollrechteck(0, 0, uint16(l), uint16(b))
 		// zeichne die Taschen
 		for _, t := range spiel.GibTaschen() {
 			pos := t.GibPos()
 			gfx.Stiftfarbe(0, 0, 0)
 			gfx.Vollkreis(uint16(pos.X()), uint16(pos.Y()), uint16(t.GibRadius()))
 		}
-		gfx.Stiftfarbe(210, 105, 30)
-		// zeichne die Banden
-		for _, b := range spiel.GibBanden() {
-			hilf.ZeichneBreiteLinieRechts(b.GibVon(), b.GibNach(), 15)
-		}
+		// warte auf Bewegung der Kugeln
 		for updateLäuft {
 			time.Sleep(time.Millisecond)
 		}
@@ -124,8 +117,8 @@ func starteMaussteuerung(spiel welt.MiniBillardSpiel, stop chan bool) {
 			taste, _, mausX, mausY := gfx.MausLesen1()
 			vAnstoß = (hilf.V2(float64(mausX), float64(mausY))).Minus(spiel.GibStoßkugel().GibPos()).Mal(1.0 / 15)
 			vabs := vAnstoß.Betrag()
-			if vabs > 12 {
-				vAnstoß = vAnstoß.Mal(12 / vabs)
+			if vabs > 10 {
+				vAnstoß = vAnstoß.Mal(10 / vabs)
 			}
 			if taste == 1 {
 				spiel.Anstoß(vAnstoß)
@@ -155,10 +148,11 @@ func starteSound(stop chan bool) {
 	takt := time.NewTicker(16 * time.Second)
 	klaenge.MassivePulseLoopSound()
 	music := func() {
-		defer func() { println("MiniBillard: Stoppe Musik"); takt.Stop() }()
+		defer func() { println("MiniBillard: Halte Musik-Schleife an"); takt.Stop() }()
 		for {
 			select {
 			case <-stop:
+				println("MiniBillard: Stoppe Musik")
 				return
 			case <-takt.C:
 				klaenge.MassivePulseLoopSound()
@@ -172,14 +166,11 @@ func starteSound(stop chan bool) {
 }
 
 func main() {
-	//spiel := welt.NewHexaBahnSpiel(600)
-	//spiel := welt.NewLBahnSpiel(600)
-	spiel := welt.New3BallLinieStandardSpiel(800)
-	//spiel := welt.New3BallStandardSpiel(800)
+	spiel := welt.New3BallStandardSpiel(800)
 
-	//spiel := welt.NewNewtonRauteSpiel(600, 350)
+	stopViewer, stopUpdater, stopController := make(chan bool), make(chan bool), make(chan bool)
+	stopSound := make(chan bool)
 
-	stopViewer, stopUpdater, stopController, stopSound := make(chan bool), make(chan bool), make(chan bool), make(chan bool)
 	starteZeichenProzess(spiel, stopViewer)
 	starteUpdateProzess(spiel, stopUpdater)
 	starteMaussteuerung(spiel, stopController)
@@ -189,8 +180,6 @@ func main() {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
 		if gedrückt == 1 {
 			switch taste {
-			case 's': // quit
-				stopSound <- true
 			case 'r': // reset
 				spiel.Nochmal() // setze Kugeln wie vor dem letzten Anstoß
 			case 'q': // quit

@@ -14,19 +14,6 @@ func (v Vec2) Y() float64 {
 	return v.y
 }
 
-type Gerade2 struct {
-	x Vec2
-	r Vec2
-}
-
-func G2(x, r Vec2) Gerade2 {
-	return Gerade2{x: x, r: r}
-}
-
-func (g Gerade2) PosBei(t float64) Vec2 {
-	return g.x.Plus(g.r.Mal(t))
-}
-
 func V2(x, y float64) Vec2 {
 	return Vec2{x: x, y: y}
 }

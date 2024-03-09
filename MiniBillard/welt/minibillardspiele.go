@@ -9,37 +9,20 @@ type MiniBillardSpiel interface {
 	Anstoß(hilf.Vec2)
 	Nochmal()
 	IstStillstand() bool
-	GibGröße() (float64, float64)
-	GibBanden() []Bande
 	GibTaschen() []Tasche
 	GibKugeln() []Kugel
 	GibStoßkugel() Kugel
-	GibBahnDreiecke() [][3]hilf.Vec2
+	GibGröße() (float64, float64)
 }
 
 type spiel struct {
-	länge        float64
-	breite       float64
-	banden       []Bande
-	bahndreiecke [][3]hilf.Vec2
-	kugeln       []Kugel
-	alteKugeln   []Kugel
-	stoßkugel    Kugel
-	taschen      []Tasche
-	stillstand   bool
-}
-
-func (s *spiel) setzeBahnform(ps ...hilf.Vec2) {
-	von := ps[0]
-	for i := 1; i < len(ps); i++ {
-		s.banden = append(s.banden, NewBande(von, ps[i]))
-		von = ps[i]
-	}
-	s.banden = append(s.banden, NewBande(von, ps[0]))
-}
-
-func (s *spiel) setzeBahndreiecke(ds ...[3]hilf.Vec2) {
-	s.bahndreiecke = append(s.bahndreiecke, ds...)
+	länge      float64
+	breite     float64
+	kugeln     []Kugel
+	alteKugeln []Kugel
+	stoßkugel  Kugel
+	taschen    []Tasche
+	stillstand bool
 }
 
 func (s *spiel) setzeTaschen(t ...Tasche) {
@@ -61,10 +44,6 @@ func NewSpiel(länge, breite float64) *spiel {
 
 func (s *spiel) GibGröße() (float64, float64) {
 	return s.länge, s.breite
-}
-
-func (s *spiel) GibBanden() []Bande {
-	return s.banden
 }
 
 func (s *spiel) GibTaschen() []Tasche {
@@ -94,10 +73,6 @@ func (s *spiel) Anstoß(v hilf.Vec2) {
 func (s *spiel) Nochmal() {
 	s.setzeKugeln(s.alteKugeln...)
 	s.stillstand = true
-}
-
-func (s *spiel) GibBahnDreiecke() [][3]hilf.Vec2 {
-	return s.bahndreiecke
 }
 
 func (s *spiel) BewegeKugeln() {
