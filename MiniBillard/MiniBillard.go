@@ -21,7 +21,7 @@ func updateProzess(spiel welt.MiniBillardSpiel) {
 		}
 		updateLäuft = true
 		lasttime = time.Now()
-		spiel.UpdateObjekte()
+		spiel.BewegeKugeln()
 		updateLäuft = false
 	}
 }
@@ -66,7 +66,7 @@ func zeichenProzess(spiel welt.MiniBillardSpiel) {
 			gfx.Stiftfarbe(r, g, b)
 			gfx.Vollkreis(uint16(pos.X()), uint16(pos.Y()), uint16(ra-1))
 		}
-		if spiel.IstStillstand() && !spiel.IstVerloren() {
+		if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
 			pS := spiel.GibStoßkugel().GibPos()
 			gfx.Stiftfarbe(250, 175, 50)
 			hilf.ZeichneBreiteLinie(pS, pS.Plus(vAnstoß.Mal(15)), 5)
