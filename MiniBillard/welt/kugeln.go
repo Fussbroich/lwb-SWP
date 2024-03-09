@@ -2,6 +2,7 @@ package welt
 
 import (
 	"../hilf"
+	"../klaenge"
 )
 
 type Kugel interface {
@@ -70,7 +71,7 @@ func (k *kugel) BewegenIn(s MiniBillardSpiel) {
 	// Prüfe, ob Kugel eingelocht wurde.
 	for _, t := range s.GibTaschen() {
 		if t.GibPos().Minus(k.GibPos()).Betrag() < t.GibRadius() {
-			hilf.BallInPocketSound()
+			klaenge.BallInPocketSound()
 			k.eingelocht = true
 			k.SetzeV(hilf.V2(0, 0))
 			break
@@ -112,7 +113,7 @@ func (k *kugel) prüfeBandenKollision(b Bande) {
 	//		return
 	//	}
 	// reflektiere die Kugel 1mal
-	hilf.BallHitsRailSound()
+	klaenge.BallHitsRailSound()
 	norm := lot.Normiert()
 	vp := vK.ProjiziertAuf(norm)
 	vo := vK.Minus(vp)
@@ -138,7 +139,7 @@ func (k1 *kugel) prüfeKugelKollision(k2 Kugel) {
 	if norm12.Betrag() >= (k1.r + k2.GibRadius()) {
 		return
 	}
-	hilf.BallHitsBallSound()
+	klaenge.BallHitsBallSound()
 	n12 := norm12.Normiert()
 	v1p := v1.ProjiziertAuf(n12)
 	v1o := v1.Minus(v1p)

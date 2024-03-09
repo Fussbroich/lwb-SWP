@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"./hilf"
+	"./klaenge"
 	"./welt"
 )
 
@@ -118,17 +119,17 @@ func starteMaussteuerung(spiel welt.MiniBillardSpiel, stop chan bool) {
 		if !gfx.FensterOffen() {
 			return
 		}
-		if spiel.IstStillstand() {
-			kS := spiel.GibStoßkugel()
+		if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
 			// TODO: hier hängt der Prozess, solange die Maus nicht im Fenster ist
 			taste, _, mausX, mausY := gfx.MausLesen1()
-			vAnstoß = (hilf.V2(float64(mausX), float64(mausY))).Minus(kS.GibPos()).Mal(1.0 / 15)
+			vAnstoß = (hilf.V2(float64(mausX), float64(mausY))).Minus(spiel.GibStoßkugel().GibPos()).Mal(1.0 / 15)
 			vabs := vAnstoß.Betrag()
 			if vabs > 12 {
 				vAnstoß = vAnstoß.Mal(12 / vabs)
 			}
 			if taste == 1 {
 				spiel.Anstoß(vAnstoß)
+				klaenge.CueHitsBallSound()
 			}
 		}
 	}
@@ -137,7 +138,7 @@ func starteMaussteuerung(spiel welt.MiniBillardSpiel, stop chan bool) {
 		for {
 			select {
 			case <-stop:
-				println("Stoppe Maussteuerung")
+				println("MiniBillard: Stoppe Maussteuerung")
 				return
 			case <-takt.C:
 				maustest()
@@ -150,6 +151,26 @@ func starteMaussteuerung(spiel welt.MiniBillardSpiel, stop chan bool) {
 	go mousecontroller()
 }
 
+func starteSound(stop chan bool) {
+	takt := time.NewTicker(16 * time.Second)
+	klaenge.MassivePulseLoopSound()
+	music := func() {
+		defer func() { println("MiniBillard: Stoppe Musik"); takt.Stop() }()
+		for {
+			select {
+			case <-stop:
+				return
+			case <-takt.C:
+				klaenge.MassivePulseLoopSound()
+			}
+		}
+	}
+
+	// starte Prozess
+	println("Starte Musik")
+	go music()
+}
+
 func main() {
 	//spiel := welt.NewHexaBahnSpiel(600)
 	//spiel := welt.NewLBahnSpiel(600)
@@ -158,18 +179,22 @@ func main() {
 
 	//spiel := welt.NewNewtonRauteSpiel(600, 350)
 
-	stopViewer, stopUpdater, stopController := make(chan bool), make(chan bool), make(chan bool)
+	stopViewer, stopUpdater, stopController, stopSound := make(chan bool), make(chan bool), make(chan bool), make(chan bool)
 	starteZeichenProzess(spiel, stopViewer)
 	starteUpdateProzess(spiel, stopUpdater)
 	starteMaussteuerung(spiel, stopController)
+	starteSound(stopSound)
 
 	for {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
 		if gedrückt == 1 {
 			switch taste {
+			case 's': // quit
+				stopSound <- true
 			case 'r': // reset
 				spiel.Nochmal() // setze Kugeln wie vor dem letzten Anstoß
 			case 'q': // quit
+				stopSound <- true
 				stopViewer <- true
 				stopUpdater <- true
 				stopController <- true
