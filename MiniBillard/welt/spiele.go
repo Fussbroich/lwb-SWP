@@ -102,7 +102,7 @@ func (s *spiel) GibBahnDreiecke() [][3]hilf.Vec2 {
 func (s *spiel) UpdateObjekte() {
 	still := true
 	for _, k := range s.kugeln {
-		k.Bewegen(s)
+		k.BewegenIn(s)
 		//prüfe Stillstand
 		if !k.GibV().IstNull() {
 			still = false

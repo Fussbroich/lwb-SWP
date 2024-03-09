@@ -5,18 +5,15 @@ import (
 )
 
 type Kugel interface {
-	Bewegen(MiniBillardSpiel)
+	BewegenIn(MiniBillardSpiel)
+	SetzeKollidiertMit(Kugel)
+	IstEingelocht() bool
 	GibV() hilf.Vec2
 	SetzeV(hilf.Vec2)
 	GibPos() hilf.Vec2
 	SetzePos(hilf.Vec2)
 	GibRadius() float64
 	GibFarbe() (uint8, uint8, uint8)
-	PrüfeBandenKollision(Bande)
-	PrüfeEingelocht([]Tasche)
-	IstEingelocht() bool
-	PrüfeKugelKollision(Kugel)
-	SetzeKollidiertMit(Kugel)
 }
 
 type kugel struct {
@@ -36,23 +33,24 @@ func NewKugel(pos hilf.Vec2, r float64, farbeR, farbeG, farbeB uint8) *kugel {
 		r:   r, cR: farbeR, cG: farbeG, cB: farbeB}
 }
 
-func (k *kugel) Bewegen(s MiniBillardSpiel) {
-	if k.IstEingelocht() {
+func (k *kugel) BewegenIn(s MiniBillardSpiel) {
+	if k.eingelocht {
 		return
 	}
 	// prüfe Kollisionen
 	for _, k2 := range s.GibKugeln() {
 		if k != k2 {
-			k.PrüfeKugelKollision(k2)
+			k.prüfeKugelKollision(k2)
 		}
 	}
 	// Prüfe Berührung mit der Bande.
 	for _, b := range s.GibBanden() {
-		k.PrüfeBandenKollision(b)
+		k.prüfeBandenKollision(b)
 	}
 	// Bewege Kugel einen Tick weiter.
 	k.pos = k.pos.Plus(k.v)
 	vabs := k.v.Betrag()
+	// Bremse die Kugel etwas ab.
 	if vabs > 0.15 {
 		k.v = k.v.Mal(1 - 0.02/vabs)
 	} else {
@@ -60,23 +58,13 @@ func (k *kugel) Bewegen(s MiniBillardSpiel) {
 	}
 	k.hatBerührt = nil
 	k.istKollMit = nil
-	//prüfe eingelocht
-	k.PrüfeEingelocht(s.GibTaschen())
-	if k.IstEingelocht() && k == s.GibStoßkugel() {
-		s.SetzeVerloren()
-	}
-}
-
-func (k *kugel) PrüfeEingelocht(ts []Tasche) {
-	if k.eingelocht {
-		return
-	}
-	for _, t := range ts {
+	// Prüfe, ob Kugel eingelocht wurde.
+	for _, t := range s.GibTaschen() {
 		if t.GibPos().Minus(k.GibPos()).Betrag() < t.GibRadius() {
 			hilf.BallInPocketSound()
 			k.eingelocht = true
 			k.SetzeV(hilf.V2(0, 0))
-			return
+			break
 		}
 	}
 }
@@ -85,7 +73,7 @@ func (k *kugel) IstEingelocht() bool {
 	return k.eingelocht
 }
 
-func (k *kugel) PrüfeBandenKollision(b Bande) {
+func (k *kugel) prüfeBandenKollision(b Bande) {
 	if k.hatBerührt == b {
 		return
 	}
@@ -115,7 +103,6 @@ func (k *kugel) PrüfeBandenKollision(b Bande) {
 	//		return
 	//	}
 	// reflektiere die Kugel 1mal
-	//println("brrrrrrrrr")
 	hilf.BallHitsRailSound()
 	norm := lot.Normiert()
 	vp := vK.ProjiziertAuf(norm)
@@ -126,7 +113,7 @@ func (k *kugel) PrüfeBandenKollision(b Bande) {
 	k.hatBerührt = b
 }
 
-func (k1 *kugel) PrüfeKugelKollision(k2 Kugel) {
+func (k1 *kugel) prüfeKugelKollision(k2 Kugel) {
 	if k1.istKollMit == k2 {
 		return
 	}
@@ -137,8 +124,8 @@ func (k1 *kugel) PrüfeKugelKollision(k2 Kugel) {
 	pos2 := k2.GibPos()
 	v1 := k1.v
 	v2 := k2.GibV()
-	//Stoßnormale
 	norm12 := pos2.Plus(v2).Minus(pos1.Plus(v1))
+	// Kugeln berühren sich gar nicht.
 	if norm12.Betrag() >= (k1.r + k2.GibRadius()) {
 		return
 	}
