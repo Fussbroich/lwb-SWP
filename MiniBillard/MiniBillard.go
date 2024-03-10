@@ -145,8 +145,8 @@ func starteMaussteuerung(spiel welt.MiniBillardSpiel, stop chan bool) {
 }
 
 func starteSound(stop chan bool) {
-	takt := time.NewTicker(16 * time.Second)
-	klaenge.MassivePulseLoopSound()
+	takt := time.NewTicker(2*time.Minute + 8*time.Second)
+	klaenge.CoolJazzLoop2641SOUND()
 	music := func() {
 		defer func() { println("MiniBillard: Halte Musik-Schleife an"); takt.Stop() }()
 		for {
@@ -155,7 +155,7 @@ func starteSound(stop chan bool) {
 				println("MiniBillard: Stoppe Musik")
 				return
 			case <-takt.C:
-				klaenge.MassivePulseLoopSound()
+				klaenge.CoolJazzLoop2641SOUND()
 			}
 		}
 	}

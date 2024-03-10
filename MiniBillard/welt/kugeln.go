@@ -87,26 +87,27 @@ func (k *kugel) prüfeBandenKollision(länge, breite float64) {
 	vx, vy := k.v.X(), k.v.Y()
 	xK, yK := k.pos.X(), k.pos.Y()
 
-	var hit bool
+	var willHit bool
 	// reflektiere die Kugel
-	if xK+vx < k.r {
+	var berührt bool = !((xK >= k.r) && (xK <= länge-k.r) && (yK >= k.r) && (yK <= breite-k.r))
+	if !berührt && xK+vx < k.r {
 		vx *= -1
-		hit = true
+		willHit = true
 	}
-	if xK+vx > länge-k.r {
+	if !berührt && xK+vx > länge-k.r {
 		vx *= -1
-		hit = true
+		willHit = true
 	}
-	if yK+vy < k.r {
+	if !berührt && yK+vy < k.r {
 		vy *= -1
-		hit = true
+		willHit = true
 	}
-	if yK+vy > breite-k.r {
+	if !berührt && yK+vy > breite-k.r {
 		vy *= -1
-		hit = true
+		willHit = true
 	}
 
-	if hit {
+	if willHit {
 		klaenge.BallHitsRailSound()
 		k.v = hilf.V2(vx, vy)
 	}
@@ -119,30 +120,35 @@ func (k1 *kugel) prüfeKugelKollision(k2 Kugel) {
 	if k1.IstEingelocht() || k2.IstEingelocht() {
 		return
 	}
-	v1 := k1.GibV()
-	v2 := k2.GibV()
-	dist := k2.GibPos().Plus(v2).Minus(k1.pos.Plus(v1))
-	// Kugeln werden sich gar nicht berühren.
-	if dist.Betrag() > (k1.r + k2.GibRadius()) {
-		return
-	}
 	// Kugeln überlappen!
 	//	/* TODO: was kann man tun, damit sich die Kugeln nicht gegenseitig einfangen?
-	//if dist.Betrag() < (k1.r + k2.GibRadius()) {
-	//println("Überlappung", k1.r+k2.GibRadius()-dist.Betrag())
-	/*
-		for dist.Betrag() <= (k1.r + k2.GibRadius()) {
-		// treibe Kugeln auseinander
+	distAkt := k2.GibPos().Minus(k1.pos).Betrag()
+	überlappt := distAkt < k1.r+k2.GibRadius()
+	if überlappt {
+		println("NiniBillard: Kugeln überlappen um", k1.r+k2.GibRadius()-distAkt)
+		/*
+			for dist.Betrag() <= (k1.r + k2.GibRadius()) {
+			// treibe Kugeln auseinander
+			}
+			return
+		*/
+	}
+
+	v1 := k1.GibV()
+	v2 := k2.GibV()
+	distPre := k2.GibPos().Plus(v2).Minus(k1.pos.Plus(v1))
+	// Kugeln werden sich gar nicht berühren.
+	if distPre.Betrag() > (k1.r + k2.GibRadius()) {
+		if überlappt {
+			println("NiniBillard: Kugeln driften wieder auseinander.")
 		}
 		return
-	*/
-	//}
-	//	*/
+	}
 
 	// Kugeln berühren sich
 	klaenge.BallHitsBallSound()
 	// die Stoßnormale geht durch die Mittelpunkte der Kugeln
-	n12 := dist.Normiert()
+	n12 := distPre.Normiert()
 	// Zerlege Geschwindigkeiten in eine parallele und eine orthogonale Komponente
 	v1p := v1.ProjiziertAuf(n12)
 	v1o := v1.Minus(v1p)

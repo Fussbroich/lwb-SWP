@@ -14,6 +14,11 @@ func MassivePulseLoopSound() {
 	gfx.SpieleSound("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\11 SWP\\lwb-SWP\\MiniBillard\\klaenge\\massivePulseLoop.wav")
 }
 
+func CoolJazzLoop2641SOUND() {
+	gfx.SetzeKlangparameter(22050, 2, 2, 1, 0.3)
+	gfx.SpieleSound("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\11 SWP\\lwb-SWP\\MiniBillard\\klaenge\\coolJazzLoop2641.wav")
+}
+
 func CueHitsBallSound() {
 	gfx.SetzeKlangparameter(22050, 2, 2, 1, 1.0)
 	gfx.SpieleSound("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\11 SWP\\lwb-SWP\\MiniBillard\\klaenge\\cueHitsBall.wav")
