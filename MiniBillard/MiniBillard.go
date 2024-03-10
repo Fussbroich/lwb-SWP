@@ -19,11 +19,11 @@ func starteUpdateProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 	takt := time.NewTicker(12 * time.Millisecond)
 
 	updater := func() {
-		defer func() { println("MiniBillard: Halte Spiel-Takt an"); takt.Stop() }()
+		defer func() { println("Halte Spiel-Takt an"); takt.Stop() }()
 		for {
 			select {
 			case <-stop:
-				println("MiniBillard: Stoppe Spiel-Logik")
+				println("Stoppe Spiel-Logik")
 				takt.Stop()
 				return
 			case <-takt.C:
@@ -44,68 +44,52 @@ func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 
 	var b, h uint16 = 1000, 600
 	rand := b / 60
+	var breiteSpiel uint16 = 800
+	lS, bS := spiel.GibGröße()
+	seitenverhältnis := lS / bS // breite/höhe
+
+	maßstab := float64(breiteSpiel) / float64(lS)
 
 	//öffne gfx-Fenster
 	gfx.Fenster(b, h)
 	gfx.Fenstertitel("unser Programmname")
 
-	//erzeuge ein View
-	myView := views.NewGfxView(rand, 900+rand, rand, gfx.Grafikspalten())
+	//erzeuge Zeichner
+	billardTischZeichner :=
+		views.NewFensterZeichner(rand, rand, 900+rand, uint16(900/seitenverhältnis)+rand, maßstab)
+	hintergrundZeichner :=
+		views.NewFensterZeichner(0, 0, b, h, 1.0)
 
-	//definiere Zeichenfunktionen
-	zeichneHintergrund := func(br, hö uint16, r, g, b uint8) {
-		gfx.Stiftfarbe(r, g, b)
-		gfx.Vollrechteck(0, 0, br, hö)
+		//definiere Zeichenfunktionen
+	fülleHintergrund := func(fenster *views.FensterZeichner, r, g, b uint8) {
+		fenster.FülleFläche(r, g, b)
 	}
 
-	zeichne := func(v *views.GfxView, spiel welt.MiniBillardSpiel) {
-		gfx.Cls()
-		l, b := spiel.GibGröße()
-		// zeichne den Belag
-		v.ZeichneVollRechteck(hilf.V2(0, 0), l, b, 60, 179, 113)
-		// zeichne die Taschen
-		for _, t := range spiel.GibTaschen() {
-			v.ZeichneVollKreis(t.GibPos(), t.GibRadius(), 0, 0, 0)
-		}
+	zeichneBillardSpiel := func(fenster *views.FensterZeichner, spiel welt.MiniBillardSpiel) {
 		// warte auf Bewegung der Kugeln
 		for updateLäuft {
 			time.Sleep(time.Millisecond)
 		}
-		// zeichne die Kugeln
-		// TODO: das ist Logik und muss hier weg
-		for _, k := range spiel.GibKugeln() {
-			if k.IstEingelocht() {
-				continue
-			}
-			r, g, b := k.GibFarbe()
-			v.ZeichneVollKreis(k.GibPos(), k.GibRadius(), 0, 0, 0)
-			v.ZeichneVollKreis(k.GibPos(), k.GibRadius()-1, r, g, b)
-		}
-		// TODO: das ist Logik und muss hier weg
+		fenster.ZeichneMiniBillardSpiel(spiel)
+		// TODO die Spielelogik und die Skalierung muss hier raus
 		if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
 			pS := spiel.GibStoßkugel().GibPos()
-			v.ZeichneBreiteLinie(pS, pS.Plus(vAnstoß.Mal(15)), 5, 250, 175, 50)
+			fenster.ZeichneBreiteLinie(pS, pS.Plus(vAnstoß.Mal(15)), 5, 250, 175, 50)
 		}
 	}
 
 	viewer := func() {
-		defer func() { println("MiniBillard: Halte Zeichen-Takt an"); takt.Stop() }()
+		defer func() { println("Halte Zeichen-Takt an"); takt.Stop() }()
 		for {
 			select {
 			case <-stop:
-				println("MiniBillard: Stoppe Zeichenprozess")
+				println("Stoppe Zeichenprozess")
 				takt.Stop()
-				if gfx.FensterOffen() {
-					gfx.FensterAus()
-				}
 				return
 			case <-takt.C:
 				gfx.UpdateAus()
-				zeichneHintergrund(b, h, 139, 69, 19)
-				zeichne(myView, spiel)
-				//zeichneRahmen(uint16(l*maßstab)+2*rand, uint16(b*maßstab)+2*rand,
-				//	rand, rand, uint16(l*maßstab)+rand, uint16(b*maßstab)+rand,
-				//	139, 69, 19)
+				fülleHintergrund(hintergrundZeichner, 139, 69, 19)
+				zeichneBillardSpiel(billardTischZeichner, spiel)
 				gfx.UpdateAn()
 			}
 		}
@@ -137,11 +121,11 @@ func starteMaussteuerung(spiel welt.MiniBillardSpiel, stop chan bool) {
 		}
 	}
 	mousecontroller := func() {
-		defer func() { println("MiniBillard: Halte Controller-Takt an"); takt.Stop() }()
+		defer func() { println("Halte Controller-Takt an"); takt.Stop() }()
 		for {
 			select {
 			case <-stop:
-				println("MiniBillard: Stoppe Maussteuerung")
+				println("Stoppe Maussteuerung")
 				return
 			case <-takt.C:
 				maustest()
@@ -161,14 +145,14 @@ func starteHintergrundPlayer(stop chan bool) {
 	klaenge.BillardPubAmbienceSOUND()
 	player := func() {
 		defer func() {
-			println("MiniBillard: Halte Musik-Schleife an")
+			println("Halte Musik-Schleife an")
 			coolJazzTakt.Stop()
 			ambienceTakt.Stop()
 		}()
 		for {
 			select {
 			case <-stop:
-				println("MiniBillard: Stoppe Musik")
+				println("Stoppe Musik")
 				return
 			case <-coolJazzTakt.C:
 				klaenge.CoolJazzLoop2641SOUND()
@@ -184,7 +168,7 @@ func starteHintergrundPlayer(stop chan bool) {
 }
 
 func main() {
-	spiel := welt.New3BallStandardSpiel(800)
+	spiel := welt.New3BallStandardSpiel()
 
 	stopViewer, stopUpdater, stopController := make(chan bool), make(chan bool), make(chan bool)
 	stopPlayer := make(chan bool)
@@ -205,6 +189,11 @@ func main() {
 				stopViewer <- true
 				stopUpdater <- true
 				stopController <- true
+				time.Sleep(100 * time.Millisecond)
+				if gfx.FensterOffen() {
+					gfx.FensterAus()
+				}
+				// goodbye
 				return
 			}
 		}

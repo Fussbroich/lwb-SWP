@@ -125,7 +125,7 @@ func (k1 *kugel) prüfeKugelKollision(k2 Kugel) {
 	distAkt := k2.GibPos().Minus(k1.pos).Betrag()
 	überlappt := distAkt < k1.r+k2.GibRadius()
 	if überlappt {
-		println("NiniBillard: Kugeln überlappen um", k1.r+k2.GibRadius()-distAkt)
+		println("--> überlappen um", k1.r+k2.GibRadius()-distAkt)
 		/*
 			for dist.Betrag() <= (k1.r + k2.GibRadius()) {
 			// treibe Kugeln auseinander
@@ -140,7 +140,7 @@ func (k1 *kugel) prüfeKugelKollision(k2 Kugel) {
 	// Kugeln werden sich gar nicht berühren.
 	if distPre.Betrag() > (k1.r + k2.GibRadius()) {
 		if überlappt {
-			println("NiniBillard: Kugeln driften wieder auseinander.")
+			println("--> Kugeln driften wieder auseinander.")
 		}
 		return
 	}
