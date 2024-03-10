@@ -44,19 +44,17 @@ func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 
 	var b, h uint16 = 1000, 600
 	rand := b / 60
-	var breiteSpiel uint16 = 800
-	lS, bS := spiel.GibGröße()
-	seitenverhältnis := lS / bS // breite/höhe
-
-	maßstab := float64(breiteSpiel) / float64(lS)
 
 	//öffne gfx-Fenster
 	gfx.Fenster(b, h)
 	gfx.Fenstertitel("unser Programmname")
 
 	//erzeuge Zeichner
-	billardTischZeichner :=
-		views.NewFensterZeichner(rand, rand, 900+rand, uint16(900/seitenverhältnis)+rand, maßstab)
+	lS, bS := spiel.GibGröße()
+	seitenverhältnis := lS / bS // breite/höhe
+	var breiteSpielFenster uint16 = 900
+	billardSpielZeichner :=
+		views.NewFensterZeichner(rand, rand, 900+rand, uint16(900/seitenverhältnis)+rand, float64(breiteSpielFenster)/float64(lS))
 	hintergrundZeichner :=
 		views.NewFensterZeichner(0, 0, b, h, 1.0)
 
@@ -89,7 +87,7 @@ func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 			case <-takt.C:
 				gfx.UpdateAus()
 				fülleHintergrund(hintergrundZeichner, 139, 69, 19)
-				zeichneBillardSpiel(billardTischZeichner, spiel)
+				zeichneBillardSpiel(billardSpielZeichner, spiel)
 				gfx.UpdateAn()
 			}
 		}
