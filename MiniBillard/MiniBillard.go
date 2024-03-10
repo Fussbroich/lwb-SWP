@@ -6,6 +6,7 @@ import (
 
 	"./hilf"
 	"./klaenge"
+	"./views"
 	"./welt"
 )
 
@@ -41,47 +42,50 @@ func starteUpdateProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 	takt := time.NewTicker(20 * time.Millisecond)
 
-	l, b := spiel.GibGröße()
+	var b, h uint16 = 1000, 600
+	rand := b / 60
 
-	gfx.Fenster(uint16(l), uint16(b))
-	gfx.Fenstertitel("Mini Billard")
+	//öffne gfx-Fenster
+	gfx.Fenster(b, h)
+	gfx.Fenstertitel("unser Programmname")
 
-	zeichne := func() {
-		gfx.UpdateAus()
+	//erzeuge ein View
+	myView := views.NewGfxView(rand, 900+rand, rand, gfx.Grafikspalten())
+
+	//definiere Zeichenfunktionen
+	zeichneHintergrund := func(br, hö uint16, r, g, b uint8) {
+		gfx.Stiftfarbe(r, g, b)
+		gfx.Vollrechteck(0, 0, br, hö)
+	}
+
+	zeichne := func(v *views.GfxView, spiel welt.MiniBillardSpiel) {
 		gfx.Cls()
 		l, b := spiel.GibGröße()
 		// zeichne den Belag
-		gfx.Stiftfarbe(60, 179, 113)
-		gfx.Vollrechteck(0, 0, uint16(l), uint16(b))
+		v.ZeichneVollRechteck(hilf.V2(0, 0), l, b, 60, 179, 113)
 		// zeichne die Taschen
 		for _, t := range spiel.GibTaschen() {
-			pos := t.GibPos()
-			gfx.Stiftfarbe(0, 0, 0)
-			gfx.Vollkreis(uint16(pos.X()), uint16(pos.Y()), uint16(t.GibRadius()))
+			v.ZeichneVollKreis(t.GibPos(), t.GibRadius(), 0, 0, 0)
 		}
 		// warte auf Bewegung der Kugeln
 		for updateLäuft {
 			time.Sleep(time.Millisecond)
 		}
 		// zeichne die Kugeln
+		// TODO: das ist Logik und muss hier weg
 		for _, k := range spiel.GibKugeln() {
 			if k.IstEingelocht() {
 				continue
 			}
-			pos := k.GibPos()
-			ra := k.GibRadius()
 			r, g, b := k.GibFarbe()
-			gfx.Stiftfarbe(0, 0, 0)
-			gfx.Vollkreis(uint16(pos.X()), uint16(pos.Y()), uint16(ra))
-			gfx.Stiftfarbe(r, g, b)
-			gfx.Vollkreis(uint16(pos.X()), uint16(pos.Y()), uint16(ra-1))
+			v.ZeichneVollKreis(k.GibPos(), k.GibRadius(), 0, 0, 0)
+			v.ZeichneVollKreis(k.GibPos(), k.GibRadius()-1, r, g, b)
 		}
+		// TODO: das ist Logik und muss hier weg
 		if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
 			pS := spiel.GibStoßkugel().GibPos()
-			gfx.Stiftfarbe(250, 175, 50)
-			hilf.ZeichneBreiteLinie(pS, pS.Plus(vAnstoß.Mal(15)), 5)
+			v.ZeichneBreiteLinie(pS, pS.Plus(vAnstoß.Mal(15)), 5, 250, 175, 50)
 		}
-		gfx.UpdateAn()
 	}
 
 	viewer := func() {
@@ -96,12 +100,18 @@ func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 				}
 				return
 			case <-takt.C:
-				zeichne()
+				gfx.UpdateAus()
+				zeichneHintergrund(b, h, 139, 69, 19)
+				zeichne(myView, spiel)
+				//zeichneRahmen(uint16(l*maßstab)+2*rand, uint16(b*maßstab)+2*rand,
+				//	rand, rand, uint16(l*maßstab)+rand, uint16(b*maßstab)+rand,
+				//	139, 69, 19)
+				gfx.UpdateAn()
 			}
 		}
 	}
 
-	// starte Prozess
+	// starte Zeichenprozess
 	println("Starte Zeichenprozess")
 	go viewer()
 }
@@ -144,37 +154,45 @@ func starteMaussteuerung(spiel welt.MiniBillardSpiel, stop chan bool) {
 	go mousecontroller()
 }
 
-func starteSound(stop chan bool) {
-	takt := time.NewTicker(2*time.Minute + 8*time.Second)
+func starteHintergrundPlayer(stop chan bool) {
+	coolJazzTakt := time.NewTicker(2*time.Minute + 8*time.Second)
+	ambienceTakt := time.NewTicker(time.Minute + 13*time.Second)
 	klaenge.CoolJazzLoop2641SOUND()
-	music := func() {
-		defer func() { println("MiniBillard: Halte Musik-Schleife an"); takt.Stop() }()
+	klaenge.BillardPubAmbienceSOUND()
+	player := func() {
+		defer func() {
+			println("MiniBillard: Halte Musik-Schleife an")
+			coolJazzTakt.Stop()
+			ambienceTakt.Stop()
+		}()
 		for {
 			select {
 			case <-stop:
 				println("MiniBillard: Stoppe Musik")
 				return
-			case <-takt.C:
+			case <-coolJazzTakt.C:
 				klaenge.CoolJazzLoop2641SOUND()
+			case <-ambienceTakt.C:
+				klaenge.BillardPubAmbienceSOUND()
 			}
 		}
 	}
 
 	// starte Prozess
 	println("Starte Musik")
-	go music()
+	go player()
 }
 
 func main() {
 	spiel := welt.New3BallStandardSpiel(800)
 
 	stopViewer, stopUpdater, stopController := make(chan bool), make(chan bool), make(chan bool)
-	stopSound := make(chan bool)
+	stopPlayer := make(chan bool)
 
 	starteZeichenProzess(spiel, stopViewer)
 	starteUpdateProzess(spiel, stopUpdater)
 	starteMaussteuerung(spiel, stopController)
-	starteSound(stopSound)
+	starteHintergrundPlayer(stopPlayer)
 
 	for {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
@@ -183,7 +201,7 @@ func main() {
 			case 'r': // reset
 				spiel.Nochmal() // setze Kugeln wie vor dem letzten Anstoß
 			case 'q': // quit
-				stopSound <- true
+				stopPlayer <- true
 				stopViewer <- true
 				stopUpdater <- true
 				stopController <- true
