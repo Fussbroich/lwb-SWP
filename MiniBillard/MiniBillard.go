@@ -19,7 +19,7 @@ func starteUpdateProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 	takt := time.NewTicker(12 * time.Millisecond)
 
 	updater := func() {
-		defer func() { println("Halte Spiel-Takt an"); takt.Stop() }()
+		defer func() { takt.Stop() }()
 		for {
 			select {
 			case <-stop:
@@ -42,7 +42,7 @@ func starteUpdateProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 	takt := time.NewTicker(20 * time.Millisecond)
 
-	var b, h uint16 = 1000, 600
+	var b, h uint16 = 1200, 800
 	rand := b / 60
 
 	//öffne gfx-Fenster
@@ -52,7 +52,7 @@ func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 	//erzeuge Zeichner
 	lS, bS := spiel.GibGröße()
 	seitenverhältnis := lS / bS // breite/höhe
-	var breiteSpielFenster uint16 = 900
+	var breiteSpielFenster uint16 = 1200 - 2*rand
 	billardSpielZeichner :=
 		views.NewFensterZeichner(rand, rand, 900+rand, uint16(900/seitenverhältnis)+rand, float64(breiteSpielFenster)/float64(lS))
 	hintergrundZeichner :=
@@ -77,7 +77,7 @@ func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 	}
 
 	viewer := func() {
-		defer func() { println("Halte Zeichen-Takt an"); takt.Stop() }()
+		defer func() { takt.Stop() }()
 		for {
 			select {
 			case <-stop:
@@ -109,8 +109,8 @@ func starteMaussteuerung(spiel welt.MiniBillardSpiel, stop chan bool) {
 			taste, _, mausX, mausY := gfx.MausLesen1()
 			vAnstoß = (hilf.V2(float64(mausX), float64(mausY))).Minus(spiel.GibStoßkugel().GibPos()).Mal(1.0 / 15)
 			vabs := vAnstoß.Betrag()
-			if vabs > 10 {
-				vAnstoß = vAnstoß.Mal(10 / vabs)
+			if vabs > 12 {
+				vAnstoß = vAnstoß.Mal(12 / vabs)
 			}
 			if taste == 1 {
 				spiel.Anstoß(vAnstoß)
@@ -119,7 +119,7 @@ func starteMaussteuerung(spiel welt.MiniBillardSpiel, stop chan bool) {
 		}
 	}
 	mousecontroller := func() {
-		defer func() { println("Halte Controller-Takt an"); takt.Stop() }()
+		defer func() { takt.Stop() }()
 		for {
 			select {
 			case <-stop:
@@ -142,11 +142,7 @@ func starteHintergrundPlayer(stop chan bool) {
 	klaenge.CoolJazzLoop2641SOUND()
 	klaenge.BillardPubAmbienceSOUND()
 	player := func() {
-		defer func() {
-			println("Halte Musik-Schleife an")
-			coolJazzTakt.Stop()
-			ambienceTakt.Stop()
-		}()
+		defer func() { coolJazzTakt.Stop(); ambienceTakt.Stop() }()
 		for {
 			select {
 			case <-stop:
@@ -159,7 +155,6 @@ func starteHintergrundPlayer(stop chan bool) {
 			}
 		}
 	}
-
 	// starte Prozess
 	println("Starte Musik")
 	go player()
