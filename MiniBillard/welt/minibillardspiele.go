@@ -7,13 +7,14 @@ import (
 type MiniBillardSpiel interface {
 	Update()
 	Anstoß(hilf.Vec2)
-	Nochmal()
+	StoßWiederholen()
 	IstStillstand() bool
 	GibTaschen() []Tasche
 	GibKugeln() []Kugel
 	GibAktiveKugeln() []Kugel
 	GibStoßkugel() Kugel
 	GibStößeBisher() uint8
+	GibStrafpunkte() uint8
 	GibGröße() (float64, float64)
 }
 
@@ -25,6 +26,7 @@ type spiel struct {
 	stoßkugel   Kugel
 	taschen     []Tasche
 	stößeBisher uint8
+	strafPunkte uint8
 	stillstand  bool
 }
 
@@ -50,17 +52,17 @@ func NewSpiel(länge, breite float64) *spiel {
 }
 
 func New3BallStandardSpiel() *spiel {
-	var länge, breite float64 = 800, 400
+	var länge, breite float64 = 1000, 500
 	rk := länge / 40 // Kugelradius
 	spiel := NewSpiel(länge, breite)
 	rt, rtm := 2.0*rk, 1.6*rk
 	spiel.setzeTaschen(
 		NewTasche(pos(0, 0), rt),
-		NewTasche(pos(länge/2, 0), rtm),
-		NewTasche(pos(länge, 0), rt),
 		NewTasche(pos(0, breite), rt),
 		NewTasche(pos(länge/2, breite), rtm),
-		NewTasche(pos(länge, breite), rt))
+		NewTasche(pos(länge, breite), rt),
+		NewTasche(pos(länge, 0), rt),
+		NewTasche(pos(länge/2, 0), rtm))
 	pWeiß := pos(4*länge/5, breite/3)
 	pGelb := pos(3*länge/5, breite/2)
 	pRot := pGelb.Plus(pos(-2*(rk+1), -(rk + 1)))
@@ -117,9 +119,13 @@ func (s *spiel) GibStößeBisher() uint8 {
 	return s.stößeBisher
 }
 
-func (s *spiel) Nochmal() {
+func (s *spiel) GibStrafpunkte() uint8 {
+	return s.strafPunkte
+}
+
+func (s *spiel) StoßWiederholen() {
 	s.setzeKugeln(s.alteKugeln...)
-	s.stößeBisher--
+	s.strafPunkte++
 	s.stillstand = true
 }
 

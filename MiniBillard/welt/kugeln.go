@@ -67,7 +67,7 @@ func (k *kugel) BewegenIn(s MiniBillardSpiel) {
 	// Prüfe, ob Kugel eingelocht wurde.
 	for _, t := range s.GibTaschen() {
 		if t.GibPos().Minus(k.GibPos()).Betrag() < t.GibRadius() {
-			klaenge.BallInPocketSound()
+			klaenge.BallInPocketSound().Play()
 			k.eingelocht = true
 			k.SetzeV(hilf.V2(0, 0))
 			break
@@ -108,7 +108,7 @@ func (k *kugel) prüfeBandenKollision(länge, breite float64) {
 	}
 
 	if willHit {
-		klaenge.BallHitsRailSound()
+		klaenge.BallHitsRailSound().Play()
 		k.v = hilf.V2(vx, vy)
 	}
 }
@@ -146,7 +146,7 @@ func (k1 *kugel) prüfeKugelKollision(k2 Kugel) {
 	}
 
 	// Kugeln berühren sich
-	klaenge.BallHitsBallSound()
+	klaenge.BallHitsBallSound().Play()
 	// die Stoßnormale geht durch die Mittelpunkte der Kugeln
 	n12 := distPre.Normiert()
 	// Zerlege Geschwindigkeiten in eine parallele und eine orthogonale Komponente
