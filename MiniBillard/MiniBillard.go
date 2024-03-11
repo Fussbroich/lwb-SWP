@@ -11,8 +11,7 @@ import (
 )
 
 var (
-	vAnstoß     hilf.Vec2
-	updateLäuft bool
+	vAnstoß hilf.Vec2
 )
 
 func starteUpdateProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
@@ -27,9 +26,7 @@ func starteUpdateProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 				takt.Stop()
 				return
 			case <-takt.C:
-				updateLäuft = true
-				spiel.BewegeKugeln()
-				updateLäuft = false
+				spiel.Update()
 			}
 		}
 	}
@@ -52,9 +49,15 @@ func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 	//erzeuge Zeichner
 	lS, bS := spiel.GibGröße()
 	seitenverhältnis := lS / bS // breite/höhe
-	var breiteSpielFenster uint16 = 1200 - 2*rand
+	var breiteSpielFenster uint16 = 800 - 2*rand
+	xs, ys, xe, ye := rand, rand, 900+rand, uint16(900/seitenverhältnis)+rand
 	billardSpielZeichner :=
-		views.NewFensterZeichner(rand, rand, 900+rand, uint16(900/seitenverhältnis)+rand, float64(breiteSpielFenster)/float64(lS))
+		views.NewFensterZeichner(xs, ys, xe, ye, float64(breiteSpielFenster)/float64(lS))
+
+	stoßzählerZeichner :=
+		views.NewFensterZeichner(xs, ye+2, xe, h-rand, 1.0)
+	lernfragenZeichner :=
+		views.NewFensterZeichner(xe+5, rand, b-rand, h-rand, 1.0)
 	hintergrundZeichner :=
 		views.NewFensterZeichner(0, 0, b, h, 1.0)
 
@@ -63,13 +66,14 @@ func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 		fenster.FülleFläche(r, g, b)
 	}
 
+	zeigeSpielinfo := func(fenster *views.FensterZeichner, spiel welt.MiniBillardSpiel) {
+		fenster.ZeigeSpielinfo(spiel)
+	}
+
 	zeichneBillardSpiel := func(fenster *views.FensterZeichner, spiel welt.MiniBillardSpiel) {
 		// warte auf Bewegung der Kugeln
-		for updateLäuft {
-			time.Sleep(time.Millisecond)
-		}
 		fenster.ZeichneMiniBillardSpiel(spiel)
-		// TODO die Spielelogik und die Skalierung muss hier raus
+		// TODO die Skalierung muss hier raus
 		if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
 			pS := spiel.GibStoßkugel().GibPos()
 			fenster.ZeichneBreiteLinie(pS, pS.Plus(vAnstoß.Mal(15)), 5, 250, 175, 50)
@@ -88,6 +92,8 @@ func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 				gfx.UpdateAus()
 				fülleHintergrund(hintergrundZeichner, 139, 69, 19)
 				zeichneBillardSpiel(billardSpielZeichner, spiel)
+				zeigeSpielinfo(stoßzählerZeichner, spiel)
+				fülleHintergrund(lernfragenZeichner, 200, 200, 200)
 				gfx.UpdateAn()
 			}
 		}

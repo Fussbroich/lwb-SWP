@@ -5,7 +5,7 @@ import (
 )
 
 type MiniBillardSpiel interface {
-	BewegeKugeln()
+	Update()
 	Anstoß(hilf.Vec2)
 	Nochmal()
 	IstStillstand() bool
@@ -13,17 +13,19 @@ type MiniBillardSpiel interface {
 	GibKugeln() []Kugel
 	GibAktiveKugeln() []Kugel
 	GibStoßkugel() Kugel
+	GibStößeBisher() uint8
 	GibGröße() (float64, float64)
 }
 
 type spiel struct {
-	länge      float64
-	breite     float64
-	kugeln     []Kugel
-	alteKugeln []Kugel
-	stoßkugel  Kugel
-	taschen    []Tasche
-	stillstand bool
+	länge       float64
+	breite      float64
+	kugeln      []Kugel
+	alteKugeln  []Kugel
+	stoßkugel   Kugel
+	taschen     []Tasche
+	stößeBisher uint8
+	stillstand  bool
 }
 
 func pos(x, y float64) hilf.Vec2 {
@@ -107,15 +109,21 @@ func (s *spiel) Anstoß(v hilf.Vec2) {
 		s.alteKugeln = append(s.alteKugeln, kNeu)
 	}
 	s.stoßkugel.SetzeV(v)
+	s.stößeBisher++
 	s.stillstand = false
+}
+
+func (s *spiel) GibStößeBisher() uint8 {
+	return s.stößeBisher
 }
 
 func (s *spiel) Nochmal() {
 	s.setzeKugeln(s.alteKugeln...)
+	s.stößeBisher--
 	s.stillstand = true
 }
 
-func (s *spiel) BewegeKugeln() {
+func (s *spiel) Update() {
 	still := true
 	for _, k := range s.kugeln {
 		k.BewegenIn(s)

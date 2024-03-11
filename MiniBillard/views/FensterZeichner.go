@@ -1,6 +1,7 @@
 package views
 
 import (
+	"fmt"
 	"gfx"
 
 	"../hilf"
@@ -35,6 +36,22 @@ func (f *FensterZeichner) ZeichneMiniBillardSpiel(spiel welt.MiniBillardSpiel) {
 		f.ZeichneVollKreis(k.GibPos(), k.GibRadius(), 0, 0, 0)
 		f.ZeichneVollKreis(k.GibPos(), k.GibRadius()-1, r, g, b)
 	}
+}
+
+func (f *FensterZeichner) ZeigeSpielinfo(spiel welt.MiniBillardSpiel) {
+	breite := f.stopX - f.startX
+	höhe := f.stopY - f.startY
+	// zeichne den Hintergrund
+	gfx.Stiftfarbe(80, 80, 80)
+	gfx.Vollrechteck(f.startX, f.startY, breite, höhe)
+	//schreibe Stößezahl
+	gfx.Stiftfarbe(180, 180, 180)
+	// gfx.SetzeFont("/home/lewein/go/src/gfx/fonts/LiberationMono-Bold.ttf", 24)
+	schriftgröße := höhe / 5
+	gfx.SetzeFont("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\src\\gfx\\fonts\\LiberationMono-Bold.ttf",
+		int(schriftgröße))
+	gfx.SchreibeFont(f.startX, f.startY,
+		fmt.Sprintf("%d Stöße bisher", spiel.GibStößeBisher()))
 }
 
 func (f *FensterZeichner) FülleFläche(r, g, b uint8) {
