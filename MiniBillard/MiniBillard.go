@@ -36,6 +36,67 @@ func starteUpdateProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 	go updater()
 }
 
+func starteHintergrundPlayer(stop chan bool) {
+	coolJazzTakt := time.NewTicker(2*time.Minute + 8*time.Second)
+	ambienceTakt := time.NewTicker(time.Minute + 13*time.Second)
+	klaenge.CoolJazzLoop2641SOUND()
+	klaenge.BillardPubAmbienceSOUND()
+	player := func() {
+		defer func() { coolJazzTakt.Stop(); ambienceTakt.Stop() }()
+		for {
+			select {
+			case <-stop:
+				println("Stoppe Musik")
+				return
+			case <-coolJazzTakt.C:
+				klaenge.CoolJazzLoop2641SOUND()
+			case <-ambienceTakt.C:
+				klaenge.BillardPubAmbienceSOUND()
+			}
+		}
+	}
+	// starte Prozess
+	println("Starte Musik")
+	go player()
+}
+func starteMaussteuerung(spiel welt.MiniBillardSpiel, stop chan bool) {
+	takt := time.NewTicker(5 * time.Millisecond)
+	maustest := func() {
+		if !gfx.FensterOffen() {
+			return
+		}
+		if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
+			// TODO: hier hängt der Prozess, solange die Maus nicht im Fenster ist
+			taste, _, mausX, mausY := gfx.MausLesen1()
+			vAnstoß = (hilf.V2(float64(mausX), float64(mausY))).Minus(spiel.GibStoßkugel().GibPos()).Mal(1.0 / 15)
+			vabs := vAnstoß.Betrag()
+			if vabs > 12 {
+				vAnstoß = vAnstoß.Mal(12 / vabs)
+			}
+			if taste == 1 {
+				spiel.Anstoß(vAnstoß)
+				klaenge.CueHitsBallSound()
+			}
+		}
+	}
+	mousecontroller := func() {
+		defer func() { takt.Stop() }()
+		for {
+			select {
+			case <-stop:
+				println("Stoppe Maussteuerung")
+				return
+			case <-takt.C:
+				maustest()
+			}
+		}
+	}
+
+	// starte Prozess
+	println("Starte Maussteuerung")
+	go mousecontroller()
+}
+
 func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 	takt := time.NewTicker(20 * time.Millisecond)
 
@@ -102,68 +163,6 @@ func starteZeichenProzess(spiel welt.MiniBillardSpiel, stop chan bool) {
 	// starte Zeichenprozess
 	println("Starte Zeichenprozess")
 	go viewer()
-}
-
-func starteMaussteuerung(spiel welt.MiniBillardSpiel, stop chan bool) {
-	takt := time.NewTicker(5 * time.Millisecond)
-	maustest := func() {
-		if !gfx.FensterOffen() {
-			return
-		}
-		if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
-			// TODO: hier hängt der Prozess, solange die Maus nicht im Fenster ist
-			taste, _, mausX, mausY := gfx.MausLesen1()
-			vAnstoß = (hilf.V2(float64(mausX), float64(mausY))).Minus(spiel.GibStoßkugel().GibPos()).Mal(1.0 / 15)
-			vabs := vAnstoß.Betrag()
-			if vabs > 12 {
-				vAnstoß = vAnstoß.Mal(12 / vabs)
-			}
-			if taste == 1 {
-				spiel.Anstoß(vAnstoß)
-				klaenge.CueHitsBallSound()
-			}
-		}
-	}
-	mousecontroller := func() {
-		defer func() { takt.Stop() }()
-		for {
-			select {
-			case <-stop:
-				println("Stoppe Maussteuerung")
-				return
-			case <-takt.C:
-				maustest()
-			}
-		}
-	}
-
-	// starte Prozess
-	println("Starte Maussteuerung")
-	go mousecontroller()
-}
-
-func starteHintergrundPlayer(stop chan bool) {
-	coolJazzTakt := time.NewTicker(2*time.Minute + 8*time.Second)
-	ambienceTakt := time.NewTicker(time.Minute + 13*time.Second)
-	klaenge.CoolJazzLoop2641SOUND()
-	klaenge.BillardPubAmbienceSOUND()
-	player := func() {
-		defer func() { coolJazzTakt.Stop(); ambienceTakt.Stop() }()
-		for {
-			select {
-			case <-stop:
-				println("Stoppe Musik")
-				return
-			case <-coolJazzTakt.C:
-				klaenge.CoolJazzLoop2641SOUND()
-			case <-ambienceTakt.C:
-				klaenge.BillardPubAmbienceSOUND()
-			}
-		}
-	}
-	// starte Prozess
-	println("Starte Musik")
-	go player()
 }
 
 func main() {
