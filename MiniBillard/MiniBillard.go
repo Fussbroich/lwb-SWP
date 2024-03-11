@@ -47,26 +47,26 @@ func view_komponente(spiel welt.MiniBillardSpiel) func() {
 	seitenverhältnis := lS / bS // breite/höhe
 	var breiteSpielFenster uint16 = 800 - 2*rand
 	xs, ys, xe, ye := rand, rand, 900+rand, uint16(900/seitenverhältnis)+rand
-	billardSpielZeichner :=
+	billardSpielFenster :=
 		views.NewBillardTischZeichner(xs, ys, xe, ye, float64(breiteSpielFenster)/float64(lS))
-	stoßzählerZeichner :=
+	stoßzählerFenster :=
 		views.NewSpielinfoZeichner(xs, ye+2, xe, h-rand)
-	lernfragenZeichner :=
+	lernfragenFenster :=
 		views.NewHintergrundZeichner(xe+5, rand, b-rand, h-rand)
-	hintergrundZeichner :=
+	hintergrund :=
 		views.NewHintergrundZeichner(0, 0, b, h)
 
 	return func() {
 		gfx.UpdateAus()
-		hintergrundZeichner.Zeichne(139, 69, 19)
-		billardSpielZeichner.Zeichne(spiel)
-		stoßzählerZeichner.Zeichne(spiel)
-		lernfragenZeichner.Zeichne(200, 200, 200)
+		hintergrund.Zeichne(139, 69, 19)
+		billardSpielFenster.Zeichne(spiel)
+		stoßzählerFenster.Zeichne(spiel)
+		lernfragenFenster.Zeichne(200, 200, 200)
 		//definiere Zeichenfunktionen
 		// TODO die Skalierung muss hier raus
 		if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
 			pS := spiel.GibStoßkugel().GibPos()
-			billardSpielZeichner.ZeichneBreiteLinie(pS, pS.Plus(vAnstoß.Mal(15)), 5, 250, 175, 50)
+			billardSpielFenster.ZeichneBreiteLinie(pS, pS.Plus(vAnstoß.Mal(15)), 5, 250, 175, 50)
 		}
 		gfx.UpdateAn()
 	}
