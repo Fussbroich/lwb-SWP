@@ -39,9 +39,11 @@ func view_komponente(spiel welt.MiniBillardSpiel, b, h, rand uint16) func() {
 	bS, hS := spiel.GibGröße()
 	xs, ys, xe, ye := rand, rand, rand+uint16(bS+0.5), uint16(hS+0.5)+rand
 	billardSpielFenster :=
-		views.NewBillardTischZeichner(xs, ys, xe, ye)
-	stoßzählerFenster :=
-		views.NewSpielinfoZeichner(xs, ye+2, xe, h-rand)
+		views.NewMBSpielfeldZeichner(xs, ys, xe, ye)
+	eingelochteAzeiger :=
+		views.NewMBEingelochteZeichner(xs, ye+2, xe, ye+(h-ye-2-rand)/2)
+	spielinfoFenster :=
+		views.NewMBSpielinfoZeichner(xs, ye+(h-ye-2-rand)/2, xe, h-rand)
 	lernfragenFenster :=
 		views.NewHintergrundZeichner(xe+5, rand, b-rand, h-rand)
 	hintergrund :=
@@ -51,7 +53,8 @@ func view_komponente(spiel welt.MiniBillardSpiel, b, h, rand uint16) func() {
 		gfx.UpdateAus()
 		hintergrund.Zeichne(139, 69, 19)
 		billardSpielFenster.Zeichne(spiel)
-		stoßzählerFenster.Zeichne(spiel)
+		spielinfoFenster.Zeichne(spiel)
+		eingelochteAzeiger.Zeichne(spiel)
 		lernfragenFenster.Zeichne(200, 200, 200)
 		//definiere Zeichenfunktionen
 		// TODO die Skalierung muss hier raus

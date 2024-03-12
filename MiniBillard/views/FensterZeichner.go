@@ -17,16 +17,20 @@ type HintergrundZeichner struct {
 	FensterZeichner
 }
 
-type BillardTischZeichner struct {
+type MiniBillardSpielfeldZeichner struct {
 	FensterZeichner
 }
 
-type SpielinfoZeichner struct {
+type MiniBillardSpielinfoZeichner struct {
 	FensterZeichner
 }
 
-func NewBillardTischZeichner(startx, starty, stopx, stopy uint16) *BillardTischZeichner {
-	return &BillardTischZeichner{
+type MiniBillardEingelochteZeichner struct {
+	FensterZeichner
+}
+
+func NewMBSpielfeldZeichner(startx, starty, stopx, stopy uint16) *MiniBillardSpielfeldZeichner {
+	return &MiniBillardSpielfeldZeichner{
 		FensterZeichner{
 			startX: startx, startY: starty,
 			stopX: stopx, stopY: stopy}}
@@ -39,14 +43,21 @@ func NewHintergrundZeichner(startx, starty, stopx, stopy uint16) *HintergrundZei
 			stopX: stopx, stopY: stopy}}
 }
 
-func NewSpielinfoZeichner(startx, starty, stopx, stopy uint16) *SpielinfoZeichner {
-	return &SpielinfoZeichner{
+func NewMBEingelochteZeichner(startx, starty, stopx, stopy uint16) *MiniBillardEingelochteZeichner {
+	return &MiniBillardEingelochteZeichner{
 		FensterZeichner{
 			startX: startx, startY: starty,
 			stopX: stopx, stopY: stopy}}
 }
 
-func (f *BillardTischZeichner) Zeichne(spiel welt.MiniBillardSpiel) {
+func NewMBSpielinfoZeichner(startx, starty, stopx, stopy uint16) *MiniBillardSpielinfoZeichner {
+	return &MiniBillardSpielinfoZeichner{
+		FensterZeichner{
+			startX: startx, startY: starty,
+			stopX: stopx, stopY: stopy}}
+}
+
+func (f *MiniBillardSpielfeldZeichner) Zeichne(spiel welt.MiniBillardSpiel) {
 	gfx.Cls()
 	l, b := spiel.GibGröße()
 	// zeichne den Belag
@@ -67,7 +78,7 @@ func (f *BillardTischZeichner) Zeichne(spiel welt.MiniBillardSpiel) {
 	}
 }
 
-func (f *SpielinfoZeichner) Zeichne(spiel welt.MiniBillardSpiel) {
+func (f *MiniBillardEingelochteZeichner) Zeichne(spiel welt.MiniBillardSpiel) {
 	breite := f.stopX - f.startX
 	höhe := f.stopY - f.startY
 	// zeichne den Hintergrund
@@ -75,7 +86,21 @@ func (f *SpielinfoZeichner) Zeichne(spiel welt.MiniBillardSpiel) {
 	gfx.Vollrechteck(f.startX, f.startY, breite, höhe)
 	//schreibe Stößezahl
 	gfx.Stiftfarbe(180, 180, 180)
-	// gfx.SetzeFont("/home/lewein/go/src/gfx/fonts/LiberationMono-Bold.ttf", 24)
+	schriftgröße := höhe / 5
+	gfx.SetzeFont("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\src\\gfx\\fonts\\LiberationMono-Bold.ttf",
+		int(schriftgröße))
+	gfx.SchreibeFont(f.startX, f.startY,
+		fmt.Sprintf("%d Eingelocht", len(spiel.GibEingelochteKugeln())))
+}
+
+func (f *MiniBillardSpielinfoZeichner) Zeichne(spiel welt.MiniBillardSpiel) {
+	breite := f.stopX - f.startX
+	höhe := f.stopY - f.startY
+	// zeichne den Hintergrund
+	gfx.Stiftfarbe(80, 80, 80)
+	gfx.Vollrechteck(f.startX, f.startY, breite, höhe)
+	//schreibe Stößezahl
+	gfx.Stiftfarbe(180, 180, 180)
 	schriftgröße := höhe / 5
 	gfx.SetzeFont("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\src\\gfx\\fonts\\LiberationMono-Bold.ttf",
 		int(schriftgröße))

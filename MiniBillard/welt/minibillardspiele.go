@@ -12,6 +12,7 @@ type MiniBillardSpiel interface {
 	GibTaschen() []Tasche
 	GibKugeln() []Kugel
 	GibAktiveKugeln() []Kugel
+	GibEingelochteKugeln() []Kugel
 	GibStoßkugel() Kugel
 	GibStößeBisher() uint8
 	GibStrafpunkte() uint8
@@ -91,6 +92,17 @@ func (s *spiel) GibAktiveKugeln() []Kugel {
 	ks := []Kugel{}
 	for _, k := range s.kugeln {
 		if k.IstEingelocht() {
+			continue
+		}
+		ks = append(ks, k)
+	}
+	return ks
+}
+
+func (s *spiel) GibEingelochteKugeln() []Kugel {
+	ks := []Kugel{}
+	for _, k := range s.kugeln {
+		if !k.IstEingelocht() {
 			continue
 		}
 		ks = append(ks, k)
