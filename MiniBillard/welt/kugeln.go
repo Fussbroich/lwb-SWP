@@ -15,31 +15,30 @@ type Kugel interface {
 	GibPos() hilf.Vec2
 	SetzePos(hilf.Vec2)
 	GibRadius() float64
-	GibFarbe() (uint8, uint8, uint8)
+	GibWert() uint8
 	GibKopie() Kugel
 }
 
 type kugel struct {
 	pos, v     hilf.Vec2
 	r          float64
-	cR         uint8
-	cG         uint8
-	cB         uint8
+	wert       uint8
 	istKollMit Kugel
 	eingelocht bool
 }
 
-func NewKugel(pos hilf.Vec2, r float64, farbeR, farbeG, farbeB uint8) *kugel {
+func NewKugel(pos hilf.Vec2, r float64, wert uint8) *kugel {
 	return &kugel{
-		pos: pos,
-		r:   r, cR: farbeR, cG: farbeG, cB: farbeB}
+		pos:  pos,
+		r:    r,
+		wert: wert}
 }
 
 func (k *kugel) GibKopie() Kugel {
 	return &kugel{
 		pos: k.pos, v: hilf.V2(0, 0),
-		r:  k.r,
-		cR: k.cR, cG: k.cG, cB: k.cB}
+		r:    k.r,
+		wert: k.wert}
 }
 
 func (k *kugel) BewegenIn(s MiniBillardSpiel) {
@@ -191,6 +190,6 @@ func (k *kugel) GibRadius() float64 {
 	return k.r
 }
 
-func (k *kugel) GibFarbe() (uint8, uint8, uint8) {
-	return k.cR, k.cG, k.cB
+func (k *kugel) GibWert() uint8 {
+	return k.wert
 }

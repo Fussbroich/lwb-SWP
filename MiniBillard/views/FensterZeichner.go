@@ -1,8 +1,11 @@
 package views
 
 import (
+	"errors"
 	"fmt"
 	"gfx"
+	"os"
+	"path/filepath"
 
 	"../hilf"
 	"../welt"
@@ -57,6 +60,24 @@ func NewMBSpielinfoZeichner(startx, starty, stopx, stopy uint16) *MiniBillardSpi
 			stopX: stopx, stopY: stopy}}
 }
 
+func fontDateipfad(filename string) string {
+	fontsDir := "MiniBillard/fonts"
+	wd, err := os.Getwd()
+
+	if err != nil {
+		panic(err)
+	}
+	wdir := filepath.Dir(wd)
+	fp := filepath.Join(wdir, "lwb-SWP", fontsDir, filename)
+	//	println("wdir:", wdir)
+	//	println("klaengeDir:", klaengeDir)
+	//	println("filename", filename)
+	if _, err := os.Stat(fp); errors.Is(err, os.ErrNotExist) {
+		panic(err)
+	}
+	return fp
+}
+
 func (f *MiniBillardSpielfeldZeichner) Zeichne(spiel welt.MiniBillardSpiel) {
 	gfx.Cls()
 	l, b := spiel.GibGröße()
@@ -72,23 +93,77 @@ func (f *MiniBillardSpielfeldZeichner) Zeichne(spiel welt.MiniBillardSpiel) {
 	f.ZeichneVollKreissektor(ts[5].GibPos(), ts[5].GibRadius(), 180, 360, 0, 0, 0)
 	// zeichne die Kugeln
 	for _, k := range spiel.GibAktiveKugeln() {
-		r, g, b := k.GibFarbe()
-		f.ZeichneVollKreis(k.GibPos(), k.GibRadius(), 0, 0, 0)
-		f.ZeichneVollKreis(k.GibPos(), k.GibRadius()-1, r, g, b)
+		f.zeichneKugel(k)
+	}
+
+}
+
+func (f *MiniBillardSpielfeldZeichner) zeichneKugel(k welt.Kugel) {
+	fp := fontDateipfad("LiberationMono-Bold.ttf")
+	schriftgröße := int(k.GibRadius()) - 3
+	r, g, b := func(wert uint8) (uint8, uint8, uint8) {
+		switch wert {
+		case 1, 9:
+			return 255, 201, 78 // gelb
+		case 2, 10:
+			return 34, 88, 175 // blau
+		case 3, 11:
+			return 249, 73, 68 // hellrot
+		case 4, 12:
+			return 84, 73, 149 // violett
+		case 5, 13:
+			return 255, 139, 33 // orange
+		case 6, 14:
+			return 47, 159, 52 // grün
+		case 7, 15:
+			return 194, 47, 47 // dunkelrot
+		case 8:
+			return 48, 49, 54 // schwarz
+		default:
+			return 252, 253, 242 // weiß
+		}
+	}(k.GibWert())
+	p := k.GibPos()
+	f.ZeichneVollKreis(p, k.GibRadius(), 48, 49, 54)
+	f.ZeichneVollKreis(p, k.GibRadius()-1, 252, 253, 242)
+	if k.GibWert() <= 8 {
+		f.ZeichneVollKreis(p, k.GibRadius()-1, r, g, b)
+	} else {
+		gfx.Stiftfarbe(r, g, b)
+		gfx.Vollrechteck(f.startX+uint16(p.X()-k.GibRadius()*0.818+0.5), f.startY+uint16(p.Y()-k.GibRadius()*0.61+0.5),
+			uint16(2*0.818*k.GibRadius()+0.5), uint16(2*0.61*k.GibRadius()+0.5))
+		f.ZeichneVollKreissektor(p, k.GibRadius()-1, 325, 35, r, g, b)
+		f.ZeichneVollKreissektor(p, k.GibRadius()-1, 145, 215, r, g, b)
+	}
+	if k.GibWert() != 0 {
+		f.ZeichneVollKreis(p, (k.GibRadius()-1)/2, 252, 253, 242)
+		gfx.Stiftfarbe(0, 0, 0)
+		gfx.SetzeFont(fp, schriftgröße)
+		if k.GibWert() < 10 {
+			gfx.SchreibeFont(
+				f.startX-uint16(schriftgröße)/4+uint16(p.X()+0.5),
+				f.startY-uint16(schriftgröße)/2+uint16(p.Y()+0.5),
+				fmt.Sprintf("%d", k.GibWert()))
+		} else {
+			gfx.SchreibeFont(
+				f.startX-uint16(schriftgröße)/2+uint16(p.X()+0.5),
+				f.startY-uint16(schriftgröße)/2+uint16(p.Y()+0.5),
+				fmt.Sprintf("%d", k.GibWert()))
+		}
 	}
 }
 
 func (f *MiniBillardEingelochteZeichner) Zeichne(spiel welt.MiniBillardSpiel) {
 	breite := f.stopX - f.startX
 	höhe := f.stopY - f.startY
+	fp := fontDateipfad("LiberationMono-Bold.ttf")
 	// zeichne den Hintergrund
 	gfx.Stiftfarbe(80, 80, 80)
 	gfx.Vollrechteck(f.startX, f.startY, breite, höhe)
 	//schreibe Stößezahl
 	gfx.Stiftfarbe(180, 180, 180)
-	schriftgröße := höhe / 5
-	gfx.SetzeFont("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\src\\gfx\\fonts\\LiberationMono-Bold.ttf",
-		int(schriftgröße))
+	schriftgröße := höhe / 3
+	gfx.SetzeFont(fp, int(schriftgröße))
 	gfx.SchreibeFont(f.startX, f.startY,
 		fmt.Sprintf("%d Eingelocht", len(spiel.GibEingelochteKugeln())))
 }
@@ -96,14 +171,14 @@ func (f *MiniBillardEingelochteZeichner) Zeichne(spiel welt.MiniBillardSpiel) {
 func (f *MiniBillardSpielinfoZeichner) Zeichne(spiel welt.MiniBillardSpiel) {
 	breite := f.stopX - f.startX
 	höhe := f.stopY - f.startY
+	fp := fontDateipfad("LiberationMono-Bold.ttf")
 	// zeichne den Hintergrund
 	gfx.Stiftfarbe(80, 80, 80)
 	gfx.Vollrechteck(f.startX, f.startY, breite, höhe)
 	//schreibe Stößezahl
 	gfx.Stiftfarbe(180, 180, 180)
-	schriftgröße := höhe / 5
-	gfx.SetzeFont("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\src\\gfx\\fonts\\LiberationMono-Bold.ttf",
-		int(schriftgröße))
+	schriftgröße := höhe / 4
+	gfx.SetzeFont(fp, int(schriftgröße))
 	gfx.SchreibeFont(f.startX, f.startY,
 		fmt.Sprintf("%d Stöße", spiel.GibStößeBisher()))
 	gfx.SchreibeFont(f.startX, f.startY+12*schriftgröße/10,

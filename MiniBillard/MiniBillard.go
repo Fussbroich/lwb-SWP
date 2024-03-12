@@ -26,7 +26,7 @@ func maussteuerung(spiel welt.MiniBillardSpiel) func() {
 				vAnstoß = vAnstoß.Mal(12 / vabs)
 			}
 			if taste == 1 {
-				spiel.Anstoß(vAnstoß)
+				spiel.Stoße(vAnstoß)
 				klaenge.CueHitsBallSound()
 			}
 		}
@@ -37,6 +37,7 @@ func maussteuerung(spiel welt.MiniBillardSpiel) func() {
 func view_komponente(spiel welt.MiniBillardSpiel, b, h, rand uint16) func() {
 	//erzeuge Zeichner
 	bS, hS := spiel.GibGröße()
+
 	xs, ys, xe, ye := rand, rand, rand+uint16(bS+0.5), uint16(hS+0.5)+rand
 	billardSpielFenster :=
 		views.NewMBSpielfeldZeichner(xs, ys, xe, ye)
@@ -68,12 +69,13 @@ func view_komponente(spiel welt.MiniBillardSpiel, b, h, rand uint16) func() {
 
 func main() {
 	//öffne gfx-Fenster
-	var b, h, rand uint16 = 1280, 720, 10
+	var b, h, rand uint16 = 1280, 720, 30
+	var spieltischBreite uint16 = 900
 
 	gfx.Fenster(b, h)
-	gfx.Fenstertitel("unser Programmname")
+	gfx.Fenstertitel("Das MiniBillard für Schlaumeier.")
 
-	var spiel welt.MiniBillardSpiel = welt.New3BallStandardSpiel(900)
+	var spiel welt.MiniBillardSpiel = welt.NewMiniBillardSpiel(spieltischBreite)
 
 	// erzeuge Spiel-Prozesse
 	updater := hilf.NewProzess("Spiel-Logik", func() { spiel.Update() })
@@ -93,8 +95,10 @@ func main() {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
 		if gedrückt == 1 {
 			switch taste {
+			case 'n': // nochmal
+				spiel.StoßWiederholen() // setze Kugeln wie vor dem letzten Stoß
 			case 'r': // reset
-				spiel.StoßWiederholen() // setze Kugeln wie vor dem letzten Anstoß
+				spiel.Reset() // setze Kugeln wie vor dem Anstoß
 			case 'q': // quit
 				geräusche.StoppeLoop()
 				musik.StoppeLoop()

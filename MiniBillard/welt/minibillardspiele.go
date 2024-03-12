@@ -6,8 +6,9 @@ import (
 
 type MiniBillardSpiel interface {
 	Update()
-	Anstoß(hilf.Vec2)
+	Stoße(hilf.Vec2)
 	StoßWiederholen()
+	Reset()
 	IstStillstand() bool
 	GibTaschen() []Tasche
 	GibKugeln() []Kugel
@@ -20,15 +21,16 @@ type MiniBillardSpiel interface {
 }
 
 type spiel struct {
-	länge       float64
-	breite      float64
-	kugeln      []Kugel
-	alteKugeln  []Kugel
-	stoßkugel   Kugel
-	taschen     []Tasche
-	stößeBisher uint8
-	strafPunkte uint8
-	stillstand  bool
+	breite       float64
+	höhe         float64
+	kugeln       []Kugel
+	origKugeln   []Kugel
+	vorigeKugeln []Kugel
+	stoßkugel    Kugel
+	taschen      []Tasche
+	stößeBisher  uint8
+	strafPunkte  uint8
+	stillstand   bool
 }
 
 func pos(x, y float64) hilf.Vec2 {
@@ -36,6 +38,7 @@ func pos(x, y float64) hilf.Vec2 {
 }
 
 func (s *spiel) setzeTaschen(t ...Tasche) {
+	s.taschen = []Tasche{}
 	s.taschen = append(s.taschen, t...)
 }
 
@@ -43,41 +46,89 @@ func (s *spiel) setzeKugeln(k ...Kugel) {
 	s.kugeln = []Kugel{}
 	for _, k := range k {
 		k.Stop()
-		s.kugeln = append(s.kugeln, k)
+		s.kugeln = append(s.kugeln, k.GibKopie())
 	}
 	s.stoßkugel = s.kugeln[0]
+
+	// sichere den Zustand vor dem Anstoß
+	s.origKugeln = []Kugel{}
+	for _, k := range s.kugeln {
+		s.origKugeln = append(s.origKugeln, k.GibKopie())
+	}
 }
 
-func NewSpiel(länge, breite float64) *spiel {
-	return &spiel{länge: länge, breite: breite}
-}
-
-func New3BallStandardSpiel(br uint16) *spiel {
-	var länge, breite float64 = float64(br), float64(br) / 2
-	rk := länge / 40 // Kugelradius
-	spiel := NewSpiel(länge, breite)
+func NewMiniBillardSpiel(br uint16) *spiel {
+	var breite, höhe float64 = float64(br), float64(br) / 2
+	rk := breite / 38 // Kugelradius
 	rt, rtm := 2.0*rk, 1.6*rk
-	spiel.setzeTaschen(
+	sp := &spiel{breite: breite, höhe: höhe}
+	sp.setzeTaschen(
 		NewTasche(pos(0, 0), rt),
-		NewTasche(pos(0, breite), rt),
-		NewTasche(pos(länge/2, breite), rtm),
-		NewTasche(pos(länge, breite), rt),
-		NewTasche(pos(länge, 0), rt),
-		NewTasche(pos(länge/2, 0), rtm))
-	pWeiß := pos(4*länge/5, breite/3)
-	pGelb := pos(3*länge/5, breite/2)
-	pRot := pGelb.Plus(pos(-2*(rk+1), -(rk + 1)))
-	pBlau := pGelb.Plus(pos(-2*(rk+1), (rk + 1)))
-	spiel.setzeKugeln(
-		NewKugel(pWeiß, rk, 255, 255, 255),
-		NewKugel(pGelb, rk, 240, 20, 50),
-		NewKugel(pRot, rk, 255, 215, 0),
-		NewKugel(pBlau, rk, 70, 140, 250))
-	return spiel
+		NewTasche(pos(0, höhe), rt),
+		NewTasche(pos(breite/2, höhe), rtm),
+		NewTasche(pos(breite, höhe), rt),
+		NewTasche(pos(breite, 0), rt),
+		NewTasche(pos(breite/2, 0), rtm))
+	pStoß := pos(4*breite/5, höhe/3)
+	p1 := pos(3*breite/5, höhe/2)
+	p11 := p1.Plus(pos(-2*(rk+1), -(rk + 1)))
+	p2 := p1.Plus(pos(-2*(rk+1), (rk + 1)))
+	sp.setzeKugeln(
+		NewKugel(pStoß, rk, 0),
+		NewKugel(p1, rk, 1),
+		NewKugel(p11, rk, 11),
+		NewKugel(p2, rk, 2))
+	return sp
+}
+
+func (s *spiel) Reset() {
+	s.kugeln = []Kugel{}
+	for _, k := range s.origKugeln {
+		s.kugeln = append(s.kugeln, k.GibKopie())
+	}
+	s.stoßkugel = s.kugeln[0]
+	s.stößeBisher = 0
+	s.strafPunkte = 0
+	s.stillstand = true
+}
+
+func (s *spiel) StoßWiederholen() {
+	// stelle den Zustand vor dem letzten Stoß wieder her
+	s.kugeln = []Kugel{}
+	for _, k := range s.vorigeKugeln {
+		s.kugeln = append(s.kugeln, k.GibKopie())
+	}
+	s.stoßkugel = s.kugeln[0]
+	s.strafPunkte++
+	s.stillstand = true
+}
+
+func (s *spiel) Update() {
+	still := true
+	for _, k := range s.kugeln {
+		k.BewegenIn(s)
+		//prüfe Stillstand
+		if !k.GibV().IstNull() {
+			still = false
+		}
+	}
+	s.stillstand = still
+}
+
+func (s *spiel) Stoße(v hilf.Vec2) {
+	// sichere den Zustand vor dem Stoß
+	s.vorigeKugeln = []Kugel{}
+	for _, k := range s.kugeln {
+		s.vorigeKugeln = append(s.vorigeKugeln, k.GibKopie())
+	}
+	// stoße
+	s.stoßkugel.SetzeV(v)
+	s.stößeBisher++
+	s.stillstand = false
 }
 
 func (s *spiel) GibGröße() (float64, float64) {
-	return s.länge, s.breite
+	return s.breite, s.höhe
 }
 
 func (s *spiel) GibTaschen() []Tasche {
@@ -114,17 +165,8 @@ func (s *spiel) GibStoßkugel() Kugel {
 	return s.stoßkugel
 }
 
-func (s *spiel) Anstoß(v hilf.Vec2) {
-	// sichere den Zustand vor dem Anstoß
-	s.alteKugeln = []Kugel{}
-	for _, k := range s.kugeln {
-		kNeu := k.GibKopie()
-		k.Stop()
-		s.alteKugeln = append(s.alteKugeln, kNeu)
-	}
-	s.stoßkugel.SetzeV(v)
-	s.stößeBisher++
-	s.stillstand = false
+func (s *spiel) IstStillstand() bool {
+	return s.stillstand
 }
 
 func (s *spiel) GibStößeBisher() uint8 {
@@ -133,26 +175,4 @@ func (s *spiel) GibStößeBisher() uint8 {
 
 func (s *spiel) GibStrafpunkte() uint8 {
 	return s.strafPunkte
-}
-
-func (s *spiel) StoßWiederholen() {
-	s.setzeKugeln(s.alteKugeln...)
-	s.strafPunkte++
-	s.stillstand = true
-}
-
-func (s *spiel) Update() {
-	still := true
-	for _, k := range s.kugeln {
-		k.BewegenIn(s)
-		//prüfe Stillstand
-		if !k.GibV().IstNull() {
-			still = false
-		}
-	}
-	s.stillstand = still
-}
-
-func (s *spiel) IstStillstand() bool {
-	return s.stillstand
 }

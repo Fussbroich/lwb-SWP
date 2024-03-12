@@ -62,14 +62,18 @@ func (s *klang) StoppeLoop() {
 //	signal    gibt die Signalform an: 0: Sinus, 1: Rechteck, 2:Dreieck, 3: Sägezahn
 //	pulsweite (für Rechtecksignale) gibt den Prozentsatz (0<=p<=1) für den HIGH-Teil an.
 
-func klangDateipfad(filename string) (fp string) {
-	klaengeDir := "lwb-SWP/MiniBillard/klaenge"
+func assetDateipfad(filename string) (fp string) {
+	klaengeDir := "MiniBillard/klaenge"
 	wd, err := os.Getwd()
 
 	if err != nil {
 		panic(err)
 	}
-	fp = filepath.Join(filepath.Dir(wd), klaengeDir, filename)
+	wdir := filepath.Dir(wd)
+	fp = filepath.Join(wdir, "lwb-SWP", klaengeDir, filename)
+	//	println("wdir:", wdir)
+	//	println("klaengeDir:", klaengeDir)
+	//	println("filename", filename)
 	if _, err := os.Stat(fp); errors.Is(err, os.ErrNotExist) {
 		panic(err)
 	}
@@ -77,7 +81,7 @@ func klangDateipfad(filename string) (fp string) {
 }
 
 func MassivePulseSound() *klang {
-	fp := klangDateipfad("massivePulseLoop.wav")
+	fp := assetDateipfad("massivePulseLoop.wav")
 	return &klang{
 		titel: "Massive Pulse",
 		dauer: 16 * time.Second,
@@ -90,7 +94,7 @@ func MassivePulseSound() *klang {
 }
 
 func CoolJazz2641SOUND() *klang {
-	fp := klangDateipfad("coolJazzLoop2641.wav")
+	fp := assetDateipfad("coolJazzLoop2641.wav")
 	return &klang{
 		titel: "Cool Jazz 2641",
 		dauer: 2*time.Minute + 8*time.Second,
@@ -104,7 +108,7 @@ func CoolJazz2641SOUND() *klang {
 }
 
 func BillardPubAmbienceSOUND() *klang {
-	fp := klangDateipfad("billardPubAmbience.wav")
+	fp := assetDateipfad("billardPubAmbience.wav")
 	return &klang{
 		titel: "Billard Pub Ambience",
 		dauer: time.Minute + 13*time.Second,
@@ -118,7 +122,7 @@ func BillardPubAmbienceSOUND() *klang {
 }
 
 func CueHitsBallSound() *klang {
-	fp := klangDateipfad("cueHitsBall.wav")
+	fp := assetDateipfad("cueHitsBall.wav")
 	return &klang{
 		dauer: 300 * time.Millisecond,
 		play: func() {
@@ -131,7 +135,7 @@ func CueHitsBallSound() *klang {
 }
 
 func BallHitsBallSound() *klang {
-	fp := klangDateipfad("ballHitsBall.wav")
+	fp := assetDateipfad("ballHitsBall.wav")
 	return &klang{
 		dauer: 300 * time.Millisecond,
 		play: func() {
@@ -144,7 +148,7 @@ func BallHitsBallSound() *klang {
 }
 
 func BallInPocketSound() *klang {
-	fp := klangDateipfad("ballIntoPocket.wav")
+	fp := assetDateipfad("ballIntoPocket.wav")
 	return &klang{
 		dauer: 300 * time.Millisecond,
 		play: func() {
@@ -157,7 +161,7 @@ func BallInPocketSound() *klang {
 }
 
 func BallHitsRailSound() *klang {
-	fp := klangDateipfad("ballHitsRail.wav")
+	fp := assetDateipfad("ballHitsRail.wav")
 	return &klang{
 		dauer: 300 * time.Millisecond,
 		play: func() {
