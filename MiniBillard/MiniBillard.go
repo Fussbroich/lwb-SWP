@@ -34,21 +34,12 @@ func maussteuerung(spiel welt.MiniBillardSpiel) func() {
 
 }
 
-func view_komponente(spiel welt.MiniBillardSpiel) func() {
-	var b, h uint16 = 1200, 800
-	rand := b / 60
-
-	//öffne gfx-Fenster
-	gfx.Fenster(b, h)
-	gfx.Fenstertitel("unser Programmname")
-
+func view_komponente(spiel welt.MiniBillardSpiel, b, h, rand uint16) func() {
 	//erzeuge Zeichner
-	lS, bS := spiel.GibGröße()
-	seitenverhältnis := lS / bS // breite/höhe
-	var breiteSpielFenster uint16 = 800 - 2*rand
-	xs, ys, xe, ye := rand, rand, 900+rand, uint16(900/seitenverhältnis)+rand
+	bS, hS := spiel.GibGröße()
+	xs, ys, xe, ye := rand, rand, rand+uint16(bS+0.5), uint16(hS+0.5)+rand
 	billardSpielFenster :=
-		views.NewBillardTischZeichner(xs, ys, xe, ye, float64(breiteSpielFenster)/float64(lS))
+		views.NewBillardTischZeichner(xs, ys, xe, ye)
 	stoßzählerFenster :=
 		views.NewSpielinfoZeichner(xs, ye+2, xe, h-rand)
 	lernfragenFenster :=
@@ -73,22 +64,28 @@ func view_komponente(spiel welt.MiniBillardSpiel) func() {
 }
 
 func main() {
-	var spiel welt.MiniBillardSpiel = welt.New3BallStandardSpiel()
+	//öffne gfx-Fenster
+	var b, h, rand uint16 = 1280, 720, 10
+
+	gfx.Fenster(b, h)
+	gfx.Fenstertitel("unser Programmname")
+
+	var spiel welt.MiniBillardSpiel = welt.New3BallStandardSpiel(900)
 
 	// erzeuge Spiel-Prozesse
 	updater := hilf.NewProzess("Spiel-Logik", func() { spiel.Update() })
-	zeichner := hilf.NewProzess("View-Komponente", view_komponente(spiel))
+	zeichner := hilf.NewProzess("View-Komponente", view_komponente(spiel, b, h, rand))
 	steuerung := hilf.NewProzess("Maussteuerung", maussteuerung(spiel))
-	music := klaenge.CoolJazz2641SOUND()
+	musik := klaenge.CoolJazz2641SOUND()
 	//pulse := klaenge.MassivePulseSound()
-	ambience := klaenge.BillardPubAmbienceSOUND()
+	geräusche := klaenge.BillardPubAmbienceSOUND()
 
 	// starte Spiel-Prozesse
 	updater.StarteLoop(12 * time.Millisecond)
-	zeichner.StarteLoop(20 * time.Millisecond)
+	zeichner.StarteLoop(15 * time.Millisecond)
 	steuerung.StarteLoop(5 * time.Millisecond)
-	music.StarteLoop()
-	ambience.StarteLoop()
+	musik.StarteLoop()
+	geräusche.StarteLoop()
 	for {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
 		if gedrückt == 1 {
@@ -96,8 +93,8 @@ func main() {
 			case 'r': // reset
 				spiel.StoßWiederholen() // setze Kugeln wie vor dem letzten Anstoß
 			case 'q': // quit
-				ambience.StoppeLoop()
-				music.StoppeLoop()
+				geräusche.StoppeLoop()
+				musik.StoppeLoop()
 				updater.StoppeLoop()
 				zeichner.StoppeLoop()
 				steuerung.StoppeLoop()

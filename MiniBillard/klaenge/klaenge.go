@@ -1,7 +1,10 @@
 package klaenge
 
 import (
+	"errors"
 	"gfx" // Fenster muss offen sein
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -12,10 +15,11 @@ type Klang interface {
 }
 
 type klang struct {
-	titel string
-	dauer time.Duration
-	play  func()
-	stop  chan bool
+	titel    string
+	dauer    time.Duration
+	filepath string
+	play     func()
+	stop     chan bool
 }
 
 func (s *klang) Play() {
@@ -57,19 +61,36 @@ func (s *klang) StoppeLoop() {
 //	kanaele   ist 1 für mono oder 2 für stereo.
 //	signal    gibt die Signalform an: 0: Sinus, 1: Rechteck, 2:Dreieck, 3: Sägezahn
 //	pulsweite (für Rechtecksignale) gibt den Prozentsatz (0<=p<=1) für den HIGH-Teil an.
+
+func klangDateipfad(filename string) (fp string) {
+	klaengeDir := "lwb-SWP/MiniBillard/klaenge"
+	wd, err := os.Getwd()
+
+	if err != nil {
+		panic(err)
+	}
+	fp = filepath.Join(filepath.Dir(wd), klaengeDir, filename)
+	if _, err := os.Stat(fp); errors.Is(err, os.ErrNotExist) {
+		panic(err)
+	}
+	return
+}
+
 func MassivePulseSound() *klang {
+	fp := klangDateipfad("massivePulseLoop.wav")
 	return &klang{
 		titel: "Massive Pulse",
 		dauer: 16 * time.Second,
 		play: func() {
 			if gfx.FensterOffen() {
 				gfx.SetzeKlangparameter(22050, 2, 2, 1, 0.3)
-				gfx.SpieleSound("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\11 SWP\\lwb-SWP\\MiniBillard\\klaenge\\massivePulseLoop.wav")
+				gfx.SpieleSound(fp)
 			}
 		}}
 }
 
 func CoolJazz2641SOUND() *klang {
+	fp := klangDateipfad("coolJazzLoop2641.wav")
 	return &klang{
 		titel: "Cool Jazz 2641",
 		dauer: 2*time.Minute + 8*time.Second,
@@ -78,11 +99,12 @@ func CoolJazz2641SOUND() *klang {
 				return
 			}
 			gfx.SetzeKlangparameter(16000, 2, 2, 1, 0.3)
-			gfx.SpieleSound("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\11 SWP\\lwb-SWP\\MiniBillard\\klaenge\\coolJazzLoop2641.wav")
+			gfx.SpieleSound(fp)
 		}}
 }
 
 func BillardPubAmbienceSOUND() *klang {
+	fp := klangDateipfad("billardPubAmbience.wav")
 	return &klang{
 		titel: "Billard Pub Ambience",
 		dauer: time.Minute + 13*time.Second,
@@ -91,11 +113,12 @@ func BillardPubAmbienceSOUND() *klang {
 				return
 			}
 			gfx.SetzeKlangparameter(22050, 2, 2, 1, 0.3)
-			gfx.SpieleSound("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\11 SWP\\lwb-SWP\\MiniBillard\\klaenge\\billardPubAmbience.wav")
+			gfx.SpieleSound(fp)
 		}}
 }
 
 func CueHitsBallSound() *klang {
+	fp := klangDateipfad("cueHitsBall.wav")
 	return &klang{
 		dauer: 300 * time.Millisecond,
 		play: func() {
@@ -103,11 +126,12 @@ func CueHitsBallSound() *klang {
 				return
 			}
 			gfx.SetzeKlangparameter(22050, 2, 2, 1, 1.0)
-			gfx.SpieleSound("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\11 SWP\\lwb-SWP\\MiniBillard\\klaenge\\cueHitsBall.wav")
+			gfx.SpieleSound(fp)
 		}}
 }
 
 func BallHitsBallSound() *klang {
+	fp := klangDateipfad("ballHitsBall.wav")
 	return &klang{
 		dauer: 300 * time.Millisecond,
 		play: func() {
@@ -115,11 +139,12 @@ func BallHitsBallSound() *klang {
 				return
 			}
 			gfx.SetzeKlangparameter(22050, 2, 2, 1, 1.0)
-			gfx.SpieleSound("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\11 SWP\\lwb-SWP\\MiniBillard\\klaenge\\ballHitsBall.wav")
+			gfx.SpieleSound(fp)
 		}}
 }
 
 func BallInPocketSound() *klang {
+	fp := klangDateipfad("ballIntoPocket.wav")
 	return &klang{
 		dauer: 300 * time.Millisecond,
 		play: func() {
@@ -127,11 +152,12 @@ func BallInPocketSound() *klang {
 				return
 			}
 			gfx.SetzeKlangparameter(22050, 2, 2, 1, 1.0)
-			gfx.SpieleSound("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\11 SWP\\lwb-SWP\\MiniBillard\\klaenge\\ballIntoPocket.wav")
+			gfx.SpieleSound(fp)
 		}}
 }
 
 func BallHitsRailSound() *klang {
+	fp := klangDateipfad("ballHitsRail.wav")
 	return &klang{
 		dauer: 300 * time.Millisecond,
 		play: func() {
@@ -139,6 +165,6 @@ func BallHitsRailSound() *klang {
 				return
 			}
 			gfx.SetzeKlangparameter(22050, 2, 2, 1, 1.0)
-			gfx.SpieleSound("C:\\Users\\fussb\\OneDrive\\Arbeitsplatz privat\\bbSt-Inf\\11 SWP\\lwb-SWP\\MiniBillard\\klaenge\\ballHitsRail.wav")
+			gfx.SpieleSound(fp)
 		}}
 }

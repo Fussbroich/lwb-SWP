@@ -11,7 +11,6 @@ import (
 type FensterZeichner struct {
 	startX, startY uint16
 	stopX, stopY   uint16
-	maßstab        float64
 }
 
 type HintergrundZeichner struct {
@@ -26,28 +25,25 @@ type SpielinfoZeichner struct {
 	FensterZeichner
 }
 
-func NewBillardTischZeichner(startx, starty, stopx, stopy uint16, maßstab float64) *BillardTischZeichner {
+func NewBillardTischZeichner(startx, starty, stopx, stopy uint16) *BillardTischZeichner {
 	return &BillardTischZeichner{
 		FensterZeichner{
 			startX: startx, startY: starty,
-			stopX: stopx, stopY: stopy,
-			maßstab: maßstab}}
+			stopX: stopx, stopY: stopy}}
 }
 
 func NewHintergrundZeichner(startx, starty, stopx, stopy uint16) *HintergrundZeichner {
 	return &HintergrundZeichner{
 		FensterZeichner{
 			startX: startx, startY: starty,
-			stopX: stopx, stopY: stopy,
-			maßstab: 1.0}}
+			stopX: stopx, stopY: stopy}}
 }
 
 func NewSpielinfoZeichner(startx, starty, stopx, stopy uint16) *SpielinfoZeichner {
 	return &SpielinfoZeichner{
 		FensterZeichner{
 			startX: startx, startY: starty,
-			stopX: stopx, stopY: stopy,
-			maßstab: 1.0}}
+			stopX: stopx, stopY: stopy}}
 }
 
 func (f *BillardTischZeichner) Zeichne(spiel welt.MiniBillardSpiel) {
@@ -97,29 +93,29 @@ func (f *HintergrundZeichner) Zeichne(r, g, b uint8) {
 func (f *FensterZeichner) ZeichneVollKreis(pos hilf.Vec2, radius float64, cr, cg, cb uint8) {
 	gfx.Stiftfarbe(cr, cg, cb)
 	gfx.Vollkreis(
-		f.startX+uint16(pos.X()*f.maßstab), f.startY+uint16(pos.Y()*f.maßstab),
-		uint16(radius*f.maßstab))
+		f.startX+uint16(0.5+pos.X()), f.startY+uint16(0.5+pos.Y()),
+		uint16(0.5+radius))
 }
 
 func (f *FensterZeichner) ZeichneVollKreissektor(pos hilf.Vec2, radius float64, wVon, wBis uint16, cr, cg, cb uint8) {
 	gfx.Stiftfarbe(cr, cg, cb)
 	gfx.Vollkreissektor(
-		f.startX+uint16(pos.X()*f.maßstab), f.startY+uint16(pos.Y()*f.maßstab),
-		uint16(radius*f.maßstab), wVon, wBis)
+		f.startX+uint16(0.5+pos.X()), f.startY+uint16(0.5+pos.Y()),
+		uint16(0.5+radius), wVon, wBis)
 }
 
 func (f *FensterZeichner) ZeichneVollRechteck(pos hilf.Vec2, breite, höhe float64, cr, cg, cb uint8) {
 	gfx.Stiftfarbe(cr, cg, cb)
 	gfx.Vollrechteck(
-		f.startX+uint16(pos.X()*f.maßstab), f.startY+uint16(pos.Y()*f.maßstab),
-		uint16(breite*f.maßstab), uint16(höhe*f.maßstab))
+		f.startX+uint16(0.5+pos.X()), f.startY+uint16(0.5+pos.Y()),
+		uint16(0.5+breite), uint16(0.5+höhe))
 }
 
 func (f *FensterZeichner) ZeichneVollDreieck(p1, p2, p3 hilf.Vec2) {
 	gfx.Volldreieck(
-		f.startX+uint16(p1.X()*f.maßstab), f.startY+uint16(p1.Y()*f.maßstab),
-		f.startX+uint16(p2.X()*f.maßstab), f.startY+uint16(p2.Y()*f.maßstab),
-		f.startX+uint16(p3.X()*f.maßstab), f.startY+uint16(p3.Y()*f.maßstab))
+		f.startX+uint16(0.5+p1.X()), f.startY+uint16(0.5+p1.Y()),
+		f.startX+uint16(0.5+p2.X()), f.startY+uint16(0.5+p2.Y()),
+		f.startX+uint16(0.5+p3.X()), f.startY+uint16(0.5+p3.Y()))
 }
 
 func (f *FensterZeichner) ZeichneBreiteLinie(pV, pN hilf.Vec2, breite float64, cr, cg, cb uint8) {
@@ -135,9 +131,7 @@ func (f *FensterZeichner) ZeichneBreiteLinie(pV, pN hilf.Vec2, breite float64, c
 	f.ZeichneVollDreieck(pA, pB, pC)
 	f.ZeichneVollDreieck(pA, pC, pD)
 	gfx.Vollkreis(
-		f.startX+uint16(pV.X()*f.maßstab), f.startY+uint16(pV.Y()*f.maßstab),
-		uint16(f.maßstab*breite/2))
+		f.startX+uint16(0.5+pV.X()), f.startY+uint16(0.5+pV.Y()), uint16(0.5+breite/2))
 	gfx.Vollkreis(
-		f.startX+uint16(pN.X()*f.maßstab), f.startX+uint16(pN.Y()*f.maßstab),
-		uint16(f.maßstab*breite/2))
+		f.startX+uint16(0.5+pN.X()), f.startX+uint16(0.5+pN.Y()), uint16(0.5+breite/2))
 }

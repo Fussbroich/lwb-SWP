@@ -51,8 +51,8 @@ func NewSpiel(länge, breite float64) *spiel {
 	return &spiel{länge: länge, breite: breite}
 }
 
-func New3BallStandardSpiel() *spiel {
-	var länge, breite float64 = 1000, 500
+func New3BallStandardSpiel(br uint16) *spiel {
+	var länge, breite float64 = float64(br), float64(br) / 2
 	rk := länge / 40 // Kugelradius
 	spiel := NewSpiel(länge, breite)
 	rt, rtm := 2.0*rk, 1.6*rk
