@@ -42,27 +42,27 @@ func view_komponente(spiel welt.MiniBillardSpiel, b, h, rand uint16) func() {
 	billardSpielFenster :=
 		views.NewMBSpielfeldZeichner(xs, ys, xe, ye)
 	eingelochteAzeiger :=
-		views.NewMBEingelochteZeichner(xs, ye+2, xe, ye+(h-ye-2-rand)/2)
+		views.NewMBEingelochteZeichner(xs, ye+2, xe, ye+(h-ye-2-rand)/2, views.F(80, 80, 80))
 	spielinfoFenster :=
-		views.NewMBSpielinfoZeichner(xs, ye+(h-ye-2-rand)/2, xe, h-rand)
+		views.NewMBSpielinfoZeichner(xs, ye+(h-ye-2-rand)/2, xe, h-rand, views.F(80, 80, 80), views.F(200, 200, 200))
 	lernfragenFenster :=
-		views.NewHintergrundZeichner(xe+5, rand, b-rand, h-rand)
+		views.NewHintergrundZeichner(xe+5, rand, b-rand, h-rand, views.F(200, 200, 200))
 	hintergrund :=
-		views.NewHintergrundZeichner(0, 0, b, h)
+		views.NewHintergrundZeichner(0, 0, b, h, views.F(139, 69, 19))
 
 	return func() {
 		gfx.UpdateAus()
-		hintergrund.Zeichne(139, 69, 19)
+		hintergrund.Zeichne()
 		billardSpielFenster.Zeichne(spiel)
 		spielinfoFenster.Zeichne(spiel)
 		eingelochteAzeiger.Zeichne(spiel)
-		lernfragenFenster.Zeichne(200, 200, 200)
+		lernfragenFenster.Zeichne()
 		//definiere Zeichenfunktionen
 		// TODO die Skalierung muss hier raus
-		if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
-			pS := spiel.GibStoßkugel().GibPos()
-			billardSpielFenster.ZeichneBreiteLinie(pS, pS.Plus(vAnstoß.Mal(15)), 5, 250, 175, 50)
-		}
+		//if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
+		//	pS := spiel.GibStoßkugel().GibPos()
+		//	billardSpielFenster.ZeichneBreiteLinie(pS, pS.Plus(vAnstoß.Mal(15)), 5, 250, 175, 50)
+		//}
 		gfx.UpdateAn()
 	}
 }

@@ -23,6 +23,7 @@ type MiniBillardSpiel interface {
 type spiel struct {
 	breite       float64
 	höhe         float64
+	rk           float64
 	kugeln       []Kugel
 	origKugeln   []Kugel
 	vorigeKugeln []Kugel
@@ -57,11 +58,53 @@ func (s *spiel) setzeKugeln(k ...Kugel) {
 	}
 }
 
+func (sp *spiel) SetzeKugeln9Ball() {
+	sp.setzeKugeln(sp.kugelSatz9Ball()...)
+}
+
+func (s *spiel) kugelSatz3er() []Kugel {
+	pStoß := pos(4*s.breite/5, s.höhe/3)
+	p1 := pos(3*s.breite/5, s.höhe/2)
+	dx, dy := 0.866*(2*s.rk+2), 0.5*(2*s.rk+2)
+	p2 := p1.Plus(pos(-dx, -dy))
+	p3 := p1.Plus(pos(-dx, dy))
+	return []Kugel{NewKugel(pStoß, s.rk, 0),
+		NewKugel(p1, s.rk, 1),
+		NewKugel(p2, s.rk, 2),
+		NewKugel(p3, s.rk, 3)}
+}
+
+func (s *spiel) kugelSatz9Ball() []Kugel {
+	pStoß := pos(4*s.breite/5, s.höhe/2)
+	dx, dy := 0.866*(2*s.rk+1), 0.5*(2*s.rk+1)
+	p1 := pos(3*s.breite/5, s.höhe/2)
+	p5 := p1.Plus(pos(-dx, -dy))
+	p3 := p1.Plus(pos(-dx, dy))
+
+	p2 := p1.Plus(pos(-2*dx, -2*dy))
+	p9 := p1.Plus(pos(-2*dx, 0))
+	p8 := p1.Plus(pos(-2*dx, 2*dy))
+
+	p7 := p1.Plus(pos(-3*dx, -dy))
+	p6 := p1.Plus(pos(-3*dx, dy))
+	p4 := p1.Plus(pos(-4*dx, 0))
+	return []Kugel{NewKugel(pStoß, s.rk, 0),
+		NewKugel(p1, s.rk, 1),
+		NewKugel(p2, s.rk, 2),
+		NewKugel(p3, s.rk, 3),
+		NewKugel(p4, s.rk, 4),
+		NewKugel(p5, s.rk, 5),
+		NewKugel(p6, s.rk, 6),
+		NewKugel(p7, s.rk, 7),
+		NewKugel(p8, s.rk, 8),
+		NewKugel(p9, s.rk, 9),
+	}
+}
+
 func NewMiniBillardSpiel(br uint16) *spiel {
 	var breite, höhe float64 = float64(br), float64(br) / 2
-	rk := breite / 38 // Kugelradius
-	rt, rtm := 2.0*rk, 1.6*rk
-	sp := &spiel{breite: breite, höhe: höhe}
+	sp := &spiel{breite: breite, höhe: höhe, rk: breite / 38}
+	rt, rtm := 2.0*sp.rk, 1.6*sp.rk
 	sp.setzeTaschen(
 		NewTasche(pos(0, 0), rt),
 		NewTasche(pos(0, höhe), rt),
@@ -69,15 +112,7 @@ func NewMiniBillardSpiel(br uint16) *spiel {
 		NewTasche(pos(breite, höhe), rt),
 		NewTasche(pos(breite, 0), rt),
 		NewTasche(pos(breite/2, 0), rtm))
-	pStoß := pos(4*breite/5, höhe/3)
-	p1 := pos(3*breite/5, höhe/2)
-	p11 := p1.Plus(pos(-2*(rk+1), -(rk + 1)))
-	p2 := p1.Plus(pos(-2*(rk+1), (rk + 1)))
-	sp.setzeKugeln(
-		NewKugel(pStoß, rk, 0),
-		NewKugel(p1, rk, 1),
-		NewKugel(p11, rk, 11),
-		NewKugel(p2, rk, 2))
+	sp.setzeKugeln(sp.kugelSatz9Ball()...)
 	return sp
 }
 
