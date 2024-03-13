@@ -147,7 +147,14 @@ func (s *spiel) Update() {
 
 func (s *spiel) GibVStoß() hilf.Vec2 { return s.vStoß }
 
-func (s *spiel) SetzeVStoß(v hilf.Vec2) { s.vStoß = v }
+func (s *spiel) SetzeVStoß(v hilf.Vec2) {
+	vabs := v.Betrag()
+	if vabs > 12 {
+		s.vStoß = v.Mal(12 / vabs)
+	} else {
+		s.vStoß = v
+	}
+}
 
 func (s *spiel) StoßWiederholen() {
 	// stelle den Zustand vor dem letzten Stoß wieder her

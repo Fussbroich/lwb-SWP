@@ -17,8 +17,8 @@ func maussteuerung(spiel welt.MiniBillardSpiel, xs, ys uint16) func() {
 			taste, _, mausX, mausY := gfx.MausLesen1()
 			vStoß := (hilf.V2(float64(mausX), float64(mausY))).
 				Minus(spiel.GibStoßkugel().GibPos()).
-				Plus(hilf.V2(float64(xs), float64(ys)))
-			spiel.SetzeVStoß(vStoß)
+				Minus(hilf.V2(float64(xs), float64(ys)))
+			spiel.SetzeVStoß(vStoß.Mal(1 / spiel.GibStoßkugel().GibRadius()))
 			if taste == 1 {
 				spiel.Stoße()
 			}
@@ -49,12 +49,6 @@ func view_komponente(spiel welt.MiniBillardSpiel, b, h, rand uint16) func() {
 		spielinfoFenster.Zeichne(spiel)
 		eingelochteAzeiger.Zeichne(spiel)
 		lernfragenFenster.Zeichne()
-		// TODO die Skalierung muss hier raus
-		if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
-			pS := spiel.GibStoßkugel().GibPos()
-			billardSpielFenster.ZeichneBreiteLinie(
-				pS, pS.Plus(spiel.GibVStoß()), 5, views.F(250, 175, 50))
-		}
 		gfx.UpdateAn()
 	}
 }

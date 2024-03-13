@@ -127,7 +127,12 @@ func (f *MiniBillardSpielfeldZeichner) Zeichne(spiel welt.MiniBillardSpiel) {
 	for _, k := range spiel.GibAktiveKugeln() {
 		f.zeichneKugel(k)
 	}
-
+	if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
+		pS := spiel.GibStoßkugel().GibPos()
+		f.ZeichneBreiteLinie(
+			pS, pS.Plus(spiel.GibVStoß().Mal(spiel.GibStoßkugel().GibRadius())),
+			5, F(250, 175, 50))
+	}
 }
 
 func (f *MiniBillardSpielfeldZeichner) zeichneKugel(k welt.Kugel) {
