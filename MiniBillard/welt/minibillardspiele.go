@@ -2,11 +2,12 @@ package welt
 
 import (
 	"../hilf"
+	"../klaenge"
 )
 
 type MiniBillardSpiel interface {
 	Update()
-	Stoße(hilf.Vec2)
+	Stoße()
 	StoßWiederholen()
 	Reset()
 	IstStillstand() bool
@@ -15,6 +16,8 @@ type MiniBillardSpiel interface {
 	GibAktiveKugeln() []Kugel
 	GibEingelochteKugeln() []Kugel
 	GibStoßkugel() Kugel
+	GibVStoß() hilf.Vec2
+	SetzeVStoß(hilf.Vec2)
 	GibStößeBisher() uint8
 	GibStrafpunkte() uint8
 	GibGröße() (float64, float64)
@@ -28,6 +31,7 @@ type spiel struct {
 	origKugeln   []Kugel
 	vorigeKugeln []Kugel
 	stoßkugel    Kugel
+	vStoß        hilf.Vec2
 	taschen      []Tasche
 	stößeBisher  uint8
 	strafPunkte  uint8
@@ -101,10 +105,12 @@ func (s *spiel) kugelSatz9Ball() []Kugel {
 	}
 }
 
-func NewMiniBillardSpiel(br uint16) *spiel {
+func NewMiniPoolSpiel(br uint16) *spiel {
+	// Pool-Tisch:  2540 mm × 1270 mm (2:1)
+	// Pool-Kugeln: 57,2 mm
 	var breite, höhe float64 = float64(br), float64(br) / 2
-	sp := &spiel{breite: breite, höhe: höhe, rk: breite / 38}
-	rt, rtm := 2.0*sp.rk, 1.6*sp.rk
+	sp := &spiel{breite: breite, höhe: höhe, rk: breite * 57.2 / 2540}
+	rt, rtm := 1.7*sp.rk, 1.3*sp.rk
 	sp.setzeTaschen(
 		NewTasche(pos(0, 0), rt),
 		NewTasche(pos(0, höhe), rt),
@@ -127,17 +133,6 @@ func (s *spiel) Reset() {
 	s.stillstand = true
 }
 
-func (s *spiel) StoßWiederholen() {
-	// stelle den Zustand vor dem letzten Stoß wieder her
-	s.kugeln = []Kugel{}
-	for _, k := range s.vorigeKugeln {
-		s.kugeln = append(s.kugeln, k.GibKopie())
-	}
-	s.stoßkugel = s.kugeln[0]
-	s.strafPunkte++
-	s.stillstand = true
-}
-
 func (s *spiel) Update() {
 	still := true
 	for _, k := range s.kugeln {
@@ -150,29 +145,40 @@ func (s *spiel) Update() {
 	s.stillstand = still
 }
 
-func (s *spiel) Stoße(v hilf.Vec2) {
+func (s *spiel) GibVStoß() hilf.Vec2 { return s.vStoß }
+
+func (s *spiel) SetzeVStoß(v hilf.Vec2) { s.vStoß = v }
+
+func (s *spiel) StoßWiederholen() {
+	// stelle den Zustand vor dem letzten Stoß wieder her
+	s.kugeln = []Kugel{}
+	for _, k := range s.vorigeKugeln {
+		s.kugeln = append(s.kugeln, k.GibKopie())
+	}
+	s.stoßkugel = s.kugeln[0]
+	s.strafPunkte++
+	s.stillstand = true
+}
+
+func (s *spiel) Stoße() {
 	// sichere den Zustand vor dem Stoß
 	s.vorigeKugeln = []Kugel{}
 	for _, k := range s.kugeln {
 		s.vorigeKugeln = append(s.vorigeKugeln, k.GibKopie())
 	}
-	// stoße
-	s.stoßkugel.SetzeV(v)
-	s.stößeBisher++
-	s.stillstand = false
+	if !s.vStoß.IstNull() {
+		// stoße
+		s.stoßkugel.SetzeV(s.vStoß)
+		s.vStoß = hilf.V2(0, 0)
+		klaenge.CueHitsBallSound()
+		s.stößeBisher++
+		s.stillstand = false
+	}
 }
 
-func (s *spiel) GibGröße() (float64, float64) {
-	return s.breite, s.höhe
-}
+func (s *spiel) GibKugeln() []Kugel { return s.kugeln }
 
-func (s *spiel) GibTaschen() []Tasche {
-	return s.taschen
-}
-
-func (s *spiel) GibKugeln() []Kugel {
-	return s.kugeln
-}
+func (s *spiel) GibStoßkugel() Kugel { return s.stoßkugel }
 
 func (s *spiel) GibAktiveKugeln() []Kugel {
 	ks := []Kugel{}
@@ -196,18 +202,12 @@ func (s *spiel) GibEingelochteKugeln() []Kugel {
 	return ks
 }
 
-func (s *spiel) GibStoßkugel() Kugel {
-	return s.stoßkugel
-}
+func (s *spiel) GibGröße() (float64, float64) { return s.breite, s.höhe }
 
-func (s *spiel) IstStillstand() bool {
-	return s.stillstand
-}
+func (s *spiel) GibTaschen() []Tasche { return s.taschen }
 
-func (s *spiel) GibStößeBisher() uint8 {
-	return s.stößeBisher
-}
+func (s *spiel) IstStillstand() bool { return s.stillstand }
 
-func (s *spiel) GibStrafpunkte() uint8 {
-	return s.strafPunkte
-}
+func (s *spiel) GibStößeBisher() uint8 { return s.stößeBisher }
+
+func (s *spiel) GibStrafpunkte() uint8 { return s.strafPunkte }

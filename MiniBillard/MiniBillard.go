@@ -10,24 +10,17 @@ import (
 	"./welt"
 )
 
-var (
-	vAnstoß hilf.Vec2
-)
-
-func maussteuerung(spiel welt.MiniBillardSpiel) func() {
+func maussteuerung(spiel welt.MiniBillardSpiel, xs, ys uint16) func() {
 	return func() {
 		if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
 			// TODO: hier hängt der Prozess, solange die Maus nicht im Fenster ist
 			taste, _, mausX, mausY := gfx.MausLesen1()
-			// TODO: das muss in eine Extra-Klasse
-			vAnstoß = (hilf.V2(float64(mausX), float64(mausY))).Minus(spiel.GibStoßkugel().GibPos()).Mal(1.0 / 15)
-			vabs := vAnstoß.Betrag()
-			if vabs > 12 {
-				vAnstoß = vAnstoß.Mal(12 / vabs)
-			}
+			vStoß := (hilf.V2(float64(mausX), float64(mausY))).
+				Minus(spiel.GibStoßkugel().GibPos()).
+				Plus(hilf.V2(float64(xs), float64(ys)))
+			spiel.SetzeVStoß(vStoß)
 			if taste == 1 {
-				spiel.Stoße(vAnstoß)
-				klaenge.CueHitsBallSound()
+				spiel.Stoße()
 			}
 		}
 	}
@@ -37,7 +30,6 @@ func maussteuerung(spiel welt.MiniBillardSpiel) func() {
 func view_komponente(spiel welt.MiniBillardSpiel, b, h, rand uint16) func() {
 	//erzeuge Zeichner
 	bS, hS := spiel.GibGröße()
-
 	xs, ys, xe, ye := rand, rand, rand+uint16(bS+0.5), uint16(hS+0.5)+rand
 	billardSpielFenster :=
 		views.NewMBSpielfeldZeichner(xs, ys, xe, ye)
@@ -57,11 +49,11 @@ func view_komponente(spiel welt.MiniBillardSpiel, b, h, rand uint16) func() {
 		spielinfoFenster.Zeichne(spiel)
 		eingelochteAzeiger.Zeichne(spiel)
 		lernfragenFenster.Zeichne()
-		//definiere Zeichenfunktionen
 		// TODO die Skalierung muss hier raus
 		if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
 			pS := spiel.GibStoßkugel().GibPos()
-			billardSpielFenster.ZeichneBreiteLinie(pS, pS.Plus(vAnstoß.Mal(15)), 5, views.F(250, 175, 50))
+			billardSpielFenster.ZeichneBreiteLinie(
+				pS, pS.Plus(spiel.GibVStoß()), 5, views.F(250, 175, 50))
 		}
 		gfx.UpdateAn()
 	}
@@ -71,16 +63,17 @@ func main() {
 	//öffne gfx-Fenster
 	var b, h, rand uint16 = 1280, 720, 30
 	var spieltischBreite uint16 = 900
-
+	println("Starte MiniBillard")
+	println("Öffne Gfx-Fenster")
 	gfx.Fenster(b, h)
 	gfx.Fenstertitel("Das MiniBillard für Schlaumeier.")
 
-	var spiel welt.MiniBillardSpiel = welt.NewMiniBillardSpiel(spieltischBreite)
+	var spiel welt.MiniBillardSpiel = welt.NewMiniPoolSpiel(spieltischBreite)
 
 	// erzeuge Spiel-Prozesse
 	updater := hilf.NewProzess("Spiel-Logik", func() { spiel.Update() })
 	zeichner := hilf.NewProzess("View-Komponente", view_komponente(spiel, b, h, rand))
-	steuerung := hilf.NewProzess("Maussteuerung", maussteuerung(spiel))
+	steuerung := hilf.NewProzess("Maussteuerung", maussteuerung(spiel, rand, rand))
 	musik := klaenge.CoolJazz2641SOUND()
 	//pulse := klaenge.MassivePulseSound()
 	geräusche := klaenge.BillardPubAmbienceSOUND()
