@@ -10,7 +10,7 @@ import (
 	"./welt"
 )
 
-func maussteuerung(spiel welt.MiniBillardSpiel, xs, ys uint16) func() {
+func gibMaussteuerung(spiel welt.MiniBillardSpiel, xs, ys uint16) func() {
 	return func() {
 		if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
 			// TODO: hier hängt der Prozess, solange die Maus nicht im Fenster ist
@@ -27,7 +27,7 @@ func maussteuerung(spiel welt.MiniBillardSpiel, xs, ys uint16) func() {
 
 }
 
-func view_komponente(spiel welt.MiniBillardSpiel, b, h, rand uint16) func() {
+func gibAppZeichner(spiel welt.MiniBillardSpiel, b, h, rand uint16) func() {
 	//erzeuge Zeichner
 	bS, hS := spiel.GibGröße()
 	xs, ys, xe, ye := rand, rand, rand+uint16(bS+0.5), uint16(hS+0.5)+rand
@@ -66,8 +66,8 @@ func main() {
 
 	// erzeuge Spiel-Prozesse
 	updater := hilf.NewProzess("Spiel-Logik", func() { spiel.Update() })
-	zeichner := hilf.NewProzess("View-Komponente", view_komponente(spiel, b, h, rand))
-	steuerung := hilf.NewProzess("Maussteuerung", maussteuerung(spiel, rand, rand))
+	zeichner := hilf.NewProzess("View-Komponente", gibAppZeichner(spiel, b, h, rand))
+	steuerung := hilf.NewProzess("Maussteuerung", gibMaussteuerung(spiel, rand, rand))
 	musik := klaenge.CoolJazz2641SOUND()
 	//pulse := klaenge.MassivePulseSound()
 	geräusche := klaenge.BillardPubAmbienceSOUND()
