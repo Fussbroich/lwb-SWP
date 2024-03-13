@@ -75,7 +75,7 @@ func main() {
 	// starte Spiel-Prozesse
 	updater.StarteLoop(12 * time.Millisecond)
 	zeichner.StarteLoop(15 * time.Millisecond)
-	steuerung.StarteLoop(5 * time.Millisecond)
+	steuerung.StarteLoop(10 * time.Millisecond)
 	musik.StarteLoop()
 	geräusche.StarteLoop()
 	for {

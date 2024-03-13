@@ -149,8 +149,8 @@ func (s *spiel) GibVStoß() hilf.Vec2 { return s.vStoß }
 
 func (s *spiel) SetzeVStoß(v hilf.Vec2) {
 	vabs := v.Betrag()
-	if vabs > 12 {
-		s.vStoß = v.Mal(12 / vabs)
+	if vabs > 17 {
+		s.vStoß = v.Mal(17 / vabs)
 	} else {
 		s.vStoß = v
 	}
