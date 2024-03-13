@@ -59,10 +59,10 @@ func view_komponente(spiel welt.MiniBillardSpiel, b, h, rand uint16) func() {
 		lernfragenFenster.Zeichne()
 		//definiere Zeichenfunktionen
 		// TODO die Skalierung muss hier raus
-		//if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
-		//	pS := spiel.GibStoßkugel().GibPos()
-		//	billardSpielFenster.ZeichneBreiteLinie(pS, pS.Plus(vAnstoß.Mal(15)), 5, 250, 175, 50)
-		//}
+		if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
+			pS := spiel.GibStoßkugel().GibPos()
+			billardSpielFenster.ZeichneBreiteLinie(pS, pS.Plus(vAnstoß.Mal(15)), 5, views.F(250, 175, 50))
+		}
 		gfx.UpdateAn()
 	}
 }
