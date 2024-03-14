@@ -50,7 +50,7 @@ func (s *klang) StarteLoop() {
 	go player()
 }
 
-func (s *klang) StoppeLoop() {
+func (s *klang) Stoppe() {
 	s.stop <- true
 	s.stop = nil
 }

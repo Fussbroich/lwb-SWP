@@ -1,12 +1,18 @@
 package welt
 
 import (
+	"time"
+
 	"../hilf"
 	"../klaenge"
 )
 
 type MiniBillardSpiel interface {
-	Update()
+	Starte()
+	Stoppe()
+	PauseAnAus()
+	DebugAnAus()
+	IstDebugMode() bool
 	Stoße()
 	StoßWiederholen()
 	Reset()
@@ -36,8 +42,30 @@ type spiel struct {
 	stößeBisher  uint8
 	strafPunkte  uint8
 	stillstand   bool
+	updater      hilf.Prozess
+	spielLäuft   bool
+	debuggen     bool
+	verzögerung  uint8
 }
 
+func NewMiniPoolSpiel(br uint16) *spiel {
+	// Pool-Tisch:  2540 mm × 1270 mm (2:1)
+	// Pool-Kugeln: 57,2 mm
+	var breite, höhe float64 = float64(br), float64(br) / 2
+	sp := &spiel{breite: breite, höhe: höhe, rk: breite * 57.2 / 2540}
+	rt, rtm := 1.9*sp.rk, 1.5*sp.rk
+	sp.setzeTaschen(
+		NewTasche(pos(0, 0), rt),
+		NewTasche(pos(0, höhe), rt),
+		NewTasche(pos(breite/2, höhe), rtm),
+		NewTasche(pos(breite, höhe), rt),
+		NewTasche(pos(breite, 0), rt),
+		NewTasche(pos(breite/2, 0), rtm))
+	sp.setzeKugeln(sp.kugelSatz9Ball()...)
+	return sp
+}
+
+// ######## ein paar Hilfsfunktionen #########################################
 func pos(x, y float64) hilf.Vec2 {
 	return hilf.V2(x, y)
 }
@@ -105,27 +133,71 @@ func (s *spiel) kugelSatz9Ball() []Kugel {
 	}
 }
 
-func NewMiniPoolSpiel(br uint16) *spiel {
-	// Pool-Tisch:  2540 mm × 1270 mm (2:1)
-	// Pool-Kugeln: 57,2 mm
-	var breite, höhe float64 = float64(br), float64(br) / 2
-	sp := &spiel{breite: breite, höhe: höhe, rk: breite * 57.2 / 2540}
-	rt, rtm := 1.9*sp.rk, 1.5*sp.rk
-	sp.setzeTaschen(
-		NewTasche(pos(0, 0), rt),
-		NewTasche(pos(0, höhe), rt),
-		NewTasche(pos(breite/2, höhe), rtm),
-		NewTasche(pos(breite, höhe), rt),
-		NewTasche(pos(breite, 0), rt),
-		NewTasche(pos(breite/2, 0), rtm))
-	sp.setzeKugeln(sp.kugelSatz9Ball()...)
-	return sp
+// ######## die Lebens- und Pause-Methode ###########################################################
+
+func (s *spiel) Starte() {
+	if s.spielLäuft {
+		return
+	}
+	s.updater = hilf.NewProzess("Spiel-Logik",
+		func() {
+			still := true
+			for _, k := range s.kugeln {
+				k.BewegenIn(s)
+				//prüfe Stillstand
+				if !k.GibV().IstNull() {
+					still = false
+				}
+			}
+			s.stillstand = still
+		})
+	s.spielLäuft = true
+	// ein konstanter Takt regelt die "Geschwindigkeit"
+	if s.verzögerung > 1 {
+		s.updater.StarteLoop(time.Duration(12*s.verzögerung) * time.Millisecond)
+	} else {
+		s.updater.StarteLoop(12 * time.Millisecond)
+	}
 }
+func (s *spiel) Stoppe() {
+	if !s.spielLäuft {
+		return
+	}
+	s.updater.Stoppe()
+	s.spielLäuft = false
+}
+
+func (s *spiel) PauseAnAus() {
+	if s.spielLäuft {
+		s.Stoppe()
+	} else {
+		s.Starte()
+	}
+}
+
+func (s *spiel) DebugAnAus() {
+	if s.debuggen {
+		s.verzögerung = 1 // wieder normal schnell
+	} else {
+		s.verzögerung = 10 // langsamer
+	}
+	s.debuggen = !s.debuggen
+	if s.spielLäuft {
+		s.PauseAnAus()
+		s.PauseAnAus()
+	}
+}
+
+func (s *spiel) IstDebugMode() bool {
+	return s.debuggen
+}
+
+// ######## die übrigen Methoden ####################################################
 
 func (s *spiel) Reset() {
 	s.kugeln = []Kugel{}
 	for _, k := range s.origKugeln {
-		s.kugeln = append(s.kugeln, k.GibKopie())
+		s.kugeln = append(s.kugeln, k.GibKopie()) // Kopien stehen still
 	}
 	s.stoßkugel = s.kugeln[0]
 	s.stößeBisher = 0
@@ -133,24 +205,12 @@ func (s *spiel) Reset() {
 	s.stillstand = true
 }
 
-func (s *spiel) Update() {
-	still := true
-	for _, k := range s.kugeln {
-		k.BewegenIn(s)
-		//prüfe Stillstand
-		if !k.GibV().IstNull() {
-			still = false
-		}
-	}
-	s.stillstand = still
-}
-
 func (s *spiel) GibVStoß() hilf.Vec2 { return s.vStoß }
 
 func (s *spiel) SetzeVStoß(v hilf.Vec2) {
 	vabs := v.Betrag()
-	if vabs > 17 {
-		s.vStoß = v.Mal(17 / vabs)
+	if vabs > 10 {
+		s.vStoß = v.Mal(10 / vabs)
 	} else {
 		s.vStoß = v
 	}
@@ -160,7 +220,7 @@ func (s *spiel) StoßWiederholen() {
 	// stelle den Zustand vor dem letzten Stoß wieder her
 	s.kugeln = []Kugel{}
 	for _, k := range s.vorigeKugeln {
-		s.kugeln = append(s.kugeln, k.GibKopie())
+		s.kugeln = append(s.kugeln, k.GibKopie()) // Kopien stehen still
 	}
 	s.stoßkugel = s.kugeln[0]
 	s.strafPunkte++
@@ -171,7 +231,7 @@ func (s *spiel) Stoße() {
 	// sichere den Zustand vor dem Stoß
 	s.vorigeKugeln = []Kugel{}
 	for _, k := range s.kugeln {
-		s.vorigeKugeln = append(s.vorigeKugeln, k.GibKopie())
+		s.vorigeKugeln = append(s.vorigeKugeln, k.GibKopie()) // Kopien stehen still
 	}
 	if !s.vStoß.IstNull() {
 		// stoße

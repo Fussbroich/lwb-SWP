@@ -35,12 +35,7 @@ func main() {
 	gfx.Fenstertitel("Das MiniBillard für Schlaumeier.")
 
 	// ######## erzeuge Spiel-Prozesse #########################################
-	updater := hilf.NewProzess("Spiel-Logik",
-		func() {
-			spiel.Update()
-		})
-
-	zeichner := hilf.NewProzess("View-Komponente",
+	zeichenProzess := hilf.NewProzess("View-Komponente",
 		func() {
 			gfx.UpdateAus()
 			gfx.Cls()
@@ -51,7 +46,7 @@ func main() {
 			gfx.UpdateAn()
 		})
 
-	steuerung := hilf.NewProzess("Maussteuerung",
+	mausProzess := hilf.NewProzess("Maussteuerung",
 		func() {
 			// Die Maussteuerung ist nur aktiv, wenn alle Kugeln stehen.
 			if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
@@ -72,25 +67,30 @@ func main() {
 	geräusche := klaenge.BillardPubAmbienceSOUND()
 
 	// ######## starte Spiel-Prozesse ###########################################
-	updater.StarteLoop(12 * time.Millisecond)
-	zeichner.StarteLoop(10 * time.Millisecond)
-	steuerung.StarteLoop(10 * time.Millisecond)
+	spiel.Starte()
+	zeichenProzess.StarteRate(120)
+	mausProzess.StarteRate(120)
 	musik.StarteLoop()
 	geräusche.StarteLoop()
+
 	for {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
 		if gedrückt == 1 {
 			switch taste {
+			case 'd': // Debug
+				spiel.DebugAnAus()
+			case 'p': // Pause
+				spiel.PauseAnAus()
 			case 'n': // nochmal
 				spiel.StoßWiederholen() // setze Kugeln wie vor dem letzten Stoß
 			case 'r': // reset
 				spiel.Reset() // setze Kugeln wie vor dem Anstoß
 			case 'q': // quit
-				geräusche.StoppeLoop()
-				musik.StoppeLoop()
-				updater.StoppeLoop()
-				zeichner.StoppeLoop()
-				steuerung.StoppeLoop()
+				geräusche.Stoppe()
+				musik.Stoppe()
+				spiel.Stoppe()
+				zeichenProzess.Stoppe()
+				mausProzess.Stoppe()
 				time.Sleep(100 * time.Millisecond)
 				if gfx.FensterOffen() {
 					gfx.FensterAus()

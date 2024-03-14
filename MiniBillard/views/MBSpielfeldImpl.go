@@ -56,7 +56,7 @@ func (f *miniBSpielfeld) Zeichne() {
 		gfx.SchreibeFont(uint16(pStärke.X()), uint16(pStärke.Y()), fmt.Sprintf("Stärke: %d", uint16(stärke+0.5)))
 	}
 	// debugging: zeichne Geschwindigkeiten
-	/*
+	if f.spiel.IstDebugMode() {
 		for _, k := range f.spiel.GibAktiveKugeln() {
 			if !k.GibV().IstNull() {
 				gfxBreiteLinie(f.startX, f.startY,
@@ -64,5 +64,5 @@ func (f *miniBSpielfeld) Zeichne() {
 					2, F(250, 175, 50))
 			}
 		}
-	*/
+	}
 }
