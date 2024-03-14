@@ -110,7 +110,7 @@ func NewMiniPoolSpiel(br uint16) *spiel {
 	// Pool-Kugeln: 57,2 mm
 	var breite, höhe float64 = float64(br), float64(br) / 2
 	sp := &spiel{breite: breite, höhe: höhe, rk: breite * 57.2 / 2540}
-	rt, rtm := 1.7*sp.rk, 1.3*sp.rk
+	rt, rtm := 1.9*sp.rk, 1.5*sp.rk
 	sp.setzeTaschen(
 		NewTasche(pos(0, 0), rt),
 		NewTasche(pos(0, höhe), rt),

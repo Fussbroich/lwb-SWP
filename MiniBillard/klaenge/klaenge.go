@@ -2,7 +2,7 @@ package klaenge
 
 import (
 	"errors"
-	"gfx" // Fenster muss offen sein
+	"gfx"
 	"os"
 	"path/filepath"
 	"time"
@@ -17,6 +17,7 @@ type Klang interface {
 type klang struct {
 	titel    string
 	dauer    time.Duration
+	autor    string
 	filepath string
 	play     func()
 	stop     chan bool
@@ -85,6 +86,7 @@ func MassivePulseSound() *klang {
 	return &klang{
 		titel: "Massive Pulse",
 		dauer: 16 * time.Second,
+		autor: "unknown",
 		play: func() {
 			if gfx.FensterOffen() {
 				gfx.SetzeKlangparameter(22050, 2, 2, 1, 0.3)
@@ -98,6 +100,7 @@ func CoolJazz2641SOUND() *klang {
 	return &klang{
 		titel: "Cool Jazz 2641",
 		dauer: 2*time.Minute + 8*time.Second,
+		autor: "Julius H. (pixabay)",
 		play: func() {
 			if !gfx.FensterOffen() {
 				return
@@ -112,6 +115,7 @@ func BillardPubAmbienceSOUND() *klang {
 	return &klang{
 		titel: "Billard Pub Ambience",
 		dauer: time.Minute + 13*time.Second,
+		autor: "",
 		play: func() {
 			if !gfx.FensterOffen() {
 				return
@@ -125,6 +129,7 @@ func CueHitsBallSound() *klang {
 	fp := assetDateipfad("cueHitsBall.wav")
 	return &klang{
 		dauer: 300 * time.Millisecond,
+		autor: "freesman (directory.audio)",
 		play: func() {
 			if !gfx.FensterOffen() {
 				return
@@ -138,6 +143,7 @@ func BallHitsBallSound() *klang {
 	fp := assetDateipfad("ballHitsBall.wav")
 	return &klang{
 		dauer: 300 * time.Millisecond,
+		autor: "freesman (directory.audio)",
 		play: func() {
 			if !gfx.FensterOffen() {
 				return
@@ -151,6 +157,7 @@ func BallInPocketSound() *klang {
 	fp := assetDateipfad("ballIntoPocket.wav")
 	return &klang{
 		dauer: 300 * time.Millisecond,
+		autor: "freesman (directory.audio)",
 		play: func() {
 			if !gfx.FensterOffen() {
 				return
@@ -164,6 +171,7 @@ func BallHitsRailSound() *klang {
 	fp := assetDateipfad("ballHitsRail.wav")
 	return &klang{
 		dauer: 300 * time.Millisecond,
+		autor: "freesman (directory.audio)",
 		play: func() {
 			if !gfx.FensterOffen() {
 				return

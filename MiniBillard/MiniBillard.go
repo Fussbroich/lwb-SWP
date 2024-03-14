@@ -10,73 +10,70 @@ import (
 	"./welt"
 )
 
-func gibMaussteuerung(spiel welt.MiniBillardSpiel, xs, ys uint16) func() {
-	return func() {
-		if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
-			// TODO: hier hängt der Prozess, solange die Maus nicht im Fenster ist
-			taste, _, mausX, mausY := gfx.MausLesen1()
-			vStoß := (hilf.V2(float64(mausX), float64(mausY))).
-				Minus(spiel.GibStoßkugel().GibPos()).
-				Minus(hilf.V2(float64(xs), float64(ys)))
-			spiel.SetzeVStoß(vStoß.Mal(1 / spiel.GibStoßkugel().GibRadius()))
-			if taste == 1 {
-				spiel.Stoße()
-			}
-		}
-	}
+// ######## Hier kommt die gesamte App #########################################
+func main() {
 
-}
+	println("Starte MiniBillard")
 
-func gibAppZeichner(spiel welt.MiniBillardSpiel, b, h, rand uint16) func() {
-	//erzeuge Zeichner
+	// ######## lege App-Größe fest ###########################################
+	var b, h, rand uint16 = 960, 720, 30
+	var spiel welt.MiniBillardSpiel = welt.NewMiniPoolSpiel(900) // Spieltisch mit Breite
 	bS, hS := spiel.GibGröße()
 	xs, ys, xe, ye := rand, rand, rand+uint16(bS+0.5), uint16(hS+0.5)+rand
-	billardSpielFenster :=
-		views.NewMBSpielfeldZeichner(xs, ys, xe, ye)
-	eingelochteAzeiger :=
-		views.NewMBEingelochteZeichner(xs, ye+2, xe, ye+(h-ye-2-rand)/2, views.F(80, 80, 80))
-	spielinfoFenster :=
-		views.NewMBSpielinfoZeichner(xs, ye+(h-ye-2-rand)/2, xe, h-rand, views.F(80, 80, 80), views.F(200, 200, 200))
-	lernfragenFenster :=
-		views.NewHintergrundZeichner(xe+5, rand, b-rand, h-rand, views.F(200, 200, 200))
-	hintergrund :=
-		views.NewHintergrundZeichner(0, 0, b, h, views.F(139, 69, 19))
 
-	return func() {
-		gfx.UpdateAus()
-		hintergrund.Zeichne()
-		billardSpielFenster.Zeichne(spiel)
-		spielinfoFenster.Zeichne(spiel)
-		eingelochteAzeiger.Zeichne(spiel)
-		lernfragenFenster.Zeichne()
-		gfx.UpdateAn()
-	}
-}
+	// ######## erzeuge App-Fenster ###########################################
+	var hintergrund views.Fenster = views.NewFenster(0, 0, b, h, views.F(139, 69, 19))
+	var billardSpielFenster views.Fenster = views.NewMBSpielfeldFenster(spiel,
+		xs, ys, xe, ye)
+	var eingelochteAzeiger views.Fenster = views.NewMBEingelochteFenster(spiel,
+		xs, ye+2, xe, ye+(h-ye-2-rand)/2, views.F(80, 80, 80))
+	var spielinfoFenster views.Fenster = views.NewMBSpielinfoFenster(spiel,
+		xs, ye+(h-ye-2-rand)/2, xe, h-rand, views.F(80, 80, 80), views.F(200, 200, 200))
 
-func main() {
-	//öffne gfx-Fenster
-	//var b, h, rand uint16 = 1280, 720, 30
-	//var spieltischBreite uint16 = 900
-	var b, h, rand uint16 = 1800, 1000, 42
-	var spieltischBreite uint16 = 1280
-	println("Starte MiniBillard")
 	println("Öffne Gfx-Fenster")
 	gfx.Fenster(b, h)
 	gfx.Fenstertitel("Das MiniBillard für Schlaumeier.")
 
-	var spiel welt.MiniBillardSpiel = welt.NewMiniPoolSpiel(spieltischBreite)
+	// ######## erzeuge Spiel-Prozesse #########################################
+	updater := hilf.NewProzess("Spiel-Logik",
+		func() {
+			spiel.Update()
+		})
 
-	// erzeuge Spiel-Prozesse
-	updater := hilf.NewProzess("Spiel-Logik", func() { spiel.Update() })
-	zeichner := hilf.NewProzess("View-Komponente", gibAppZeichner(spiel, b, h, rand))
-	steuerung := hilf.NewProzess("Maussteuerung", gibMaussteuerung(spiel, rand, rand))
+	zeichner := hilf.NewProzess("View-Komponente",
+		func() {
+			gfx.UpdateAus()
+			gfx.Cls()
+			hintergrund.Zeichne()
+			billardSpielFenster.Zeichne()
+			spielinfoFenster.Zeichne()
+			eingelochteAzeiger.Zeichne()
+			gfx.UpdateAn()
+		})
+
+	steuerung := hilf.NewProzess("Maussteuerung",
+		func() {
+			// Die Maussteuerung ist nur aktiv, wenn alle Kugeln stehen.
+			if spiel.IstStillstand() && !spiel.GibStoßkugel().IstEingelocht() {
+				taste, _, mausX, mausY := gfx.MausLesen1()
+				vStoß := (hilf.V2(float64(mausX), float64(mausY))).
+					Minus(spiel.GibStoßkugel().GibPos()).
+					Minus(hilf.V2(float64(rand), float64(rand)))
+				// die Stoßstärke wird in "Kugelradien" gemessen
+				spiel.SetzeVStoß(vStoß.Mal(1 / spiel.GibStoßkugel().GibRadius()))
+				if taste == 1 {
+					spiel.Stoße()
+				}
+			}
+		})
+	// ######## Musik ###########################################################
 	musik := klaenge.CoolJazz2641SOUND()
 	//pulse := klaenge.MassivePulseSound()
 	geräusche := klaenge.BillardPubAmbienceSOUND()
 
-	// starte Spiel-Prozesse
+	// ######## starte Spiel-Prozesse ###########################################
 	updater.StarteLoop(12 * time.Millisecond)
-	zeichner.StarteLoop(15 * time.Millisecond)
+	zeichner.StarteLoop(10 * time.Millisecond)
 	steuerung.StarteLoop(10 * time.Millisecond)
 	musik.StarteLoop()
 	geräusche.StarteLoop()
