@@ -100,7 +100,7 @@ func fontDateipfad(filename string) string {
 		panic(err)
 	}
 	wdir := filepath.Dir(wd)
-	fp := filepath.Join(wdir, "lwb-SWP", fontsDir, filename)
+	fp := filepath.Join(wdir, fontsDir, filename)
 	//	println("wdir:", wdir)
 	//	println("klaengeDir:", klaengeDir)
 	//	println("filename", filename)

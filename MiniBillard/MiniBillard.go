@@ -55,8 +55,10 @@ func gibAppZeichner(spiel welt.MiniBillardSpiel, b, h, rand uint16) func() {
 
 func main() {
 	//öffne gfx-Fenster
-	var b, h, rand uint16 = 1280, 720, 30
-	var spieltischBreite uint16 = 900
+	//var b, h, rand uint16 = 1280, 720, 30
+	//var spieltischBreite uint16 = 900
+	var b, h, rand uint16 = 1800, 1000, 42
+	var spieltischBreite uint16 = 1280
 	println("Starte MiniBillard")
 	println("Öffne Gfx-Fenster")
 	gfx.Fenster(b, h)

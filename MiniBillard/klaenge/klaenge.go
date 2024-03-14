@@ -70,7 +70,7 @@ func assetDateipfad(filename string) (fp string) {
 		panic(err)
 	}
 	wdir := filepath.Dir(wd)
-	fp = filepath.Join(wdir, "lwb-SWP", klaengeDir, filename)
+	fp = filepath.Join(wdir, klaengeDir, filename)
 	//	println("wdir:", wdir)
 	//	println("klaengeDir:", klaengeDir)
 	//	println("filename", filename)
