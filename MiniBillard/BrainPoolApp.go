@@ -22,7 +22,7 @@ func main() {
 	xs, ys, xe, ye := rand, rand, rand+uint16(bS+0.5), uint16(hS+0.5)+rand
 
 	// ######## erzeuge App-Fenster ###########################################
-	var renderer views.Zeichner = views.NewZeichner(
+	var renderer views.FensterZeichner = views.NewFensterZeichner(
 		// Hintergrund
 		views.NewFenster(0, 0, b, h, views.F(139, 69, 19)),
 		// Spieltisch
@@ -71,8 +71,8 @@ func main() {
 	// ######## starte Spiel-Prozesse ###########################################
 	spiel.Starte()
 	renderer.Starte()
-	mausProzess.StarteRate(15) // mal Maus checken je Sekunde
-	musik.StarteLoop()
+	mausProzess.StarteRate(15) // gewünschte Abtastrate je Sekunde
+	musik.StarteLoop()         // spiele Musik in Endlosschleife
 	geräusche.StarteLoop()
 
 	// ######## frage Tastatur ab ###########################################

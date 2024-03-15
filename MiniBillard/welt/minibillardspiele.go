@@ -221,6 +221,9 @@ func (s *spiel) SetzeVStoß(v hilf.Vec2) {
 }
 
 func (s *spiel) StoßWiederholen() {
+	if s.vorigeKugeln == nil {
+		return
+	}
 	// stelle den Zustand vor dem letzten Stoß wieder her
 	s.kugeln = []Kugel{}
 	for _, k := range s.vorigeKugeln {

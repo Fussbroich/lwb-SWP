@@ -7,7 +7,7 @@ import (
 	"../hilf"
 )
 
-type Zeichner interface {
+type FensterZeichner interface {
 	Starte()
 	Stoppe()
 	Überblende(Fenster)
@@ -15,7 +15,7 @@ type Zeichner interface {
 	ÜberblendeAus()
 }
 
-type zeichner struct {
+type fzeichner struct {
 	breite, höhe uint16
 	fenster      []Fenster
 	overlay      Fenster
@@ -24,24 +24,24 @@ type zeichner struct {
 	rate         uint64
 }
 
-func NewZeichner(fenster ...Fenster) *zeichner {
+func NewFensterZeichner(fenster ...Fenster) *fzeichner {
 	var bMax, hMax uint16
 	for _, f := range fenster {
 		b, h := f.GibGröße()
 		bMax = max(bMax, b)
 		hMax = max(hMax, h)
 	}
-	return &zeichner{fenster: fenster, breite: bMax, höhe: hMax, rate: 80}
+	return &fzeichner{fenster: fenster, breite: bMax, höhe: hMax, rate: 80}
 }
 
 // ######## die Start- und Stop-Methode ###########################################################
 
-func (r *zeichner) Starte() {
+func (r *fzeichner) Starte() {
 	if r.updaterLäuft {
 		return
 	}
 
-	r.updater = hilf.NewProzess("Renderer",
+	r.updater = hilf.NewProzess("Zeichner",
 		func() {
 			gfx.UpdateAus()
 			gfx.Cls()
@@ -60,7 +60,7 @@ func (r *zeichner) Starte() {
 	r.updater.StarteRate(r.rate)
 }
 
-func (r *zeichner) Stoppe() {
+func (r *fzeichner) Stoppe() {
 	if !r.updaterLäuft {
 		return
 	}
@@ -70,7 +70,7 @@ func (r *zeichner) Stoppe() {
 
 // ######## die übrigen Methoden ####################################################
 
-func (r *zeichner) Überblende(f Fenster) {
+func (r *fzeichner) Überblende(f Fenster) {
 	r.overlay = f
 	if r.updaterLäuft {
 		r.Stoppe()
@@ -78,7 +78,7 @@ func (r *zeichner) Überblende(f Fenster) {
 	}
 }
 
-func (r *zeichner) ÜberblendeText(t string, c Farbe) {
+func (r *fzeichner) ÜberblendeText(t string, c Farbe) {
 	r.overlay = NewTextOverlay(0, 0, r.breite, r.höhe, t, 180, Weiß(), c)
 	if r.updaterLäuft {
 		r.Stoppe()
@@ -86,7 +86,7 @@ func (r *zeichner) ÜberblendeText(t string, c Farbe) {
 	}
 }
 
-func (r *zeichner) ÜberblendeAus() {
+func (r *fzeichner) ÜberblendeAus() {
 	r.overlay = nil
 	if r.updaterLäuft {
 		r.Stoppe()

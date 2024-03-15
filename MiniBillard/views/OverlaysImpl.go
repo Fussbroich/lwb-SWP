@@ -61,5 +61,5 @@ func (f *infotext) Zeichne() {
 	gfx.Stiftfarbe(r, g, b)
 	schriftgröße := (f.stopY - f.startY) / 5
 	gfx.SetzeFont(fp, int(schriftgröße))
-	gfx.SchreibeFont((f.stopX-f.startX)/3, (f.stopY-f.startY)/4, f.text)
+	gfx.SchreibeFont(f.startX, f.startY, f.text)
 }

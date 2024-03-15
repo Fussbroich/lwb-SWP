@@ -40,7 +40,5 @@ func (f *miniBSpielinfo) Zeichne() {
 	schriftgröße := höhe / 4
 	gfx.SetzeFont(fp, int(schriftgröße))
 	gfx.SchreibeFont(f.startX, f.startY,
-		fmt.Sprintf("%d Stöße", f.spiel.GibStößeBisher()))
-	gfx.SchreibeFont(f.startX, f.startY+12*schriftgröße/10,
-		fmt.Sprintf("%d Strafpunkte", f.spiel.GibStrafpunkte()))
+		fmt.Sprintf("%d Stöße/%d Strafen", f.spiel.GibStößeBisher(), f.spiel.GibStrafpunkte()))
 }
