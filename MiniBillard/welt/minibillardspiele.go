@@ -1,8 +1,6 @@
 package welt
 
 import (
-	"time"
-
 	"../hilf"
 	"../klaenge"
 )
@@ -10,6 +8,7 @@ import (
 type MiniBillardSpiel interface {
 	Starte()
 	Stoppe()
+	Läuft() bool
 	PauseAnAus()
 	DebugAnAus()
 	IstDebugMode() bool
@@ -45,7 +44,7 @@ type spiel struct {
 	updater      hilf.Prozess
 	spielLäuft   bool
 	debuggen     bool
-	verzögerung  uint8
+	zeitlupe     uint64
 }
 
 func NewMiniPoolSpiel(br uint16) *spiel {
@@ -153,12 +152,17 @@ func (s *spiel) Starte() {
 		})
 	s.spielLäuft = true
 	// ein konstanter Takt regelt die "Geschwindigkeit"
-	if s.verzögerung > 1 {
-		s.updater.StarteLoop(time.Duration(12*s.verzögerung) * time.Millisecond)
+	if s.zeitlupe > 1 {
+		s.updater.StarteRate(83 / uint64(s.zeitlupe))
+		//s.updater.StarteLoop(time.Duration(12*s.zeitlupe) * time.Millisecond)
 	} else {
-		s.updater.StarteLoop(12 * time.Millisecond)
+		s.updater.StarteRate(83)
+		//s.updater.StarteLoop(12 * time.Millisecond)
 	}
 }
+
+func (s *spiel) Läuft() bool { return s.spielLäuft }
+
 func (s *spiel) Stoppe() {
 	if !s.spielLäuft {
 		return
@@ -177,9 +181,9 @@ func (s *spiel) PauseAnAus() {
 
 func (s *spiel) DebugAnAus() {
 	if s.debuggen {
-		s.verzögerung = 1 // wieder normal schnell
+		s.zeitlupe = 1 // wieder normal schnell
 	} else {
-		s.verzögerung = 10 // langsamer
+		s.zeitlupe = 10 // langsamer
 	}
 	s.debuggen = !s.debuggen
 	if s.spielLäuft {

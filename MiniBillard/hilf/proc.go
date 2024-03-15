@@ -4,15 +4,18 @@ import "time"
 
 type Prozess interface {
 	StarteLoop(time.Duration)
-	StarteRate(uint8)
+	StarteRate(uint64)
+	GibRate() uint64
 	Stoppe()
 }
 
 type prozess struct {
-	name  string
-	frun  func()
-	stop  chan bool
-	läuft bool // eigentlich überflüssig
+	name        string
+	frun        func()
+	rate        uint64 // Hertz
+	verzögerung time.Duration
+	stop        chan bool
+	läuft       bool // eigentlich überflüssig
 }
 
 func NewProzess(name string, f func()) *prozess {
@@ -22,6 +25,7 @@ func NewProzess(name string, f func()) *prozess {
 }
 
 func (proc *prozess) StarteLoop(tick time.Duration) {
+	proc.rate = 1e9 / uint64(tick.Nanoseconds())
 	if proc.läuft {
 		println("Fehler: Prozess", proc.name, "läuft bereits.")
 		return
@@ -46,29 +50,56 @@ func (proc *prozess) StarteLoop(tick time.Duration) {
 	go runner()
 }
 
-func (proc *prozess) StarteRate(rate uint8) {
+func (proc *prozess) StarteRate(sollRate uint64) {
 	if proc.läuft {
 		println("Fehler: Prozess", proc.name, "läuft bereits.")
 		return
 	}
-	println("Starte", proc.name, "(max", rate, "Hz)")
-	takt := time.NewTicker(time.Second / time.Duration(rate))
+	proc.rate = sollRate
+	proc.verzögerung = 0
+	maxVerzögerung := time.Second / 5
+	var minRate, maxRate uint64 = sollRate * 4 / 5, sollRate * 6 / 5
 	proc.stop = make(chan bool)
-	proc.frun()
 	runner := func() {
-		defer func() { takt.Stop(); println("Stoppe", proc.name) }()
+		var startzeit time.Time = time.Now()
+		var laufzeit time.Duration
+		var läufe float64
 		for {
+			laufzeit = time.Since(startzeit)
+			if laufzeit >= time.Second/50 { // Rate 50 mal je Sekunde anpassen
+				proc.rate = uint64(läufe / laufzeit.Seconds()) // Rate ist Läufe je Sekunde
+				if proc.rate < minRate {
+					if proc.verzögerung > 0 {
+						proc.verzögerung -= time.Millisecond
+					}
+				}
+				if proc.rate > maxRate {
+					if proc.verzögerung < maxVerzögerung {
+						proc.verzögerung += time.Millisecond
+					}
+				}
+				startzeit = time.Now()
+				läufe = 0
+			}
 			select {
 			case <-proc.stop:
+				println("Stoppe", proc.name)
 				return
-			case <-takt.C:
+			default:
 				proc.frun()
+				läufe++
+				time.Sleep(time.Duration(proc.verzögerung))
 			}
 		}
 	}
 	// starte Prozess
+	println("Starte", proc.name, "(max", sollRate, "Hz)")
 	proc.läuft = true
 	go runner()
+}
+
+func (proc *prozess) GibRate() uint64 {
+	return uint64(proc.rate)
 }
 
 func (proc *prozess) Stoppe() {

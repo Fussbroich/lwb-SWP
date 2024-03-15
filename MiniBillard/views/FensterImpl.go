@@ -11,6 +11,31 @@ import (
 	"../welt"
 )
 
+type fenster struct {
+	startX, startY uint16
+	stopX, stopY   uint16
+	hg, vg         Farbe
+}
+
+func NewFenster(startx, starty, stopx, stopy uint16, hg Farbe) *fenster {
+	return &fenster{
+		startX: startx, startY: starty,
+		stopX: stopx, stopY: stopy,
+		hg: hg, vg: Schwarz()}
+}
+
+func (f *fenster) GibStartkoordinaten() (uint16, uint16) { return f.startX, f.startY }
+
+func (f *fenster) GibGröße() (uint16, uint16) { return f.stopX - f.startX, f.stopY - f.startY }
+
+func (f *fenster) Zeichne() {
+	r, g, b := f.hg.RGB()
+	gfx.Stiftfarbe(r, g, b)
+	gfx.Vollrechteck(f.startX, f.startY, f.stopX-f.startX, f.stopY-f.startY)
+}
+
+// ######## Hilfsfunktionen #######################################################################
+
 var (
 	kugelPalette *[16]Farbe
 )
@@ -55,27 +80,6 @@ func fontDateipfad(filename string) string {
 	}
 	return fp
 }
-
-type fenster struct {
-	startX, startY uint16
-	stopX, stopY   uint16
-	hg, vg         Farbe
-}
-
-func NewFenster(startx, starty, stopx, stopy uint16, hg Farbe) *fenster {
-	return &fenster{
-		startX: startx, startY: starty,
-		stopX: stopx, stopY: stopy,
-		hg: hg, vg: Schwarz()}
-}
-
-func (f *fenster) Zeichne() {
-	r, g, b := f.hg.RGB()
-	gfx.Stiftfarbe(r, g, b)
-	gfx.Vollrechteck(f.startX, f.startY, f.stopX-f.startX, f.stopY-f.startY)
-}
-
-// ######## Hilfsfunktionen #######################################################################
 
 func zeichneKugel(startX, startY uint16, p hilf.Vec2, k welt.Kugel) {
 	fp := fontDateipfad("LiberationMono-Bold.ttf")

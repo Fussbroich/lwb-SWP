@@ -22,6 +22,10 @@ func NewMBSpielinfoFenster(spiel welt.MiniBillardSpiel, startx, starty, stopx, s
 		hg: hg, vg: vg}
 }
 
+func (f *miniBSpielinfo) GibStartkoordinaten() (uint16, uint16) { return f.startX, f.startY }
+
+func (f *miniBSpielinfo) GibGröße() (uint16, uint16) { return f.stopX - f.startX, f.stopY - f.startY }
+
 func (f *miniBSpielinfo) Zeichne() {
 	breite := f.stopX - f.startX
 	höhe := f.stopY - f.startY
