@@ -13,39 +13,30 @@ import (
 // ######## Hier kommt die gesamte App #########################################
 func main() {
 
-	println("Starte MiniBillard")
+	println("Starte BrainPool")
 
 	// ######## lege App-Größe fest ###########################################
-	var b, h, rand uint16 = 900, 700, 20
-	var spiel welt.MiniBillardSpiel = welt.NewMiniPoolSpiel(500) // Spieltisch mit Breite
+	var b, h, rand uint16 = 960, 720, 30
+	var spiel welt.MiniBillardSpiel = welt.NewMiniPoolSpiel(900) // Spieltisch mit Breite
 	bS, hS := spiel.GibGröße()
 	xs, ys, xe, ye := rand, rand, rand+uint16(bS+0.5), uint16(hS+0.5)+rand
 
 	// ######## erzeuge App-Fenster ###########################################
-	var hintergrund views.Fenster = views.NewFenster(0, 0, b, h, views.F(139, 69, 19))
-	var billardSpielFenster views.Fenster = views.NewMBSpielfeldFenster(spiel,
-		xs, ys, xe, ye)
-	var eingelochteAzeiger views.Fenster = views.NewMBEingelochteFenster(spiel,
-		xs, ye+2, xe, ye+(h-ye-2-rand)/2, views.F(80, 80, 80))
-	var spielinfoFenster views.Fenster = views.NewMBSpielinfoFenster(spiel,
-		xs, ye+(h-ye-2-rand)/2, xe, h-rand, views.F(80, 80, 80), views.F(200, 200, 200))
+	var renderer views.Zeichner = views.NewZeichner(
+		// Hintergrund
+		views.NewFenster(0, 0, b, h, views.F(139, 69, 19)),
+		// Spieltisch
+		views.NewMBSpielfeldFenster(spiel, xs, ys, xe, ye),
+		// Anzeige der eingelochten
+		views.NewMBEingelochteFenster(spiel, xs, ye+2, xe, ye+(h-ye-2-rand)/2, views.F(80, 80, 80)),
+		// Infos zum Spielverlauf
+		views.NewMBSpielinfoFenster(spiel, xs, ye+(h-ye-2-rand)/2, xe, h-rand, views.F(80, 80, 80), views.F(200, 200, 200)))
 
 	println("Öffne Gfx-Fenster")
 	gfx.Fenster(b, h)
-	gfx.Fenstertitel("Das MiniBillard für Schlaumeier.")
+	gfx.Fenstertitel("BrainPool - Das MiniBillard für Schlaue.")
 
-	// ######## erzeuge Spiel-Prozesse #########################################
-	zeichenProzess := hilf.NewProzess("View-Komponente",
-		func() {
-			gfx.UpdateAus()
-			gfx.Cls()
-			hintergrund.Zeichne()
-			billardSpielFenster.Zeichne()
-			spielinfoFenster.Zeichne()
-			eingelochteAzeiger.Zeichne()
-			gfx.UpdateAn()
-		})
-
+	// ######## definiere Maussteuerung #########################################
 	mausProzess := hilf.NewProzess("Maussteuerung",
 		func() {
 			// Die Maussteuerung ist nur aktiv, wenn alle Kugeln stehen.
@@ -61,6 +52,7 @@ func main() {
 				}
 			}
 		})
+
 	// ######## Musik ###########################################################
 	musik := klaenge.CoolJazz2641SOUND()
 	//pulse := klaenge.MassivePulseSound()
@@ -68,7 +60,7 @@ func main() {
 
 	// ######## starte Spiel-Prozesse ###########################################
 	spiel.Starte()
-	zeichenProzess.StarteRate(120)
+	renderer.Starte()
 	mausProzess.StarteRate(120)
 	musik.StarteLoop()
 	geräusche.StarteLoop()
@@ -79,8 +71,10 @@ func main() {
 			switch taste {
 			case 'd': // Debug
 				spiel.DebugAnAus()
+				renderer.Overlay("debug")
 			case 'p': // Pause
 				spiel.PauseAnAus()
+				renderer.PauseAnAus()
 			case 'n': // nochmal
 				spiel.StoßWiederholen() // setze Kugeln wie vor dem letzten Stoß
 			case 'r': // reset
@@ -89,7 +83,7 @@ func main() {
 				geräusche.Stoppe()
 				musik.Stoppe()
 				spiel.Stoppe()
-				zeichenProzess.Stoppe()
+				renderer.Stoppe()
 				mausProzess.Stoppe()
 				time.Sleep(100 * time.Millisecond)
 				if gfx.FensterOffen() {
