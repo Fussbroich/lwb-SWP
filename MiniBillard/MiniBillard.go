@@ -32,7 +32,7 @@ func main() {
 
 	println("Öffne Gfx-Fenster")
 	gfx.Fenster(b, h)
-	gfx.Fenstertitel("Das MiniBillard für Schlaumeier.")
+	gfx.Fenstertitel("BrainPool — Das MiniBillard für Schlaumeier.")
 
 	// ######## erzeuge Spiel-Prozesse #########################################
 	zeichenProzess := hilf.NewProzess("View-Komponente",
