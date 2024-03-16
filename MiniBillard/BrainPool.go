@@ -70,9 +70,10 @@ func main() {
 	// ######## starte Spiel-Prozesse ###########################################
 	billard.Starte()
 	renderer.Starte()
+	//renderer.ZeigeLayout()
 	mausProzess.StarteRate(15) // gewünschte Abtastrate je Sekunde
 
-	// ######## Tastatur-Loop######## ###########################################
+	// ######## Tastatur-Loop ###################################################
 	var pause bool
 	for {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
@@ -87,7 +88,7 @@ func main() {
 			case 'p': // Pause
 				if !pause {
 					billard.Stoppe()
-					renderer.ÜberblendeText("Pause", views.F(249, 73, 68))
+					renderer.ÜberblendeText("Pause", views.F(225, 255, 255), views.F(249, 73, 68), 180)
 				} else {
 					renderer.ÜberblendeAus()
 					billard.Starte()
@@ -98,7 +99,7 @@ func main() {
 			case 'r': // reset
 				billard.Reset() // setze Kugeln wie vor dem Anstoß
 			case 'q': // quit
-				renderer.ÜberblendeText("Bye!", views.F(249, 73, 68))
+				renderer.ÜberblendeText("Bye!", views.F(225, 255, 255), views.F(249, 73, 68), 30)
 				geräusche.Stoppe()
 				musik.Stoppe()
 				billard.Stoppe()

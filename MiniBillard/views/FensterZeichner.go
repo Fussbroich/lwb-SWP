@@ -11,8 +11,9 @@ import (
 type FensterZeichner interface {
 	Starte()
 	Stoppe()
+	ZeigeLayout()
 	Überblende(Fenster)
-	ÜberblendeText(string, Farbe)
+	ÜberblendeText(string, Farbe, Farbe, uint8)
 	ÜberblendeAus()
 }
 
@@ -71,6 +72,16 @@ func (r *fzeichner) Stoppe() {
 
 // ######## die übrigen Methoden ####################################################
 
+func (r *fzeichner) ZeigeLayout() {
+	for _, f := range r.fenster {
+		f.ZeichneLayout()
+	}
+	if r.overlay != nil {
+		r.overlay.Zeichne()
+	}
+	NewInfoText(r.breite/50, r.höhe/50, r.breite/8, r.höhe/10, "Layout-Ansicht", F(240, 255, 255)).Zeichne()
+}
+
 func (r *fzeichner) Überblende(f Fenster) {
 	r.overlay = f
 	if r.updaterLäuft {
@@ -79,8 +90,8 @@ func (r *fzeichner) Überblende(f Fenster) {
 	}
 }
 
-func (r *fzeichner) ÜberblendeText(t string, c Farbe) {
-	r.overlay = NewTextOverlay(0, 0, r.breite, r.höhe, t, Weiß(), c, 180)
+func (r *fzeichner) ÜberblendeText(t string, hg, vg Farbe, tr uint8) {
+	r.overlay = NewTextOverlay(0, 0, r.breite, r.höhe, t, hg, vg, tr)
 	if r.updaterLäuft {
 		r.Stoppe()
 		r.Starte()
