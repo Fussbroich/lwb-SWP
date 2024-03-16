@@ -43,7 +43,9 @@ func (f *miniBSpielfeld) Zeichne() {
 		// zeichne die Stoßrichtung und -stärke bezogen auf Kugelradien
 		stärke := f.billard.GibVStoß().Betrag()
 		var farbe Farbe
-		if stärke > 10 {
+		if stärke < 7 {
+			farbe = F(47, 159, 52)
+		} else if stärke > 9 {
 			farbe = F(249, 73, 68)
 		} else {
 			farbe = F(250, 175, 50)

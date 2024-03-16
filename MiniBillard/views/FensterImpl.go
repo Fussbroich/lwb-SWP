@@ -100,9 +100,8 @@ func zeichneKugel(startX, startY uint16, p hilf.Vec2, k welt.Kugel) {
 	} else {
 		r, g, b := c.RGB()
 		gfx.Stiftfarbe(r, g, b)
-		gfx.Vollrechteck(startX+uint16(p.X()-k.GibRadius()*0.818+0.5),
-			startY+uint16(p.Y()-k.GibRadius()*0.61+0.5),
-			uint16(2*0.818*k.GibRadius()+0.5), uint16(2*0.61*k.GibRadius()+0.5))
+		gfx.Vollrechteck(startX+uint16(p.X()-k.GibRadius()*0.75+0.5), startY+uint16(p.Y()-k.GibRadius()*0.6+0.5),
+			uint16(2*0.75*k.GibRadius()+0.5), uint16(2*0.6*k.GibRadius()+0.5))
 		gfxVollKreissektor(startX, startY, p, k.GibRadius()-1, 325, 35, c)
 		gfxVollKreissektor(startX, startY, p, k.GibRadius()-1, 145, 215, c)
 	}

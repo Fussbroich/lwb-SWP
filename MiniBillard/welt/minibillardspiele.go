@@ -106,16 +106,18 @@ func (s *spiel) kugelSatz9Ball() []Kugel {
 	pStoß := pos(4*s.breite/5, s.höhe/2)
 	dx, dy := 0.866*(2*s.rk+1), 0.5*(2*s.rk+1)
 	p1 := pos(3*s.breite/5, s.höhe/2)
-	p5 := p1.Plus(pos(-dx, -dy))
+	//
+	p2 := p1.Plus(pos(-dx, -dy))
 	p3 := p1.Plus(pos(-dx, dy))
-
-	p2 := p1.Plus(pos(-2*dx, -2*dy))
+	//
+	p4 := p1.Plus(pos(-2*dx, -2*dy))
 	p9 := p1.Plus(pos(-2*dx, 0))
-	p8 := p1.Plus(pos(-2*dx, 2*dy))
-
-	p7 := p1.Plus(pos(-3*dx, -dy))
-	p6 := p1.Plus(pos(-3*dx, dy))
-	p4 := p1.Plus(pos(-4*dx, 0))
+	p5 := p1.Plus(pos(-2*dx, 2*dy))
+	//
+	p6 := p1.Plus(pos(-3*dx, -dy))
+	p7 := p1.Plus(pos(-3*dx, dy))
+	//
+	p8 := p1.Plus(pos(-4*dx, 0))
 	return []Kugel{NewKugel(pStoß, s.rk, 0),
 		NewKugel(p1, s.rk, 1),
 		NewKugel(p2, s.rk, 2),
@@ -130,14 +132,16 @@ func (s *spiel) kugelSatz9Ball() []Kugel {
 }
 
 // ######## die Lebens- und Pause-Methode ###########################################################
-
 func (s *spiel) Starte() {
 	if s.updater == nil {
 		s.updater = hilf.NewProzess("Spiel-Logik",
 			func() {
-				still := true
 				for _, k := range s.kugeln {
 					k.BewegenIn(s)
+				}
+				still := true
+				for _, k := range s.kugeln {
+					k.SetzeKollidiertZurück()
 					//prüfe Stillstand
 					if !k.GibV().IstNull() {
 						still = false
@@ -187,8 +191,8 @@ func (s *spiel) GibVStoß() hilf.Vec2 { return s.vStoß }
 func (s *spiel) SetzeVStoß(v hilf.Vec2) {
 	vabs := v.Betrag()
 	// Die "Geschwindigkeit/Stärke" ist auf 17 (m/s) begrenzt
-	if vabs > 17 {
-		s.vStoß = v.Mal(17 / vabs)
+	if vabs > 12 {
+		s.vStoß = v.Mal(12 / vabs)
 	} else {
 		s.vStoß = v
 	}

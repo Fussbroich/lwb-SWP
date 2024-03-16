@@ -8,6 +8,7 @@ import (
 type Kugel interface {
 	BewegenIn(MiniBillardSpiel)
 	SetzeKollidiertMit(Kugel)
+	SetzeKollidiertZurück()
 	IstEingelocht() bool
 	GibV() hilf.Vec2
 	SetzeV(hilf.Vec2)
@@ -47,10 +48,12 @@ func (k *kugel) BewegenIn(s MiniBillardSpiel) {
 	}
 	// prüfe Kollisionen
 	for _, k2 := range s.GibKugeln() {
-		if k != k2 {
+		if (k != k2) && !k2.IstEingelocht() {
 			k.prüfeKugelKollision(k2)
 		}
 	}
+	// setze kollidierte zurück
+	k.istKollMit = nil
 	// Prüfe Berührung mit der Bande.
 	k.prüfeBandenKollision(s.GibGröße())
 	// Bewege Kugel einen Tick weiter.
@@ -62,7 +65,6 @@ func (k *kugel) BewegenIn(s MiniBillardSpiel) {
 	} else {
 		k.v = hilf.V2(0, 0)
 	}
-	k.istKollMit = nil
 	// Prüfe, ob Kugel eingelocht wurde.
 	for _, t := range s.GibTaschen() {
 		if t.GibPos().Minus(k.GibPos()).Betrag() < t.GibRadius() {
@@ -114,38 +116,30 @@ func (k *kugel) prüfeBandenKollision(länge, breite float64) {
 
 func (k1 *kugel) prüfeKugelKollision(k2 Kugel) {
 	if k1.istKollMit == k2 {
+		//if (k1.wert == 7 && k2.GibWert() == 2) || (k1.wert == 2 && k2.GibWert() == 7) {
+		//	fmt.Printf("schon geprüft: %d->%d\n", k1.wert, k2.GibWert())
+		//}
 		return
-	}
-	if k1.IstEingelocht() || k2.IstEingelocht() {
-		return
-	}
-	// Kugeln überlappen!
-	//	/* TODO: was kann man tun, damit sich die Kugeln nicht gegenseitig einfangen?
-	distAkt := k2.GibPos().Minus(k1.pos).Betrag()
-	überlappt := distAkt < k1.r+k2.GibRadius()
-	if überlappt {
-		println("--> überlappen um", k1.r+k2.GibRadius()-distAkt)
-		/*
-			for dist.Betrag() <= (k1.r + k2.GibRadius()) {
-			// treibe Kugeln auseinander
-			}
-			return
-		*/
 	}
 
 	v1 := k1.GibV()
 	v2 := k2.GibV()
 	distPre := k2.GibPos().Plus(v2).Minus(k1.pos.Plus(v1))
+	distAkt := k2.GibPos().Minus(k1.pos)
+
 	// Kugeln werden sich gar nicht berühren.
 	if distPre.Betrag() > (k1.r + k2.GibRadius()) {
-		if überlappt {
-			println("--> Kugeln driften wieder auseinander.")
-		}
 		return
 	}
 
-	// Kugeln berühren sich
-	klaenge.BallHitsBallSound().Play()
+	// Kugeln überlappen!
+	//	TODO: darf nicht sein - darf zumindest nicht so bleiben
+	überlappen := distAkt.Betrag() < k1.r+k2.GibRadius()
+	//if überlappen {
+	//if (k1.wert == 7 && k2.GibWert() == 2) || (k1.wert == 2 && k2.GibWert() == 7) {
+	//	fmt.Printf("   --> überlappen um %04.1f\n", k1.r+k2.GibRadius()-distAkt.Betrag())
+	//}
+
 	// die Stoßnormale geht durch die Mittelpunkte der Kugeln
 	n12 := distPre.Normiert()
 	// Zerlege Geschwindigkeiten in eine parallele und eine orthogonale Komponente
@@ -153,17 +147,34 @@ func (k1 *kugel) prüfeKugelKollision(k2 Kugel) {
 	v1o := v1.Minus(v1p)
 	v2p := v2.ProjiziertAuf(n12)
 	v2o := v2.Minus(v2p)
-	// Tausche Geschwindigkeiten aus
-	u1 := v2p.Plus(v1o)
-	u2 := v1p.Plus(v2o)
+	// Tausche Geschwindigkeiten parallel zur Normalen aus
+	var u1, u2 hilf.Vec2
+	if überlappen {
+		// Überlappung lösen, sonst rattern die Kugeln zusammen
+		if distPre.Betrag() < distAkt.Betrag() {
+			u1 = v2p.Plus(v1o)
+			u2 = v1p.Plus(v2o)
+		} else {
+			u1 = v1
+			u2 = v2
+		}
+	} else {
+		klaenge.BallHitsBallSound().Play()
+		u1 = v2p.Plus(v1o)
+		u2 = v1p.Plus(v2o)
+	}
 	k1.SetzeV(u1)
-	k1.istKollMit = k2
 	k2.SetzeV(u2)
+	k1.istKollMit = k2
 	k2.SetzeKollidiertMit(k1)
 }
 
 func (k1 *kugel) SetzeKollidiertMit(k2 Kugel) {
 	k1.istKollMit = k2
+}
+
+func (k1 *kugel) SetzeKollidiertZurück() {
+	k1.istKollMit = nil
 }
 
 func (k *kugel) GibV() hilf.Vec2 {
