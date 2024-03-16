@@ -52,15 +52,21 @@ func (f *miniBSpielfeld) Zeichne() {
 		zielP := pK.Plus(f.spiel.GibVStoß().Normiert().Mal(float64(f.stopX - f.startX)))
 		gfx.Linie(f.startX+uint16(pK.X()), f.startY+uint16(pK.Y()), f.startX+uint16(zielP.X()), f.startY+uint16(zielP.Y()))
 		// zeichne die Stoßrichtung und -stärke bezogen auf Kugelradien
+		stärke := f.spiel.GibVStoß().Betrag()
+		var farbe Farbe
+		if stärke > 10 {
+			farbe = F(249, 73, 68)
+		} else {
+			farbe = F(250, 175, 50)
+		}
 		gfxBreiteLinie(f.startX, f.startY,
 			pK, pK.Plus(f.spiel.GibVStoß().Mal(kS.GibRadius())),
-			5, F(250, 175, 50))
+			5, farbe)
 		// Schreibe den Wert der Stärke daneben
 		gfx.Stiftfarbe(100, 100, 100)
 		schriftgröße := int(f.spiel.GibStoßkugel().GibRadius()*0.67 + 0.5)
 		gfx.SetzeFont(fp, schriftgröße)
 		pStärke := pK.Plus(f.spiel.GibVStoß().Mal(f.spiel.GibStoßkugel().GibRadius() / 2))
-		stärke := f.spiel.GibVStoß().Betrag()
 		gfx.SchreibeFont(uint16(pStärke.X()), uint16(pStärke.Y()), fmt.Sprintf("Stärke: %d", uint16(stärke+0.5)))
 	}
 	// debugging

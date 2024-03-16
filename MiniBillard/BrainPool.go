@@ -72,7 +72,7 @@ func main() {
 	renderer.Starte()
 	mausProzess.StarteRate(15) // gewünschte Abtastrate je Sekunde
 
-	// ######## frage Tastatur ab ###########################################
+	// ######## Tastatur-Loop######## ###########################################
 	var pause bool
 	for {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
