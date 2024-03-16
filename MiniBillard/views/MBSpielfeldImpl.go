@@ -44,19 +44,23 @@ func (f *miniBSpielfeld) Zeichne() {
 	for _, k := range f.spiel.GibAktiveKugeln() {
 		zeichneKugel(f.startX, f.startY, k.GibPos(), k)
 	}
-	// zeichne die Stoßstärke und -richtung bezogen auf Kugelradien
 	if f.spiel.IstStillstand() && !f.spiel.GibStoßkugel().IstEingelocht() {
 		kS := f.spiel.GibStoßkugel()
-		stärke := f.spiel.GibVStoß().Betrag()
-		gfxBreiteLinie(f.startX, f.startY,
-			kS.GibPos(), kS.GibPos().Plus(f.spiel.GibVStoß().Mal(kS.GibRadius())),
-			5, F(250, 175, 50))
-
-		schriftgröße := int(f.spiel.GibStoßkugel().GibRadius()*0.67 + 0.5)
+		pK := kS.GibPos()
+		// Zeichne Peillinie bis zum Rand
 		gfx.Stiftfarbe(100, 100, 100)
-		gfx.SetzeFont(fp, schriftgröße)
+		zielP := pK.Plus(f.spiel.GibVStoß().Normiert().Mal(float64(f.stopX - f.startX)))
+		gfx.Linie(f.startX+uint16(pK.X()), f.startY+uint16(pK.Y()), f.startX+uint16(zielP.X()), f.startY+uint16(zielP.Y()))
+		// zeichne die Stoßrichtung und -stärke bezogen auf Kugelradien
+		gfxBreiteLinie(f.startX, f.startY,
+			pK, pK.Plus(f.spiel.GibVStoß().Mal(kS.GibRadius())),
+			5, F(250, 175, 50))
 		// Schreibe den Wert der Stärke daneben
-		pStärke := kS.GibPos().Plus(f.spiel.GibVStoß().Mal(f.spiel.GibStoßkugel().GibRadius() / 2))
+		gfx.Stiftfarbe(100, 100, 100)
+		schriftgröße := int(f.spiel.GibStoßkugel().GibRadius()*0.67 + 0.5)
+		gfx.SetzeFont(fp, schriftgröße)
+		pStärke := pK.Plus(f.spiel.GibVStoß().Mal(f.spiel.GibStoßkugel().GibRadius() / 2))
+		stärke := f.spiel.GibVStoß().Betrag()
 		gfx.SchreibeFont(uint16(pStärke.X()), uint16(pStärke.Y()), fmt.Sprintf("Stärke: %d", uint16(stärke+0.5)))
 	}
 	// debugging

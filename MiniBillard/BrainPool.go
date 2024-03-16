@@ -82,6 +82,7 @@ func main() {
 			case 'd': // Debug
 				spiel.ZeitlupeAnAus()
 			case 'm': // Musik an
+				// einmal an bleibt an; stoppen geht mit gfx nicht.
 				musik.StarteLoop()
 				geräusche.StarteLoop()
 			case 'p': // Pause

@@ -186,8 +186,9 @@ func (s *spiel) GibVStoß() hilf.Vec2 { return s.vStoß }
 
 func (s *spiel) SetzeVStoß(v hilf.Vec2) {
 	vabs := v.Betrag()
-	if vabs > 10 {
-		s.vStoß = v.Mal(10 / vabs)
+	// Die "Geschwindigkeit/Stärke" ist auf 17 (m/s) begrenzt
+	if vabs > 17 {
+		s.vStoß = v.Mal(17 / vabs)
 	} else {
 		s.vStoß = v
 	}

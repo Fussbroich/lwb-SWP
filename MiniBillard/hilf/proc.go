@@ -94,7 +94,7 @@ func (proc *prozess) StarteRate(sollRate uint64) {
 		}
 	}
 	// starte Prozess
-	println("Starte", proc.name, "(max", sollRate, "Hz)")
+	println("Starte", proc.name, "(soll:", sollRate, "Hz)")
 	go runner()
 }
 
@@ -108,7 +108,5 @@ func (proc *prozess) Stoppe() {
 		return
 	}
 	proc.stop <- true
-	// TODO: Wird hier gewartet, bis der laufende Prozess wirklich fertig ist?
-	// Sonst kann man ihn gleich wieder starten und er würde doppelt laufen.
 	proc.stop = nil
 }
