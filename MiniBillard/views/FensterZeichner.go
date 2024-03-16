@@ -51,7 +51,7 @@ func (r *fzeichner) Starte() {
 			}
 			// zeige die frame rate
 			info := fmt.Sprintf("%04d fps", r.updater.GibRate()/10*10)
-			NewInfoText(r.breite/50, r.höhe/50, r.breite/8, r.höhe/10, info, F(249, 73, 68)).Zeichne()
+			NewInfoText(r.breite/50, r.höhe/50, r.breite/8, r.höhe/10, info, F(240, 255, 255)).Zeichne()
 			if r.overlay != nil {
 				r.overlay.Zeichne()
 			}

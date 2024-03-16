@@ -14,12 +14,12 @@ type miniBEingelochte struct {
 	hg, vg         Farbe
 }
 
-func NewMBEingelochteFenster(spiel welt.MiniBillardSpiel, startx, starty, stopx, stopy uint16, hg Farbe) *miniBEingelochte {
+func NewMBEingelochteFenster(spiel welt.MiniBillardSpiel, startx, starty, stopx, stopy uint16, hg, vg Farbe) *miniBEingelochte {
 	return &miniBEingelochte{
 		spiel:  spiel,
 		startX: startx, startY: starty,
 		stopX: stopx, stopY: stopy,
-		hg: hg, vg: Schwarz()}
+		hg: hg, vg: vg}
 }
 
 func (f *miniBEingelochte) GibStartkoordinaten() (uint16, uint16) { return f.startX, f.startY }
@@ -33,10 +33,12 @@ func (f *miniBEingelochte) Zeichne() {
 	höhe := f.stopY - f.startY
 	fp := fontDateipfad("LiberationMono-Bold.ttf")
 	// zeichne den Hintergrund
-	gfx.Stiftfarbe(80, 80, 80)
+	r, g, b := f.hg.RGB()
+	gfx.Stiftfarbe(r, g, b)
 	gfx.Vollrechteck(f.startX, f.startY, breite, höhe)
 	//schreibe Stößezahl
-	gfx.Stiftfarbe(180, 180, 180)
+	r, g, b = f.vg.RGB()
+	gfx.Stiftfarbe(r, g, b)
 	schriftgröße := höhe / 3
 	gfx.SetzeFont(fp, int(schriftgröße))
 	gfx.SchreibeFont(f.startX, f.startY,

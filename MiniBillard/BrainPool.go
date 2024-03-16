@@ -17,20 +17,20 @@ func main() {
 
 	// ######## lege App-Größe fest ###########################################
 	var b, h, rand uint16 = 960, 720, 30
-	var spiel welt.MiniBillardSpiel = welt.NewMiniPoolSpiel(900) // Spieltisch mit Breite
-	bS, hS := spiel.GibGröße()
+	var billard welt.MiniBillardSpiel = welt.NewMiniPoolSpiel(900) // Spieltisch mit Breite
+	bS, hS := billard.GibGröße()
 	xs, ys, xe, ye := rand, rand, rand+uint16(bS+0.5), uint16(hS+0.5)+rand
 
 	// ######## erzeuge App-Fenster ###########################################
 	var renderer views.FensterZeichner = views.NewFensterZeichner(
 		// Hintergrund
-		views.NewFenster(0, 0, b, h, views.F(139, 69, 19)),
+		views.NewFenster(0, 0, b, h, views.F(104, 76, 65)),
 		// Spieltisch
-		views.NewMBSpielfeldFenster(spiel, xs, ys, xe, ye),
+		views.NewMBSpielfeldFenster(billard, xs, ys, xe, ye),
 		// Anzeige der eingelochten
-		views.NewMBEingelochteFenster(spiel, xs, ye+2, xe, ye+(h-ye-2-rand)/2, views.F(80, 80, 80)),
+		views.NewMBEingelochteFenster(billard, xs, ye+rand, xe, ye-rand+(h-ye)/2, views.F(96, 108, 108), views.F(120, 135, 135)),
 		// Infos zum Spielverlauf
-		views.NewMBSpielinfoFenster(spiel, xs, ye+(h-ye-2-rand)/2, xe, h-rand, views.F(80, 80, 80), views.F(200, 200, 200)))
+		views.NewMBSpielinfoFenster(billard, xs, ye-rand+(h-ye-5)/2+5, xe, h-rand, views.F(96, 108, 108), views.F(120, 135, 135)))
 
 	println("Öffne Gfx-Fenster")
 	gfx.Fenster(b, h)
@@ -39,28 +39,27 @@ func main() {
 	// ######## definiere Maussteuerung #########################################
 	mausProzess := hilf.NewProzess("Maussteuerung",
 		func() {
+			if !billard.Läuft() {
+				return
+			}
 			// Die Maussteuerung ist nur aktiv, wenn alle Kugeln stehen.
-			if !spiel.Läuft() {
+			if !billard.IstStillstand() {
 				return
 			}
-			if !spiel.IstStillstand() {
-				return
-			}
-			if spiel.GibStoßkugel().IstEingelocht() {
+			if billard.GibStoßkugel().IstEingelocht() {
 				return
 			}
 			taste, _, mausX, mausY := gfx.MausLesen1()
 			vStoß := (hilf.V2(float64(mausX), float64(mausY))).
-				Minus(spiel.GibStoßkugel().GibPos()).
+				Minus(billard.GibStoßkugel().GibPos()).
 				Minus(hilf.V2(float64(rand), float64(rand)))
 			// die Stoßstärke wird in "Kugelradien" gemessen
-			spiel.SetzeVStoß(vStoß.Mal(1 / spiel.GibStoßkugel().GibRadius()))
+			billard.SetzeVStoß(vStoß.Mal(1 / billard.GibStoßkugel().GibRadius()))
 
 			// der Stoß wird ausgeführt
 			if taste == 1 {
-				spiel.Stoße()
+				billard.Stoße()
 			}
-
 		})
 
 	// ######## Musik ###########################################################
@@ -69,7 +68,7 @@ func main() {
 	geräusche := klaenge.BillardPubAmbienceSOUND()
 
 	// ######## starte Spiel-Prozesse ###########################################
-	spiel.Starte()
+	billard.Starte()
 	renderer.Starte()
 	mausProzess.StarteRate(15) // gewünschte Abtastrate je Sekunde
 
@@ -80,28 +79,28 @@ func main() {
 		if gedrückt == 1 {
 			switch taste {
 			case 'd': // Debug
-				spiel.ZeitlupeAnAus()
+				billard.ZeitlupeAnAus()
 			case 'm': // Musik an
 				// einmal an bleibt an; stoppen geht mit gfx nicht.
 				musik.StarteLoop()
 				geräusche.StarteLoop()
 			case 'p': // Pause
 				if !pause {
-					spiel.Stoppe()
+					billard.Stoppe()
 					renderer.ÜberblendeText("Pause", views.F(249, 73, 68))
 				} else {
 					renderer.ÜberblendeAus()
-					spiel.Starte()
+					billard.Starte()
 				}
 				pause = !pause
 			case 'n': // nochmal
-				spiel.StoßWiederholen() // setze Kugeln wie vor dem letzten Stoß
+				billard.StoßWiederholen() // setze Kugeln wie vor dem letzten Stoß
 			case 'r': // reset
-				spiel.Reset() // setze Kugeln wie vor dem Anstoß
+				billard.Reset() // setze Kugeln wie vor dem Anstoß
 			case 'q': // quit
 				geräusche.Stoppe()
 				musik.Stoppe()
-				spiel.Stoppe()
+				billard.Stoppe()
 				renderer.Stoppe()
 				mausProzess.Stoppe()
 				time.Sleep(100 * time.Millisecond)

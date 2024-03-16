@@ -195,6 +195,10 @@ func (s *spiel) SetzeVStoß(v hilf.Vec2) {
 }
 
 func (s *spiel) Stoße() {
+	if !s.stillstand {
+		println("Fehler: Stoßen während laufender Bewegungen ist verboten!")
+		return
+	}
 	// sichere den Zustand vor dem Stoß
 	s.vorigeKugeln = []Kugel{}
 	for _, k := range s.kugeln {
