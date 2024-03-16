@@ -24,13 +24,13 @@ func main() {
 	// ######## erzeuge App-Fenster ###########################################
 	var renderer views.FensterZeichner = views.NewFensterZeichner(
 		// Hintergrund
-		views.NewFenster(0, 0, b, h, views.F(104, 76, 65)),
-		// Spieltisch
-		views.NewMBSpielfeldFenster(billard, xs, ys, xe, ye),
+		views.NewFenster(0, 0, b, h, views.F(104, 76, 65), views.Schwarz(), 0),
+		// Spieltisch grün: views.F(60, 179, 113)
+		views.NewMBSpielfeldFenster(billard, xs, ys, xe, ye, views.F(100, 149, 237), views.Schwarz(), 0),
 		// Anzeige der eingelochten
-		views.NewMBEingelochteFenster(billard, xs, ye+rand, xe, ye-rand+(h-ye)/2, views.F(96, 108, 108), views.F(120, 135, 135)),
+		views.NewMBEingelochteFenster(billard, xs, ye+rand, xe, ye-rand+(h-ye)/2, views.F(96, 108, 108), views.F(120, 135, 135), 0),
 		// Infos zum Spielverlauf
-		views.NewMBSpielinfoFenster(billard, xs, ye-rand+(h-ye-5)/2+5, xe, h-rand, views.F(96, 108, 108), views.F(120, 135, 135)))
+		views.NewMBSpielinfoFenster(billard, xs, ye-rand+(h-ye-5)/2+5, xe, h-rand, views.F(96, 108, 108), views.F(120, 135, 135), 0))
 
 	println("Öffne Gfx-Fenster")
 	gfx.Fenster(b, h)
@@ -98,6 +98,7 @@ func main() {
 			case 'r': // reset
 				billard.Reset() // setze Kugeln wie vor dem Anstoß
 			case 'q': // quit
+				renderer.ÜberblendeText("Bye!", views.F(249, 73, 68))
 				geräusche.Stoppe()
 				musik.Stoppe()
 				billard.Stoppe()

@@ -15,13 +15,11 @@ type fenster struct {
 	startX, startY uint16
 	stopX, stopY   uint16
 	hg, vg         Farbe
+	trans          uint8
 }
 
-func NewFenster(startx, starty, stopx, stopy uint16, hg Farbe) *fenster {
-	return &fenster{
-		startX: startx, startY: starty,
-		stopX: stopx, stopY: stopy,
-		hg: hg, vg: Schwarz()}
+func NewFenster(startx, starty, stopx, stopy uint16, hg, vg Farbe, tr uint8) *fenster {
+	return &fenster{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, trans: tr}
 }
 
 func (f *fenster) GibStartkoordinaten() (uint16, uint16) { return f.startX, f.startY }
@@ -31,7 +29,9 @@ func (f *fenster) GibGröße() (uint16, uint16) { return f.stopX - f.startX, f.s
 func (f *fenster) Zeichne() {
 	r, g, b := f.hg.RGB()
 	gfx.Stiftfarbe(r, g, b)
+	gfx.Transparenz(f.trans)
 	gfx.Vollrechteck(f.startX, f.startY, f.stopX-f.startX, f.stopY-f.startY)
+	gfx.Transparenz(0)
 }
 
 // ######## Hilfsfunktionen #######################################################################

@@ -80,7 +80,7 @@ func (r *fzeichner) Überblende(f Fenster) {
 }
 
 func (r *fzeichner) ÜberblendeText(t string, c Farbe) {
-	r.overlay = NewTextOverlay(0, 0, r.breite, r.höhe, t, 180, Weiß(), c)
+	r.overlay = NewTextOverlay(0, 0, r.breite, r.höhe, t, Weiß(), c, 180)
 	if r.updaterLäuft {
 		r.Stoppe()
 		r.Starte()
