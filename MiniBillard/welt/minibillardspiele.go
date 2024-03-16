@@ -9,9 +9,8 @@ type MiniBillardSpiel interface {
 	Starte()
 	Stoppe()
 	Läuft() bool
-	PauseAnAus()
-	DebugAnAus()
-	IstDebugMode() bool
+	ZeitlupeAnAus()
+	IstZeitlupe() bool
 	Stoße()
 	StoßWiederholen()
 	Reset()
@@ -42,8 +41,6 @@ type spiel struct {
 	strafPunkte  uint8
 	stillstand   bool
 	updater      hilf.Prozess
-	spielLäuft   bool
-	debuggen     bool
 	zeitlupe     uint64
 }
 
@@ -135,22 +132,20 @@ func (s *spiel) kugelSatz9Ball() []Kugel {
 // ######## die Lebens- und Pause-Methode ###########################################################
 
 func (s *spiel) Starte() {
-	if s.spielLäuft {
-		return
-	}
-	s.updater = hilf.NewProzess("Spiel-Logik",
-		func() {
-			still := true
-			for _, k := range s.kugeln {
-				k.BewegenIn(s)
-				//prüfe Stillstand
-				if !k.GibV().IstNull() {
-					still = false
+	if s.updater == nil {
+		s.updater = hilf.NewProzess("Spiel-Logik",
+			func() {
+				still := true
+				for _, k := range s.kugeln {
+					k.BewegenIn(s)
+					//prüfe Stillstand
+					if !k.GibV().IstNull() {
+						still = false
+					}
 				}
-			}
-			s.stillstand = still
-		})
-	s.spielLäuft = true
+				s.stillstand = still
+			})
+	}
 	// ein konstanter Takt regelt die "Geschwindigkeit"
 	if s.zeitlupe > 1 {
 		s.updater.StarteRate(83 / uint64(s.zeitlupe))
@@ -161,53 +156,31 @@ func (s *spiel) Starte() {
 	}
 }
 
-func (s *spiel) Läuft() bool { return s.spielLäuft }
+func (s *spiel) Läuft() bool {
+	return s.updater != nil && s.updater.Läuft()
+}
 
 func (s *spiel) Stoppe() {
-	if !s.spielLäuft {
-		return
-	}
-	s.updater.Stoppe()
-	s.spielLäuft = false
-}
-
-func (s *spiel) PauseAnAus() {
-	if s.spielLäuft {
-		s.Stoppe()
-	} else {
-		s.Starte()
+	if s.updater != nil {
+		s.updater.Stoppe()
 	}
 }
 
-func (s *spiel) DebugAnAus() {
-	if s.debuggen {
+func (s *spiel) ZeitlupeAnAus() {
+	if s.zeitlupe > 1 {
 		s.zeitlupe = 1 // wieder normal schnell
 	} else {
 		s.zeitlupe = 10 // langsamer
 	}
-	s.debuggen = !s.debuggen
-	if s.spielLäuft {
-		s.PauseAnAus()
-		s.PauseAnAus()
+	if s.updater != nil && s.updater.Läuft() {
+		s.Stoppe()
+		s.Starte()
 	}
 }
 
-func (s *spiel) IstDebugMode() bool {
-	return s.debuggen
-}
+func (s *spiel) IstZeitlupe() bool { return s.zeitlupe > 1 }
 
-// ######## die übrigen Methoden ####################################################
-
-func (s *spiel) Reset() {
-	s.kugeln = []Kugel{}
-	for _, k := range s.origKugeln {
-		s.kugeln = append(s.kugeln, k.GibKopie()) // Kopien stehen still
-	}
-	s.stoßkugel = s.kugeln[0]
-	s.stößeBisher = 0
-	s.strafPunkte = 0
-	s.stillstand = true
-}
+// ######## die Methoden zum Stoßen #################################################
 
 func (s *spiel) GibVStoß() hilf.Vec2 { return s.vStoß }
 
@@ -218,20 +191,6 @@ func (s *spiel) SetzeVStoß(v hilf.Vec2) {
 	} else {
 		s.vStoß = v
 	}
-}
-
-func (s *spiel) StoßWiederholen() {
-	if s.vorigeKugeln == nil {
-		return
-	}
-	// stelle den Zustand vor dem letzten Stoß wieder her
-	s.kugeln = []Kugel{}
-	for _, k := range s.vorigeKugeln {
-		s.kugeln = append(s.kugeln, k.GibKopie()) // Kopien stehen still
-	}
-	s.stoßkugel = s.kugeln[0]
-	s.strafPunkte++
-	s.stillstand = true
 }
 
 func (s *spiel) Stoße() {
@@ -248,6 +207,33 @@ func (s *spiel) Stoße() {
 		s.stößeBisher++
 		s.stillstand = false
 	}
+}
+
+// ######## die übrigen Methoden ####################################################
+
+func (s *spiel) Reset() {
+	s.kugeln = []Kugel{}
+	for _, k := range s.origKugeln {
+		s.kugeln = append(s.kugeln, k.GibKopie()) // Kopien stehen still
+	}
+	s.stoßkugel = s.kugeln[0]
+	s.stößeBisher = 0
+	s.strafPunkte = 0
+	s.stillstand = true
+}
+
+func (s *spiel) StoßWiederholen() {
+	if s.vorigeKugeln == nil {
+		return
+	}
+	// stelle den Zustand vor dem letzten Stoß wieder her
+	s.kugeln = []Kugel{}
+	for _, k := range s.vorigeKugeln {
+		s.kugeln = append(s.kugeln, k.GibKopie()) // Kopien stehen still
+	}
+	s.stoßkugel = s.kugeln[0]
+	s.strafPunkte++
+	s.stillstand = true
 }
 
 func (s *spiel) GibKugeln() []Kugel { return s.kugeln }

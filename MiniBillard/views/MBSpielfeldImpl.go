@@ -59,8 +59,9 @@ func (f *miniBSpielfeld) Zeichne() {
 		pStärke := kS.GibPos().Plus(f.spiel.GibVStoß().Mal(f.spiel.GibStoßkugel().GibRadius() / 2))
 		gfx.SchreibeFont(uint16(pStärke.X()), uint16(pStärke.Y()), fmt.Sprintf("Stärke: %d", uint16(stärke+0.5)))
 	}
-	// debugging: zeichne Geschwindigkeiten
-	if f.spiel.IstDebugMode() {
+	// debugging
+	if f.spiel.IstZeitlupe() {
+		// zeichne Geschwindigkeiten
 		for _, k := range f.spiel.GibAktiveKugeln() {
 			if !k.GibV().IstNull() {
 				gfxBreiteLinie(f.startX, f.startY,
@@ -68,5 +69,8 @@ func (f *miniBSpielfeld) Zeichne() {
 					2, F(250, 175, 50))
 			}
 		}
+		gfx.Stiftfarbe(100, 100, 100)
+		gfx.SetzeFont(fp, int(f.spiel.GibStoßkugel().GibRadius()+0.5))
+		gfx.SchreibeFont(4*(f.stopX-f.startX)/5, f.startY+5, "Zeitlupe")
 	}
 }

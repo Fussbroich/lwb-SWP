@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"../hilf"
 )
 
 type Klang interface {
@@ -15,53 +17,29 @@ type Klang interface {
 }
 
 type klang struct {
-	titel    string
-	dauer    time.Duration
-	autor    string
-	filepath string
-	play     func()
-	stop     chan bool
+	titel  string
+	dauer  time.Duration
+	autor  string
+	player hilf.Prozess
+	play   func()
 }
 
 func (s *klang) Play() {
-	s.play()
+	go s.play()
 }
 
 func (s *klang) StarteLoop() {
-	if s.stop != nil {
-		return
+	if s.player == nil {
+		s.player = hilf.NewProzess(s.titel, s.play)
 	}
-	s.stop = make(chan bool)
-	takt := time.NewTicker(s.dauer)
-	println("Starte Soundloop \"", s.titel, "\"")
-	s.play()
-	player := func() {
-		defer func() { takt.Stop(); println("Stoppe Soundloop \"", s.titel, "\"") }()
-		for {
-			select {
-			case <-s.stop:
-				return
-			case <-takt.C:
-				s.play()
-			}
-		}
-	}
-	// starte Prozess
-	go player()
+	s.player.StarteLoop(s.dauer)
 }
 
 func (s *klang) Stoppe() {
-	s.stop <- true
-	s.stop = nil
+	if s.player != nil {
+		s.player.Stoppe()
+	}
 }
-
-// gfx.SetzeKlangparameter(rate uint32, aufloesung, kanaele, signal uint8, p float64)
-//
-//	rate      ist die Abtastrate, z.B. 11025, 22050 oder 44100.
-//	auflösung ist 1 für 8 Bit oder 2 für 16 Bit.
-//	kanaele   ist 1 für mono oder 2 für stereo.
-//	signal    gibt die Signalform an: 0: Sinus, 1: Rechteck, 2:Dreieck, 3: Sägezahn
-//	pulsweite (für Rechtecksignale) gibt den Prozentsatz (0<=p<=1) für den HIGH-Teil an.
 
 func assetDateipfad(filename string) (fp string) {
 	klaengeDir := "MiniBillard/klaenge"
@@ -72,14 +50,19 @@ func assetDateipfad(filename string) (fp string) {
 	}
 	wdir := filepath.Dir(wd)
 	fp = filepath.Join(wdir, klaengeDir, filename)
-	//	println("wdir:", wdir)
-	//	println("klaengeDir:", klaengeDir)
-	//	println("filename", filename)
 	if _, err := os.Stat(fp); errors.Is(err, os.ErrNotExist) {
 		panic(err)
 	}
 	return
 }
+
+// gfx.SetzeKlangparameter(rate uint32, aufloesung, kanaele, signal uint8, p float64)
+//
+//	rate      ist die Abtastrate, z.B. 11025, 22050 oder 44100.
+//	auflösung ist 1 für 8 Bit oder 2 für 16 Bit.
+//	kanaele   ist 1 für mono oder 2 für stereo.
+//	signal    gibt die Signalform an: 0: Sinus, 1: Rechteck, 2:Dreieck, 3: Sägezahn
+//	pulsweite (für Rechtecksignale) gibt den Prozentsatz (0<=p<=1) für den HIGH-Teil an.
 
 func MassivePulseSound() *klang {
 	fp := assetDateipfad("massivePulseLoop.wav")

@@ -72,8 +72,6 @@ func main() {
 	spiel.Starte()
 	renderer.Starte()
 	mausProzess.StarteRate(15) // gewünschte Abtastrate je Sekunde
-	musik.StarteLoop()         // spiele Musik in Endlosschleife
-	geräusche.StarteLoop()
 
 	// ######## frage Tastatur ab ###########################################
 	var pause bool
@@ -82,14 +80,17 @@ func main() {
 		if gedrückt == 1 {
 			switch taste {
 			case 'd': // Debug
-				spiel.DebugAnAus()
+				spiel.ZeitlupeAnAus()
+			case 'm': // Musik an
+				musik.StarteLoop()
+				geräusche.StarteLoop()
 			case 'p': // Pause
 				if !pause {
-					spiel.PauseAnAus()
+					spiel.Stoppe()
 					renderer.ÜberblendeText("Pause", views.F(249, 73, 68))
 				} else {
 					renderer.ÜberblendeAus()
-					spiel.PauseAnAus()
+					spiel.Starte()
 				}
 				pause = !pause
 			case 'n': // nochmal

@@ -7,6 +7,7 @@ type Prozess interface {
 	StarteRate(uint64)
 	GibRate() uint64
 	Stoppe()
+	Läuft() bool
 }
 
 type prozess struct {
@@ -15,7 +16,6 @@ type prozess struct {
 	rate        uint64 // Hertz
 	verzögerung time.Duration
 	stop        chan bool
-	läuft       bool // eigentlich überflüssig
 }
 
 func NewProzess(name string, f func()) *prozess {
@@ -24,10 +24,12 @@ func NewProzess(name string, f func()) *prozess {
 		frun: f}
 }
 
+func (proc *prozess) Läuft() bool { return proc.stop != nil }
+
 func (proc *prozess) StarteLoop(tick time.Duration) {
 	proc.rate = 1e9 / uint64(tick.Nanoseconds())
-	if proc.läuft {
-		println("Fehler: Prozess", proc.name, "läuft bereits.")
+	if proc.stop != nil {
+		println("Fehler:", proc.name, "läuft bereits.")
 		return
 	}
 	println("Starte Takt für", proc.name)
@@ -46,13 +48,12 @@ func (proc *prozess) StarteLoop(tick time.Duration) {
 		}
 	}
 	// starte Prozess
-	proc.läuft = true
 	go runner()
 }
 
 func (proc *prozess) StarteRate(sollRate uint64) {
-	if proc.läuft {
-		println("Fehler: Prozess", proc.name, "läuft bereits.")
+	if proc.stop != nil {
+		println("Fehler:", proc.name, "läuft bereits.")
 		return
 	}
 	proc.rate = sollRate
@@ -94,7 +95,6 @@ func (proc *prozess) StarteRate(sollRate uint64) {
 	}
 	// starte Prozess
 	println("Starte", proc.name, "(max", sollRate, "Hz)")
-	proc.läuft = true
 	go runner()
 }
 
@@ -103,11 +103,12 @@ func (proc *prozess) GibRate() uint64 {
 }
 
 func (proc *prozess) Stoppe() {
-	if !proc.läuft {
-		println("Fehler: Prozess", proc.name, "steht bereits.")
+	if proc.stop == nil {
+		println("Fehler:", proc.name, "läuft gar nicht.")
 		return
 	}
 	proc.stop <- true
+	// TODO: Wird hier gewartet, bis der laufende Prozess wirklich fertig ist?
+	// Sonst kann man ihn gleich wieder starten und er würde doppelt laufen.
 	proc.stop = nil
-	proc.läuft = false
 }
