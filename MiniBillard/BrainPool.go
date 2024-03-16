@@ -109,7 +109,7 @@ func main() {
 				if gfx.FensterOffen() {
 					gfx.FensterAus()
 				}
-				println("MiniBillard wird beendet!")
+				println("BrainPool wird beendet!")
 				return
 			}
 		}
