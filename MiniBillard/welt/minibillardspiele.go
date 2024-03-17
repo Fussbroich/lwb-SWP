@@ -22,7 +22,7 @@ type MiniBillardSpiel interface {
 	GibStoßkugel() Kugel
 	GibVStoß() hilf.Vec2
 	SetzeVStoß(hilf.Vec2)
-	GibStößeBisher() uint8
+	GibTreffer() uint8
 	GibStrafpunkte() uint8
 	GibGröße() (float64, float64)
 }
@@ -44,11 +44,11 @@ type spiel struct {
 	zeitlupe     uint64
 }
 
-func NewMiniPoolSpiel(br uint16) *spiel {
+func NewMiniPoolSpiel(br, hö, ra uint16) *spiel {
 	// Pool-Tisch:  2540 mm × 1270 mm (2:1)
 	// Pool-Kugeln: 57,2 mm
-	var breite, höhe float64 = float64(br), float64(br) / 2
-	sp := &spiel{breite: breite, höhe: höhe, rk: breite * 57.2 / 2540}
+	var breite, höhe, rK float64 = float64(br), float64(hö), float64(ra)
+	sp := &spiel{breite: breite, höhe: höhe, rk: rK}
 	rt, rtm := 1.9*sp.rk, 1.5*sp.rk
 	sp.setzeTaschen(
 		NewTasche(pos(0, 0), rt),
@@ -277,6 +277,13 @@ func (s *spiel) GibTaschen() []Tasche { return s.taschen }
 
 func (s *spiel) IstStillstand() bool { return s.stillstand }
 
-func (s *spiel) GibStößeBisher() uint8 { return s.stößeBisher }
+func (s *spiel) GibTreffer() (treffer uint8) {
+	for _, k := range s.kugeln {
+		if !(k == s.stoßkugel) && k.IstEingelocht() {
+			treffer++
+		}
+	}
+	return
+}
 
 func (s *spiel) GibStrafpunkte() uint8 { return s.strafPunkte }

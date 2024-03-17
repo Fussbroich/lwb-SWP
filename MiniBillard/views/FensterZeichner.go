@@ -3,7 +3,6 @@ package views
 import (
 	"fmt"
 	"gfx"
-	"math"
 
 	"../hilf"
 )
@@ -27,12 +26,7 @@ type fzeichner struct {
 }
 
 func NewFensterZeichner(fenster ...Fenster) *fzeichner {
-	var bMax, hMax uint16
-	for _, f := range fenster {
-		b, h := f.GibGröße()
-		bMax = uint16(math.Max(float64(bMax), float64(b)))
-		hMax = uint16(math.Max(float64(hMax), float64(h)))
-	}
+	bMax, hMax := fenster[0].GibGröße()
 	return &fzeichner{fenster: fenster, breite: bMax, höhe: hMax, rate: 80}
 }
 

@@ -16,23 +16,36 @@ func main() {
 	println("Starte BrainPool")
 
 	// ######## lege App-Größe fest ###########################################
-	var b, h, rand uint16 = 960, 720, 30
-	var billard welt.MiniBillardSpiel = welt.NewMiniPoolSpiel(900) // Spieltisch mit Breite
-	bS, hS := billard.GibGröße()
-	xs, ys, xe, ye := rand, rand, rand+uint16(bS+0.5), uint16(hS+0.5)+rand
+	var g uint16 = 35 // Rastermaß
+	xs, ys, xe, ye := 4*g, 8*g, 28*g, 20*g
+	g3 := g + g/3
+
+	println("Öffne Gfx-Fenster")
+	gfx.Fenster(32*g, 24*g) //Fenstergröße
+	gfx.Fenstertitel("BrainPool - Das MiniBillard für Schlaue.")
+
+	// realer Tisch: 2540 mm x 1270 mm, Kugelradius: 57.2 mm
+	var bS, hS uint16 = 24 * g, 12 * g        // Breite, Höhe des "Spielfelds"
+	ra := uint16(0.5 + float64(bS)*57.2/2540) // Zeichenradius der Kugeln
+	var billard welt.MiniBillardSpiel = welt.NewMiniPoolSpiel(bS, hS, ra)
 
 	// ######## erzeuge App-Fenster ###########################################
 	var renderer views.FensterZeichner = views.NewFensterZeichner(
-		// Hintergrund
-		views.NewFenster(0, 0, b, h, views.F(104, 76, 65), views.Schwarz(), 0),
-		// Anzeige der eingelochten
-		views.NewMBEingelochteFenster(billard, xs, ye+rand, xe, ye-rand+(h-ye)/2, views.F(96, 108, 108), views.F(120, 135, 135), 0),
-		// Spieltisch grün: views.F(60, 179, 113)
-		views.NewMBSpielfeldFenster(billard, xs, ys, xe, ye, views.F(100, 149, 237), views.Schwarz(), 0))
-
-	println("Öffne Gfx-Fenster")
-	gfx.Fenster(b, h)
-	gfx.Fenstertitel("BrainPool - Das MiniBillard für Schlaue.")
+		// Hintergrund: Hallenboden: F(218, 218, 218), Kneipenboden: views.F(104, 76, 65)
+		views.NewFenster(0, 0, 32*g, 24*g,
+			views.F(218, 218, 218), views.Schwarz(), 0, 0),
+		// Anzeige der Punkte
+		views.NewMBPunkteAnzeiger(billard, xs-g3, 2*g, 18*g, 5*g,
+			views.F(96, 108, 108), views.F(120, 135, 135), 255),
+		// Anzeige Countdown
+		views.NewFenster(20*g, 2*g, xe, 4*g,
+			views.F(96, 108, 108), views.Schwarz(), 200, 0),
+		// Bande
+		views.NewFenster(xs-g3, ys-g3, xe+g3, ye+g3,
+			views.F(96, 108, 108), views.Schwarz(), 0, g3),
+		// Spielfeld
+		views.NewMBSpieltischFenster(billard, xs, ys, xe, ye,
+			views.F(91, 184, 207), views.Schwarz(), 0, 0))
 
 	// ######## definiere Maussteuerung #########################################
 	mausProzess := hilf.NewProzess("Maussteuerung",
@@ -50,7 +63,7 @@ func main() {
 			taste, _, mausX, mausY := gfx.MausLesen1()
 			vStoß := (hilf.V2(float64(mausX), float64(mausY))).
 				Minus(billard.GibStoßkugel().GibPos()).
-				Minus(hilf.V2(float64(rand), float64(rand)))
+				Minus(hilf.V2(float64(xs), float64(ys)))
 			// die Stoßstärke wird in "Kugelradien" gemessen
 			billard.SetzeVStoß(vStoß.Mal(1 / billard.GibStoßkugel().GibRadius()))
 

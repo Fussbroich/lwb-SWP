@@ -13,7 +13,7 @@ type miniBEingelochte struct {
 }
 
 func NewMBEingelochteFenster(billard welt.MiniBillardSpiel, startx, starty, stopx, stopy uint16, hg, vg Farbe, tr uint8) *miniBEingelochte {
-	fenster := fenster{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, trans: tr}
+	fenster := fenster{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr}
 	return &miniBEingelochte{billard: billard, fenster: fenster}
 }
 

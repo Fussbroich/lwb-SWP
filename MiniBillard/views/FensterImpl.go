@@ -15,11 +15,12 @@ type fenster struct {
 	startX, startY uint16
 	stopX, stopY   uint16
 	hg, vg         Farbe
-	trans          uint8
+	transparenz    uint8
+	eckradius      uint16
 }
 
-func NewFenster(startx, starty, stopx, stopy uint16, hg, vg Farbe, tr uint8) *fenster {
-	return &fenster{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, trans: tr}
+func NewFenster(startx, starty, stopx, stopy uint16, hg, vg Farbe, tr uint8, ra uint16) *fenster {
+	return &fenster{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr, eckradius: ra}
 }
 
 func (f *fenster) GibStartkoordinaten() (uint16, uint16) { return f.startX, f.startY }
@@ -29,16 +30,34 @@ func (f *fenster) GibGröße() (uint16, uint16) { return f.stopX - f.startX, f.s
 func (f *fenster) ZeichneLayout() {
 	r, g, b := f.hg.RGB()
 	gfx.Stiftfarbe(r, g, b)
-	gfx.Transparenz(f.trans)
-	gfx.Vollrechteck(f.startX, f.startY, f.stopX-f.startX, f.stopY-f.startY)
+	gfx.Transparenz(f.transparenz)
+	if f.eckradius > 0 {
+		gfx.Vollrechteck(f.startX+f.eckradius, f.startY, f.stopX-f.startX-2*f.eckradius, f.stopY-f.startY)
+		gfx.Vollrechteck(f.startX, f.startY+f.eckradius, f.stopX-f.startX, f.stopY-f.startY-2*f.eckradius)
+		gfx.Vollkreis(f.startX+f.eckradius, f.startY+f.eckradius, f.eckradius)
+		gfx.Vollkreis(f.startX+f.eckradius, f.stopY-f.eckradius, f.eckradius)
+		gfx.Vollkreis(f.stopX-f.eckradius, f.stopY-f.eckradius, f.eckradius)
+		gfx.Vollkreis(f.stopX-f.eckradius, f.startY+f.eckradius, f.eckradius)
+	} else {
+		gfx.Vollrechteck(f.startX, f.startY, f.stopX-f.startX, f.stopY-f.startY)
+	}
 	gfx.Transparenz(0)
 }
 
 func (f *fenster) Zeichne() {
 	r, g, b := f.hg.RGB()
 	gfx.Stiftfarbe(r, g, b)
-	gfx.Transparenz(f.trans)
-	gfx.Vollrechteck(f.startX, f.startY, f.stopX-f.startX, f.stopY-f.startY)
+	gfx.Transparenz(f.transparenz)
+	if f.eckradius > 0 {
+		gfx.Vollrechteck(f.startX+f.eckradius, f.startY, f.stopX-f.startX-2*f.eckradius, f.stopY-f.startY)
+		gfx.Vollrechteck(f.startX, f.startY+f.eckradius, f.stopX-f.startX, f.stopY-f.startY-2*f.eckradius)
+		gfx.Vollkreis(f.startX+f.eckradius, f.startY+f.eckradius, f.eckradius)
+		gfx.Vollkreis(f.startX+f.eckradius, f.stopY-f.eckradius, f.eckradius)
+		gfx.Vollkreis(f.stopX-f.eckradius, f.stopY-f.eckradius, f.eckradius)
+		gfx.Vollkreis(f.stopX-f.eckradius, f.startY+f.eckradius, f.eckradius)
+	} else {
+		gfx.Vollrechteck(f.startX, f.startY, f.stopX-f.startX, f.stopY-f.startY)
+	}
 	gfx.Transparenz(0)
 }
 
@@ -168,8 +187,8 @@ func gfxBreiteLinie(startX, startY uint16, pV, pN hilf.Vec2, breite float64, c F
 	gfxVollDreieck(startX, startY, pA, pC, pD, c)
 	cr, cg, cb := c.RGB()
 	gfx.Stiftfarbe(cr, cg, cb)
-	gfx.Vollkreis(
-		startX+uint16(0.5+pV.X()), startY+uint16(0.5+pV.Y()), uint16(0.5+breite/2))
-	gfx.Vollkreis(
-		startX+uint16(0.5+pN.X()), startX+uint16(0.5+pN.Y()), uint16(0.5+breite/2))
+	//gfx.Vollkreis(
+	//	startX+uint16(0.5+pV.X()), startY+uint16(0.5+pV.Y()), uint16(0.5+breite/2))
+	//gfx.Vollkreis(
+	//	startX+uint16(0.5+pN.X()), startX+uint16(0.5+pN.Y()), uint16(0.5+breite/2))
 }

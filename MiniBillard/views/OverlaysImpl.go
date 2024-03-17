@@ -13,7 +13,7 @@ type infotext struct {
 }
 
 func NewTextOverlay(startx, starty, stopx, stopy uint16, t string, hg, vg Farbe, tr uint8) *text_overlay {
-	fenster := fenster{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, trans: tr}
+	fenster := fenster{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr}
 	return &text_overlay{text: t, fenster: fenster}
 }
 
@@ -29,7 +29,7 @@ func (f *text_overlay) Zeichne() {
 
 func NewInfoText(startx, starty, stopx, stopy uint16, t string, vg Farbe) *infotext {
 	fenster := fenster{startX: startx, startY: starty, stopX: stopx, stopY: stopy,
-		hg: Weiß(), vg: vg, trans: 255}
+		hg: Weiß(), vg: vg, transparenz: 255}
 	return &infotext{text: t, fenster: fenster}
 }
 
