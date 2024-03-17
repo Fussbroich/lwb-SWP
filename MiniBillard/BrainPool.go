@@ -17,11 +17,12 @@ func main() {
 
 	// ######## lege App-Größe fest ###########################################
 	var g uint16 = 35 // Rastermaß
-	xs, ys, xe, ye := 4*g, 8*g, 28*g, 20*g
+	xs, ys, xe, ye := 4*g, 6*g, 28*g, 18*g
+	b, h := 32*g, 22*g
 	g3 := g + g/3
 
 	println("Öffne Gfx-Fenster")
-	gfx.Fenster(32*g, 24*g) //Fenstergröße
+	gfx.Fenster(b, h) //Fenstergröße
 	gfx.Fenstertitel("BrainPool - Das MiniBillard für Schlaue.")
 
 	// realer Tisch: 2540 mm x 1270 mm, Kugelradius: 57.2 mm
@@ -32,13 +33,13 @@ func main() {
 	// ######## erzeuge App-Fenster ###########################################
 	var renderer views.FensterZeichner = views.NewFensterZeichner(
 		// Hintergrund: Hallenboden: F(218, 218, 218), Kneipenboden: views.F(104, 76, 65)
-		views.NewFenster(0, 0, 32*g, 24*g,
+		views.NewFenster(0, 0, b, h,
 			views.F(218, 218, 218), views.Schwarz(), 0, 0),
 		// Anzeige der Punkte
-		views.NewMBPunkteAnzeiger(billard, xs-g3, 2*g, 18*g, 5*g,
-			views.F(96, 108, 108), views.F(120, 135, 135), 255),
+		views.NewMBPunkteAnzeiger(billard, xs-g3, 1*g, 18*g, 3*g,
+			views.F(218, 218, 218), views.F(120, 135, 135), 255),
 		// Anzeige Countdown
-		views.NewFenster(20*g, 2*g, xe, 4*g,
+		views.NewFenster(20*g, 2*g, xe, 3*g,
 			views.F(96, 108, 108), views.Schwarz(), 200, 0),
 		// Bande
 		views.NewFenster(xs-g3, ys-g3, xe+g3, ye+g3,

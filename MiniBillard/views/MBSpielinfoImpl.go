@@ -20,17 +20,43 @@ func NewMBPunkteAnzeiger(billard welt.MiniBillardSpiel, startx, starty, stopx, s
 func (f *miniBSpielinfo) Zeichne() {
 	f.fenster.Zeichne()
 	fp := fontDateipfad("LiberationMono-Bold.ttf")
-	cr, cg, cb := f.vg.RGB()
-	gfx.Stiftfarbe(cr, cg, cb)
-	var x, y uint16
+	vr, vg, vb := f.vg.RGB()
+	hr, hg, hb := f.hg.RGB()
+	breite, höhe := f.GibGröße()
+	ra := höhe / 2
+
+	var zeilenhöhe uint16
 	var schriftgröße int
 
+	// Display rechts zeigt Treffer und Strafen an
+	tr, st := f.billard.GibTreffer(), f.billard.GibStrafpunkte()
+	zeilenhöhe = höhe / 2
+	schriftgröße = int(zeilenhöhe) * 3 / 5
+	d := (zeilenhöhe - uint16(schriftgröße)) / 2
+
+	gfx.Stiftfarbe(hr, hg, hb)
+	gfx.Vollkreis(f.startX+ra, f.startY+ra, ra)
+	gfx.Vollrechteck(f.startX+ra, f.startY, breite-ra, höhe)
+	gfx.Stiftfarbe(vr, vg, vb)
+	gfx.SetzeFont(fp, schriftgröße)
+	gfx.SchreibeFont(f.startX+2*ra+d, f.startY+d, "Treffer")
+	gfx.SchreibeFont(f.startX+2*ra+d, f.startY+zeilenhöhe+d, "Fouls")
+
+	// zeichne Fortschritts-Balken
+	var bBalken, xSBalken uint16 = breite - 2*ra - 5*uint16(schriftgröße), f.startX + 2*ra + 5*uint16(schriftgröße)
+	var anzKugeln uint8 = uint8(len(f.billard.GibKugeln()) - 1)
+
+	gfx.Stiftfarbe(34, 88, 175)
+	gfx.Vollrechteck(xSBalken, f.startY+1, bBalken*uint16(tr)/uint16(anzKugeln), zeilenhöhe-2)
+	gfx.Stiftfarbe(255, 201, 78)
+	gfx.Vollrechteck(xSBalken, f.startY+zeilenhöhe+1, bBalken*uint16(st)/uint16(anzKugeln), zeilenhöhe-2)
+
 	// Kreis links zeigt Treffer an
-	ra := (f.stopY - f.startY) / 2
 	schriftgröße = int(ra * 4 / 3)
+	gfx.Stiftfarbe(vr, vg, vb)
 	gfx.Kreis(ra+f.startX, ra+f.startY, ra)
 	gfx.SetzeFont(fp, schriftgröße)
-	tr := f.billard.GibTreffer()
+	var x, y uint16
 	if tr > 9 {
 		x = ra + f.startX - uint16(schriftgröße)*2/5
 		y = ra + f.startY - uint16(schriftgröße)/2
@@ -39,19 +65,4 @@ func (f *miniBSpielinfo) Zeichne() {
 		y = ra + f.startY - uint16(schriftgröße)/2
 	}
 	gfx.SchreibeFont(x, y, fmt.Sprintf("%d", tr))
-
-	// Display rechts zeigt Treffer und Strafen an
-	//st := f.billard.GibStrafpunkte()
-	//fp = fontDateipfad("LiberationMono-Regular.ttf")
-	x, y = f.startX+2*ra, f.startY
-	zeilenhöhe := (f.stopY - f.startY) / 2
-	d := zeilenhöhe / 10
-	schriftgröße = int(zeilenhöhe) * 3 / 5
-	gfx.Rechteck(x, y, 6*uint16(schriftgröße), 2*zeilenhöhe)
-	gfx.SetzeFont(fp, schriftgröße)
-	gfx.SchreibeFont(x+d, y+d, "Treffer")
-	gfx.SchreibeFont(x+d, y+zeilenhöhe+d, "Fouls")
-
-	//TODO
-
 }
