@@ -5,6 +5,7 @@ import "time"
 type Prozess interface {
 	StarteLoop(time.Duration)
 	StarteRate(uint64)
+	Starte()
 	GibRate() uint64
 	Stoppe()
 	Läuft() bool
@@ -67,7 +68,7 @@ func (proc *prozess) StarteRate(sollRate uint64) {
 		var läufe float64
 		for {
 			laufzeit = time.Since(startzeit)
-			if laufzeit >= time.Second/50 { // Rate 50 mal je Sekunde anpassen
+			if laufzeit >= time.Second/20 { // Rate alle 20stel Sekunde anpassen
 				proc.rate = uint64(läufe / laufzeit.Seconds()) // Rate ist Läufe je Sekunde
 				if proc.rate < minRate {
 					if proc.verzögerung > 0 {
@@ -95,6 +96,41 @@ func (proc *prozess) StarteRate(sollRate uint64) {
 	}
 	// starte Prozess
 	println("Starte", proc.name, "(soll:", sollRate, "Hz)")
+	go runner()
+}
+
+func (proc *prozess) Starte() {
+	if proc.stop != nil {
+		println("Fehler:", proc.name, "läuft bereits.")
+		return
+	}
+	proc.rate = 1e9
+	proc.verzögerung = 0
+	proc.stop = make(chan bool)
+	runner := func() {
+		var startzeit time.Time = time.Now()
+		var laufzeit time.Duration
+		var läufe float64
+		for {
+			laufzeit = time.Since(startzeit)
+			if laufzeit >= time.Second/20 { // Rate alle 20stel Sekunde messen
+				proc.rate = uint64(läufe / laufzeit.Seconds()) // Rate ist Läufe je Sekunde
+				println("Maus", proc.rate)
+				startzeit = time.Now()
+				läufe = 0
+			}
+			select {
+			case <-proc.stop:
+				println("Stoppe", proc.name)
+				return
+			default:
+				proc.frun()
+				läufe++
+			}
+		}
+	}
+	// starte Prozess
+	println("Starte", proc.name)
 	go runner()
 }
 

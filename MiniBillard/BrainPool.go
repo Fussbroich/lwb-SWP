@@ -55,7 +55,8 @@ func main() {
 	var bS, hS uint16 = 24 * g, 12 * g        // Breite, Höhe des "Spielfelds"
 	ra := uint16(0.5 + float64(bS)*57.2/2540) // Zeichenradius der Kugeln
 	var billard welt.MiniBillardSpiel = welt.NewMiniPoolSpiel(bS, hS, ra)
-
+	var quiz welt.Quiz = welt.NewAlphabetQuiz()
+	var quizfenster views.Fenster
 	// ######## erzeuge App-Fenster ###########################################
 	// H: Hallenboden: F(218, 218, 218), Kneipenboden: views.F(104, 76, 65)
 	hintergrund := views.NewFenster(0, 0, b, h,
@@ -101,7 +102,9 @@ func main() {
 				billard.Reset()
 				billard.SetzeRestzeit(standardzeit)
 			}
-			if billard.Läuft() && billard.IstStillstand() && !billard.GibStoßkugel().IstEingelocht() {
+			if quizfenster != nil && inFenster(mausX, mausY, quizfenster) {
+
+			} else if billard.Läuft() && billard.IstStillstand() && !billard.GibStoßkugel().IstEingelocht() {
 				switch taste {
 				case 1:
 					billard.Stoße()
@@ -131,11 +134,25 @@ func main() {
 	mausProzess.StarteRate(15) // gewünschte Abtastrate je Sekunde
 
 	// ######## Tastatur-Loop ###################################################
-	var pause bool
+	var pause, fragemodus bool
 	for {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
 		if gedrückt == 1 {
 			switch taste {
+			case 'f': // fragemodus
+				if !fragemodus {
+					billard.Stoppe()
+					quizfenster = views.NewQuizFenster(quiz.GibNächsteFrage(), xs, ys, xe, ye,
+						views.Weiß(), views.F(1, 88, 122))
+					renderer.Überblende(quizfenster)
+				} else {
+					renderer.ÜberblendeAus()
+					quizfenster = nil
+					billard.Starte()
+				}
+				fragemodus = !fragemodus
+
+			//
 			case 'd': // Debug
 				billard.ZeitlupeAnAus()
 			case 'm': // Musik an

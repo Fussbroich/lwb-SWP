@@ -54,6 +54,7 @@ func (r *fzeichner) Starte() {
 		})
 	r.updaterLäuft = true
 	r.updater.StarteRate(r.rate)
+	//r.updater.Starte()
 }
 
 func (r *fzeichner) Stoppe() {
