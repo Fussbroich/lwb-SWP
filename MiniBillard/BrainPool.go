@@ -62,9 +62,9 @@ func main() {
 	// Anzeige der Punkte
 	punktezähler := views.NewMBPunkteAnzeiger(billard, xs-g3, 1*g, 18*g, 3*g,
 		views.Weiß(), views.F(1, 88, 122), 255)
-	// Anzeige Countdown
-	countdown := views.NewFenster(20*g, g, xe, 3*g,
-		views.Weiß(), views.F(1, 88, 122), 150, 0)
+	// Anzeige restliche Zeit
+	restzeit := views.NewMBRestzeitAnzeiger(billard, 20*g+g3, g, xe+g3, 3*g,
+		views.Weiß(), views.F(1, 88, 122), 0)
 	// Bande
 	bande := views.NewFenster(xs-g3, ys-g3, xe+g3, ye+g3,
 		views.F(1, 88, 122), views.Schwarz(), 0, g3)
@@ -78,7 +78,7 @@ func main() {
 	var renderer views.FensterZeichner = views.NewFensterZeichner(
 		hintergrund,
 		punktezähler,
-		countdown,
+		restzeit,
 		bande, tisch,
 		neuesSpielButton)
 
@@ -107,6 +107,7 @@ func main() {
 				// Prüfe, wo die Maus gerade ist
 				if inFenster(mausX, mausY, neuesSpielButton) {
 					billard.Reset()
+					billard.SetzeRestzeit(150 * time.Second)
 				} else if billard.Läuft() {
 					if billard.IstStillstand() && !billard.GibStoßkugel().IstEingelocht() {
 						billard.Stoße()
@@ -121,6 +122,7 @@ func main() {
 	geräusche := klaenge.BillardPubAmbienceSOUND()
 
 	// ######## starte Spiel-Prozesse ###########################################
+	billard.SetzeRestzeit(150 * time.Second)
 	billard.Starte()
 	renderer.Starte()
 	//renderer.ZeigeLayout()

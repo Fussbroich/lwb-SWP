@@ -1,6 +1,8 @@
 package welt
 
 import (
+	"time"
+
 	"../hilf"
 	"../klaenge"
 )
@@ -22,6 +24,8 @@ type MiniBillardSpiel interface {
 	GibStoßkugel() Kugel
 	GibVStoß() hilf.Vec2
 	SetzeVStoß(hilf.Vec2)
+	SetzeRestzeit(time.Duration)
+	GibRestzeit() time.Duration
 	GibTreffer() uint8
 	GibStrafpunkte() uint8
 	GibGröße() (float64, float64)
@@ -41,6 +45,8 @@ type spiel struct {
 	strafPunkte  uint8
 	stillstand   bool
 	updater      hilf.Prozess
+	startzeit    time.Time
+	restzeit     time.Duration
 	zeitlupe     uint64
 }
 
@@ -133,9 +139,20 @@ func (s *spiel) kugelSatz9Ball() []Kugel {
 
 // ######## die Lebens- und Pause-Methode ###########################################################
 func (s *spiel) Starte() {
+	s.startzeit = time.Now()
 	if s.updater == nil {
 		s.updater = hilf.NewProzess("Spiel-Logik",
 			func() {
+				vergangen := time.Since(s.startzeit)
+				if s.zeitlupe > 0 {
+					vergangen = vergangen / time.Duration(s.zeitlupe)
+				}
+				if s.restzeit <= vergangen {
+					s.restzeit = 0
+				} else {
+					s.restzeit -= vergangen
+				}
+				s.startzeit = time.Now()
 				for _, k := range s.kugeln {
 					k.BewegenIn(s)
 				}
@@ -219,6 +236,10 @@ func (s *spiel) Stoße() {
 }
 
 // ######## die übrigen Methoden ####################################################
+
+func (s *spiel) SetzeRestzeit(t time.Duration) { s.restzeit = t }
+
+func (s *spiel) GibRestzeit() time.Duration { return s.restzeit }
 
 func (s *spiel) Reset() {
 	s.kugeln = []Kugel{}

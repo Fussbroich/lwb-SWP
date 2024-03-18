@@ -35,18 +35,17 @@ func (f *miniBSpielinfo) Zeichne() {
 	zeilenhöhe = höhe / 2
 	schriftgröße = int(zeilenhöhe) * 3 / 5
 	d := (zeilenhöhe - uint16(schriftgröße)) / 2
+	var bBalken, xSBalken uint16 = breite - 2*ra - 5*uint16(schriftgröße), f.startX + 2*ra + 5*uint16(schriftgröße)
 
 	gfx.Stiftfarbe(hr, hg, hb)
 	gfx.Vollkreis(f.startX+ra, f.startY+ra, ra)
-	gfx.Vollrechteck(f.startX+ra, f.startY, breite-ra, höhe)
+	gfx.Vollrechteck(f.startX+ra, f.startY, xSBalken-f.startX-ra, höhe)
 	gfx.Stiftfarbe(vr, vg, vb)
 	gfx.SetzeFont(fp, schriftgröße)
 	gfx.SchreibeFont(f.startX+2*ra+d, f.startY+d, "Treffer")
 	gfx.SchreibeFont(f.startX+2*ra+d, f.startY+zeilenhöhe+d, "Fouls")
 
 	// zeichne Fortschritts-Balken
-	var bBalken, xSBalken uint16 = breite - 2*ra - 5*uint16(schriftgröße), f.startX + 2*ra + 5*uint16(schriftgröße)
-
 	gfx.Stiftfarbe(243, 186, 0) // Treffer gelb
 	gfx.Vollrechteck(xSBalken, f.startY+1, bBalken*uint16(tr)/uint16(anzKugeln), zeilenhöhe-2)
 	gfx.Stiftfarbe(219, 80, 0) // Fouls in Warnrot
