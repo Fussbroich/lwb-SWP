@@ -98,12 +98,11 @@ func main() {
 			taste, _, mausX, mausY := gfx.MausLesen1()
 
 			// Prüfe, wo die Maus gerade ist
-			if inFenster(mausX, mausY, neuesSpielButton) && taste == 1 {
-				billard.Reset()
-				billard.SetzeRestzeit(standardzeit)
-			}
 			if quizfenster != nil && inFenster(mausX, mausY, quizfenster) {
 
+			} else if inFenster(mausX, mausY, neuesSpielButton) && taste == 1 {
+				billard.Reset()
+				billard.SetzeRestzeit(standardzeit)
 			} else if billard.Läuft() && billard.IstStillstand() && !billard.GibStoßkugel().IstEingelocht() {
 				switch taste {
 				case 1:
@@ -131,7 +130,7 @@ func main() {
 	billard.Starte()
 	renderer.Starte()
 	//renderer.ZeigeLayout()
-	mausProzess.StarteRate(15) // gewünschte Abtastrate je Sekunde
+	mausProzess.StarteRate(50) // gewünschte Abtastrate je Sekunde
 
 	// ######## Tastatur-Loop ###################################################
 	var pause, fragemodus bool
@@ -151,7 +150,6 @@ func main() {
 					billard.Starte()
 				}
 				fragemodus = !fragemodus
-
 			//
 			case 'd': // Debug
 				billard.ZeitlupeAnAus()
