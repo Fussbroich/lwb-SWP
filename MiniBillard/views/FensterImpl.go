@@ -66,10 +66,14 @@ func (f *fenster) Zeichne() {
 }
 
 func (f *fenster) ZeichneRand() {
-	r, g, b := f.hg.RGB()
+	r, g, b := f.vg.RGB()
 	gfx.Stiftfarbe(r, g, b)
 	gfx.Transparenz(0)
 	if f.eckradius > 0 {
+		gfx.Kreissektor(f.startX+f.eckradius, f.startY+f.eckradius, f.eckradius, 90, 180)
+		gfx.Kreissektor(f.startX+f.eckradius, f.stopY-f.eckradius, f.eckradius, 180, 270)
+		gfx.Kreissektor(f.stopX-f.eckradius, f.stopY-f.eckradius, f.eckradius, 270, 0)
+		gfx.Kreissektor(f.stopX-f.eckradius, f.startY+f.eckradius, f.eckradius, 0, 90)
 		gfx.Linie(f.startX+f.eckradius, f.startY, f.stopX-f.eckradius, f.startY)
 		gfx.Linie(f.startX+f.eckradius, f.stopY, f.stopX-f.eckradius, f.stopY)
 		gfx.Linie(f.startX, f.startY+f.eckradius, f.startX, f.stopY-f.eckradius)
@@ -80,9 +84,6 @@ func (f *fenster) ZeichneRand() {
 		gfx.Linie(f.startX, f.startY, f.startX, f.stopY)
 		gfx.Linie(f.stopX, f.startY, f.stopX, f.stopY)
 	}
-	r, g, b = f.vg.RGB()
-	gfx.Stiftfarbe(r, g, b)
-	gfx.Transparenz(0)
 }
 
 // ######## Hilfsfunktionen #######################################################################

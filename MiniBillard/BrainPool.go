@@ -44,6 +44,7 @@ func main() {
 	xs, ys, xe, ye := 4*g, 6*g, 28*g, 18*g
 	b, h := 32*g, 22*g
 	g3 := g + g/3
+	standardzeit := 4 * time.Minute
 
 	println("Willkommen bei BrainPool")
 	println("Öffne Gfx-Fenster")
@@ -107,7 +108,7 @@ func main() {
 				// Prüfe, wo die Maus gerade ist
 				if inFenster(mausX, mausY, neuesSpielButton) {
 					billard.Reset()
-					billard.SetzeRestzeit(150 * time.Second)
+					billard.SetzeRestzeit(standardzeit)
 				} else if billard.Läuft() {
 					if billard.IstStillstand() && !billard.GibStoßkugel().IstEingelocht() {
 						billard.Stoße()
@@ -122,7 +123,7 @@ func main() {
 	geräusche := klaenge.BillardPubAmbienceSOUND()
 
 	// ######## starte Spiel-Prozesse ###########################################
-	billard.SetzeRestzeit(150 * time.Second)
+	billard.SetzeRestzeit(standardzeit)
 	billard.Starte()
 	renderer.Starte()
 	//renderer.ZeigeLayout()
