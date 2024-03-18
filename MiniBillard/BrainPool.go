@@ -96,24 +96,25 @@ func main() {
 			// Der Mauspuffer ist aber zu langsam
 			taste, _, mausX, mausY := gfx.MausLesen1()
 
-			if billard.Läuft() && billard.IstStillstand() && !billard.GibStoßkugel().IstEingelocht() {
-				vStoß := (hilf.V2(float64(mausX), float64(mausY))).
-					Minus(billard.GibStoßkugel().GibPos()).
-					Minus(hilf.V2(float64(xs), float64(ys)))
-				// die Stoßstärke wird in "Kugelradien" gemessen
-				billard.SetzeVStoß(vStoß.Mal(1 / billard.GibStoßkugel().GibRadius()))
+			// Prüfe, wo die Maus gerade ist
+			if inFenster(mausX, mausY, neuesSpielButton) && taste == 1 {
+				billard.Reset()
+				billard.SetzeRestzeit(standardzeit)
 			}
-			// der Stoß wird ausgeführt
-			if taste == 1 {
-				// Prüfe, wo die Maus gerade ist
-				if inFenster(mausX, mausY, neuesSpielButton) {
-					billard.Reset()
-					billard.SetzeRestzeit(standardzeit)
-				} else if billard.Läuft() {
-					if billard.IstStillstand() && !billard.GibStoßkugel().IstEingelocht() {
-						billard.Stoße()
-					}
+			if billard.Läuft() && billard.IstStillstand() && !billard.GibStoßkugel().IstEingelocht() {
+				switch taste {
+				case 1:
+					billard.Stoße()
+				case 4:
+					billard.SetzeStoßStärke(billard.GibVStoß().Betrag() + 1)
+				case 5:
+					billard.SetzeStoßStärke(billard.GibVStoß().Betrag() - 1)
+				default:
+					billard.SetzeStoßRichtung((hilf.V2(float64(mausX), float64(mausY))).
+						Minus(billard.GibStoßkugel().GibPos()).
+						Minus(hilf.V2(float64(xs), float64(ys))))
 				}
+				// die Stoßstärke wird in "Kugelradien" gemessen
 			}
 		})
 

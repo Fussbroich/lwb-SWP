@@ -23,7 +23,8 @@ type MiniBillardSpiel interface {
 	GibEingelochteKugeln() []Kugel
 	GibStoßkugel() Kugel
 	GibVStoß() hilf.Vec2
-	SetzeVStoß(hilf.Vec2)
+	SetzeStoßRichtung(hilf.Vec2)
+	SetzeStoßStärke(float64)
 	SetzeRestzeit(time.Duration)
 	GibRestzeit() time.Duration
 	GibTreffer() uint8
@@ -39,7 +40,8 @@ type spiel struct {
 	origKugeln   []Kugel
 	vorigeKugeln []Kugel
 	stoßkugel    Kugel
-	vStoß        hilf.Vec2
+	stoßricht    hilf.Vec2
+	stoßstärke   float64
 	taschen      []Tasche
 	stößeBisher  uint8
 	strafPunkte  uint8
@@ -140,6 +142,7 @@ func (s *spiel) kugelSatz9Ball() []Kugel {
 // ######## die Lebens- und Pause-Methode ###########################################################
 func (s *spiel) Starte() {
 	s.startzeit = time.Now()
+	s.stoßstärke = 5
 	if s.updater == nil {
 		s.updater = hilf.NewProzess("Spiel-Logik",
 			func() {
@@ -203,16 +206,18 @@ func (s *spiel) IstZeitlupe() bool { return s.zeitlupe > 1 }
 
 // ######## die Methoden zum Stoßen #################################################
 
-func (s *spiel) GibVStoß() hilf.Vec2 { return s.vStoß }
+func (s *spiel) GibVStoß() hilf.Vec2 { return s.stoßricht.Mal(s.stoßstärke) }
 
-func (s *spiel) SetzeVStoß(v hilf.Vec2) {
-	vabs := v.Betrag()
-	// Die "Geschwindigkeit/Stärke" ist auf 17 (m/s) begrenzt
-	if vabs > 12 {
-		s.vStoß = v.Mal(12 / vabs)
-	} else {
-		s.vStoß = v
+func (s *spiel) SetzeStoßRichtung(v hilf.Vec2) { s.stoßricht = v.Normiert() }
+
+func (s *spiel) SetzeStoßStärke(v float64) {
+	// Die "Geschwindigkeit/Stärke" ist auf 12 (m/s) begrenzt
+	if v > 12 {
+		v = 12
+	} else if v < 0 {
+		v = 0
 	}
+	s.stoßstärke = v
 }
 
 func (s *spiel) Stoße() {
@@ -225,13 +230,13 @@ func (s *spiel) Stoße() {
 	for _, k := range s.kugeln {
 		s.vorigeKugeln = append(s.vorigeKugeln, k.GibKopie()) // Kopien stehen still
 	}
-	if !s.vStoß.IstNull() {
+	if !(s.stoßstärke == 0) {
 		// stoße
-		s.stoßkugel.SetzeV(s.vStoß)
-		s.vStoß = hilf.V2(0, 0)
-		klaenge.CueHitsBallSound()
+		s.stoßkugel.SetzeV(s.stoßricht.Mal(s.stoßstärke))
+		s.stoßstärke = 5
 		s.stößeBisher++
 		s.stillstand = false
+		klaenge.CueHitsBallSound()
 	}
 }
 
