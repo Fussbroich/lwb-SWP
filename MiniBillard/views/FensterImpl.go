@@ -70,19 +70,19 @@ func (f *fenster) ZeichneRand() {
 	gfx.Stiftfarbe(r, g, b)
 	gfx.Transparenz(0)
 	if f.eckradius > 0 {
-		gfx.Kreissektor(f.startX+f.eckradius, f.startY+f.eckradius, f.eckradius, 90, 180)
-		gfx.Kreissektor(f.startX+f.eckradius, f.stopY-f.eckradius, f.eckradius, 180, 270)
-		gfx.Kreissektor(f.stopX-f.eckradius, f.stopY-f.eckradius, f.eckradius, 270, 0)
-		gfx.Kreissektor(f.stopX-f.eckradius, f.startY+f.eckradius, f.eckradius, 0, 90)
-		gfx.Linie(f.startX+f.eckradius, f.startY, f.stopX-f.eckradius, f.startY)
-		gfx.Linie(f.startX+f.eckradius, f.stopY, f.stopX-f.eckradius, f.stopY)
-		gfx.Linie(f.startX, f.startY+f.eckradius, f.startX, f.stopY-f.eckradius)
-		gfx.Linie(f.stopX, f.startY+f.eckradius, f.stopX, f.stopY-f.eckradius)
+		gfx.Kreissektor(f.startX+f.eckradius, f.startY+f.eckradius, f.eckradius+1, 90, 180)
+		gfx.Kreissektor(f.startX+f.eckradius, f.stopY-f.eckradius, f.eckradius+1, 180, 270)
+		gfx.Kreissektor(f.stopX-f.eckradius, f.stopY-f.eckradius, f.eckradius+1, 270, 0)
+		gfx.Kreissektor(f.stopX-f.eckradius, f.startY+f.eckradius, f.eckradius+1, 0, 90)
+		gfx.Linie(f.startX+f.eckradius, f.startY-1, f.stopX-f.eckradius, f.startY-1)
+		gfx.Linie(f.startX+f.eckradius, f.stopY+1, f.stopX-f.eckradius, f.stopY+1)
+		gfx.Linie(f.startX-1, f.startY+f.eckradius, f.startX-1, f.stopY-f.eckradius)
+		gfx.Linie(f.stopX+1, f.startY+f.eckradius, f.stopX+1, f.stopY-f.eckradius)
 	} else {
-		gfx.Linie(f.startX, f.startY, f.stopX, f.startY)
-		gfx.Linie(f.startX, f.stopY, f.stopX, f.stopY)
-		gfx.Linie(f.startX, f.startY, f.startX, f.stopY)
-		gfx.Linie(f.stopX, f.startY, f.stopX, f.stopY)
+		gfx.Linie(f.startX-1, f.startY-1, f.stopX+1, f.startY-1)
+		gfx.Linie(f.startX-1, f.stopY+1, f.stopX+1, f.stopY+1)
+		gfx.Linie(f.startX-1, f.startY-1, f.startX-1, f.stopY+1)
+		gfx.Linie(f.stopX+1, f.startY-1, f.stopX+1, f.stopY+1)
 	}
 }
 

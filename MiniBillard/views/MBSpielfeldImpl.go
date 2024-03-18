@@ -22,24 +22,23 @@ func (f *miniBSpielfeld) Zeichne() {
 	f.fenster.Zeichne()
 	fp := fontDateipfad("LiberationMono-Regular.ttf")
 	// zeichne die Taschen
-	ts := f.billard.GibTaschen()
-	gfxVollKreis(f.startX, f.startY, ts[0].GibPos(), ts[0].GibRadius()/1.5, Schwarz())
-	gfxVollKreis(f.startX, f.startY, ts[1].GibPos(), ts[1].GibRadius()/1.5, Schwarz())
-	gfxVollKreis(f.startX, f.startY, ts[2].GibPos(), ts[2].GibRadius()/1.2, Schwarz())
-	gfxVollKreis(f.startX, f.startY, ts[3].GibPos(), ts[3].GibRadius()/1.5, Schwarz())
-	gfxVollKreis(f.startX, f.startY, ts[4].GibPos(), ts[4].GibRadius()/1.5, Schwarz())
-	gfxVollKreis(f.startX, f.startY, ts[5].GibPos(), ts[5].GibRadius()/1.2, Schwarz())
+
+	breite, _ := f.GibGröße()
+	kS := f.billard.GibStoßkugel()
+	ra := kS.GibRadius()
+
+	for _, t := range f.billard.GibTaschen() {
+		gfxVollKreis(f.startX, f.startY, t.GibPos(), ra, Schwarz())
+	}
 	// zeichne die Kugeln
 	for _, k := range f.billard.GibAktiveKugeln() {
 		zeichneKugel(f.startX, f.startY, k.GibPos(), k)
 	}
 	if f.billard.IstStillstand() && !f.billard.GibStoßkugel().IstEingelocht() {
-		kS := f.billard.GibStoßkugel()
-		ra := kS.GibRadius()
 		pK := kS.GibPos()
 		// Zeichne Peillinie bis zum Rand
 		gfx.Stiftfarbe(100, 100, 100)
-		zielP := pK.Plus(f.billard.GibVStoß().Normiert().Mal(float64(f.stopX - f.startX)))
+		zielP := pK.Plus(f.billard.GibVStoß().Normiert().Mal(float64(breite)))
 		gfx.Linie(f.startX+uint16(pK.X()), f.startY+uint16(pK.Y()), f.startX+uint16(zielP.X()), f.startY+uint16(zielP.Y()))
 		// zeichne die Stoßrichtung und -stärke bezogen auf Kugelradien
 		stärke := f.billard.GibVStoß().Betrag()
@@ -73,6 +72,6 @@ func (f *miniBSpielfeld) Zeichne() {
 		}
 		gfx.Stiftfarbe(100, 100, 100)
 		gfx.SetzeFont(fp, int(f.billard.GibStoßkugel().GibRadius()+0.5))
-		gfx.SchreibeFont(4*(f.stopX-f.startX)/5, f.startY+5, "Zeitlupe")
+		gfx.SchreibeFont(4*breite/5, f.startY+5, "Zeitlupe")
 	}
 }

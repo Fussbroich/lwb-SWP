@@ -74,7 +74,7 @@ func main() {
 		views.F(92, 179, 193), views.Schwarz(), 0, 0)
 	// neues-Spiel-Button
 	neuesSpielButton := views.NewButton(b/2-2*g, ye+g3+g/2, b/2+2*g, ye+g3+g3, "neues Spiel",
-		views.Weiß(), views.F(1, 88, 122), 100, 0)
+		views.Weiß(), views.F(1, 88, 122), 100, g/3)
 
 	var renderer views.FensterZeichner = views.NewFensterZeichner(
 		hintergrund,
