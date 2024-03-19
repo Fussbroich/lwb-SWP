@@ -55,8 +55,8 @@ func main() {
 	var bS, hS uint16 = 24 * g, 12 * g        // Breite, Höhe des "Spielfelds"
 	ra := uint16(0.5 + float64(bS)*57.2/2540) // Zeichenradius der Kugeln
 	var billard welt.MiniBillardSpiel = welt.NewMiniPoolSpiel(bS, hS, ra)
-	var quiz welt.Quiz = welt.NewAlphabetQuiz()
-	var quizfenster views.Fenster
+	var quiz welt.Quiz = welt.NewBeispielQuiz()
+	var quizmodus bool
 	// ######## erzeuge App-Fenster ###########################################
 	// H: Hallenboden: F(218, 218, 218), Kneipenboden: views.F(104, 76, 65)
 	hintergrund := views.NewFenster(0, 0, b, h,
@@ -76,33 +76,34 @@ func main() {
 	// neues-Spiel-Button
 	neuesSpielButton := views.NewButton(b/2-2*g, ye+g3+g/2, b/2+2*g, ye+g3+g3, "neues Spiel",
 		views.Weiß(), views.F(1, 88, 122), 100, g/3)
+	//Quizfenster
+	quizfenster := views.NewQuizFenster(quiz, xs-g3, ys-g3, xe+g3, ye+g3,
+		views.Weiß(), views.F(1, 88, 122), g3)
 
 	var renderer views.FensterZeichner = views.NewFensterZeichner(
 		hintergrund,
+		bande, tisch,
 		punktezähler,
 		restzeit,
-		bande, tisch,
 		neuesSpielButton)
 
 	// ######## definiere Maussteuerung #########################################^
-	inFenster := func(x, y uint16, f views.Fenster) bool {
-		xs, ys := f.GibStartkoordinaten()
-		b, h := f.GibGröße()
-		return x > xs && x < xs+b && y > ys && y < ys+h
-	}
 
 	mausProzess := hilf.NewProzess("Maussteuerung",
 		func() {
-			// TODO: hier hängt das Spiel, wenn die Maus nicht bewegt wird
-			// Der Mauspuffer ist aber zu langsam
+			// TODO: hier hängt es, wenn die Maus nicht bewegt wird.
+			// Der Mauspuffer ist aber keine Lösung ...
 			taste, _, mausX, mausY := gfx.MausLesen1()
 
 			// Prüfe, wo die Maus gerade ist
-			if quizfenster != nil && inFenster(mausX, mausY, quizfenster) {
-
-			} else if inFenster(mausX, mausY, neuesSpielButton) && taste == 1 {
+			if quizmodus && quizfenster.ImFenster(mausX, mausY) {
+				if taste == 1 {
+				}
+			} else if neuesSpielButton.ImFenster(mausX, mausY) && taste == 1 {
+				renderer.ÜberblendeAus()
 				billard.Reset()
 				billard.SetzeRestzeit(standardzeit)
+				billard.Starte()
 			} else if billard.Läuft() && billard.IstStillstand() && !billard.GibStoßkugel().IstEingelocht() {
 				switch taste {
 				case 1:
@@ -141,12 +142,10 @@ func main() {
 			case 'f': // erzwinge fragemodus
 				if !fragemodus {
 					billard.Stoppe()
-					quizfenster = views.NewQuizFenster(quiz.GibNächsteFrage(), xs-g3, ys-g3, xe+g3, ye+g3,
-						views.Weiß(), views.F(1, 88, 122), g3)
+					quiz.NächsteFrage()
 					renderer.Überblende(quizfenster)
 				} else {
 					renderer.ÜberblendeAus()
-					quizfenster = nil
 					billard.Starte()
 				}
 				fragemodus = !fragemodus

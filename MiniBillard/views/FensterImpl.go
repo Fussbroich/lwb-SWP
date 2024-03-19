@@ -27,6 +27,12 @@ func (f *fenster) GibStartkoordinaten() (uint16, uint16) { return f.startX, f.st
 
 func (f *fenster) GibGröße() (uint16, uint16) { return f.stopX - f.startX, f.stopY - f.startY }
 
+func (f *fenster) ImFenster(x, y uint16) bool {
+	xs, ys := f.startX+f.eckradius*3/10, f.startY+f.eckradius*3/10
+	b, h := f.stopX-f.startX-f.eckradius*6/10, f.stopY-f.startY-f.eckradius*6/10
+	return x > xs && x < xs+b && y > ys && y < ys+h
+}
+
 func (f *fenster) ZeichneLayout() {
 	r, g, b := f.hg.RGB()
 	gfx.Stiftfarbe(r, g, b)

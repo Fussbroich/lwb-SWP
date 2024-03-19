@@ -3,13 +3,17 @@ package welt
 import "math/rand"
 
 type Quiz interface {
+	NächsteFrage()
 	GibAktuelleFrage() QuizFrage
-	GibNächsteFrage() QuizFrage
 }
 
 type quiz struct {
 	fragen   []QuizFrage
 	aktuelle QuizFrage
+}
+
+func (q *quiz) NächsteFrage() {
+	q.aktuelle = q.fragen[rand.Intn(len(q.fragen))]
 }
 
 func (q *quiz) GibAktuelleFrage() QuizFrage {
@@ -19,37 +23,6 @@ func (q *quiz) GibAktuelleFrage() QuizFrage {
 	return q.aktuelle
 }
 
-func (q *quiz) GibNächsteFrage() QuizFrage {
-	q.aktuelle = q.fragen[rand.Intn(len(q.fragen))]
-	return q.aktuelle
-}
-
-func NewAlphabetQuiz() *quiz {
-	return &quiz{
-		fragen: []QuizFrage{
-			&quizfrage{frage: "Wie lautet der erste Buchstabe des Alphabets?",
-				antworten: [4]string{"A", "B", "C", "D"},
-				richtig:   0},
-			&quizfrage{frage: "Wie lautet der zweite Buchstabe des Alphabets?",
-				antworten: [4]string{"A", "B", "C", "D"},
-				richtig:   1},
-			&quizfrage{frage: "Wie lautet der dritte Buchstabe des Alphabets?",
-				antworten: [4]string{"A", "B", "C", "D"},
-				richtig:   2},
-			&quizfrage{frage: "Wie lautet der vierte Buchstabe des Alphabets?",
-				antworten: [4]string{"A", "B", "C", "D"},
-				richtig:   3},
-			&quizfrage{frage: "Wie lautet der fünfte Buchstabe des Alphabets?",
-				antworten: [4]string{"D", "E", "F", "G"},
-				richtig:   0},
-			&quizfrage{frage: "Wie lautet der sechste Buchstabe des Alphabets?",
-				antworten: [4]string{"D", "E", "F", "G"},
-				richtig:   1},
-			&quizfrage{frage: "Wie lautet der siebte Buchstabe des Alphabets?",
-				antworten: [4]string{"D", "E", "F", "G"},
-				richtig:   2}}}
-}
-
 type QuizFrage interface {
 	GibFrage() string
 	GibAntworten() [4]string
@@ -57,9 +30,9 @@ type QuizFrage interface {
 }
 
 type quizfrage struct {
-	frage     string
-	richtig   uint8
-	antworten [4]string
+	frage            string
+	richtig, gewählt uint8
+	antworten        [4]string
 }
 
 func NewFrage(frage, a1, a2, a3, a4 string, richtig uint8) *quizfrage {
