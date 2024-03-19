@@ -12,12 +12,13 @@ type quizfenster struct {
 }
 
 // TextOverlay zeigt den Hintergrund
-func NewQuizFenster(frage welt.QuizFrage, startx, starty, stopx, stopy uint16, hg, vg Farbe) *quizfenster {
-	fenster := fenster{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: 0}
+func NewQuizFenster(frage welt.QuizFrage, startx, starty, stopx, stopy uint16, hg, vg Farbe, ra uint16) *quizfenster {
+	fenster := fenster{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: 0, eckradius: ra}
 	return &quizfenster{frage: frage, fenster: fenster}
 }
 
 func (f *quizfenster) Zeichne() {
+	f.ZeichneRand()
 	f.fenster.Zeichne()
 	fp := fontDateipfad("LiberationSerif-BoldItalic.ttf")
 	r, g, b := f.vg.RGB()

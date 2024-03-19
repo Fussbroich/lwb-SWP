@@ -141,8 +141,8 @@ func main() {
 			case 'f': // fragemodus
 				if !fragemodus {
 					billard.Stoppe()
-					quizfenster = views.NewQuizFenster(quiz.GibNächsteFrage(), xs, ys, xe, ye,
-						views.Weiß(), views.F(1, 88, 122))
+					quizfenster = views.NewQuizFenster(quiz.GibNächsteFrage(), xs-g3, ys-g3, xe+g3, ye+g3,
+						views.Weiß(), views.F(1, 88, 122), g3)
 					renderer.Überblende(quizfenster)
 				} else {
 					renderer.ÜberblendeAus()
