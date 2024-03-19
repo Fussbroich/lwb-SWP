@@ -20,7 +20,6 @@ func NewQuizFenster(frage welt.QuizFrage, startx, starty, stopx, stopy uint16, h
 func (f *quizfenster) Zeichne() {
 	f.ZeichneRand()
 	f.fenster.Zeichne()
-	fp := fontDateipfad("LiberationSerif-BoldItalic.ttf")
 	r, g, b := f.vg.RGB()
 	gfx.Stiftfarbe(r, g, b)
 
@@ -28,10 +27,6 @@ func (f *quizfenster) Zeichne() {
 	ra := f.eckradius
 	breite, höhe = breite-2*ra, höhe-2*ra
 	sx, sy := f.startX+ra, f.startY+ra
-	zeilenhöhe := höhe / 5
-	schriftgröße := zeilenhöhe * 2 / 5
-	//d := (zeilenhöhe - schriftgröße) / 2
-	gfx.SetzeFont(fp, int(schriftgröße))
 	var d uint16 = 3
 	frage := NewTextFenster(sx, sy, sx+breite, sy+höhe*3/7-d,
 		f.frage.GibFrage(), f.hg, f.vg, f.transparenz, 0)
