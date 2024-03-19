@@ -138,7 +138,7 @@ func main() {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
 		if gedrückt == 1 {
 			switch taste {
-			case 'f': // fragemodus
+			case 'f': // erzwinge fragemodus
 				if !fragemodus {
 					billard.Stoppe()
 					quizfenster = views.NewQuizFenster(quiz.GibNächsteFrage(), xs-g3, ys-g3, xe+g3, ye+g3,
