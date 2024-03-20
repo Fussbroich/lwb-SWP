@@ -31,19 +31,19 @@ func NewBeispielQuiz() *quiz {
 		"D",
 		"E",
 		"F",
-		"G", 0))
-	quizfragen = append(quizfragen, NewQuizFrage(
-		"Wie lautet der sechste Buchstabe des Alphabets?",
-		"D",
-		"E",
-		"F",
 		"G", 1))
 	quizfragen = append(quizfragen, NewQuizFrage(
-		"Wie lautet der siebte Buchstabe des Alphabets?",
-		"D",
-		"E",
+		"Wie lautet der sechste Buchstabe des Alphabets?",
+		"Meistens D.",
+		"Manchmal E.",
 		"F",
 		"G", 2))
+	quizfragen = append(quizfragen, NewQuizFrage(
+		"Wie lautet der siebte Buchstabe des Alphabets?",
+		"Der lautet D.",
+		"Das ist so ganz eindeutig nicht entscheidbar.",
+		"Das F.",
+		"G", 3))
 
 	return &quiz{fragen: quizfragen}
 }

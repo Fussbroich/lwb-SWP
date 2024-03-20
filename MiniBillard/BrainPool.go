@@ -63,9 +63,8 @@ func main() {
 	//pulse := klaenge.MassivePulseSound()
 	geräusche := klaenge.BillardPubAmbienceSOUND()
 
-	// ######## Tastatur-Loop ###################################################
+	// ######## Tastatur-Loop #########################################
 	bpapp.Starte()
-
 	for {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
 		if gedrückt == 1 {
@@ -80,8 +79,6 @@ func main() {
 				geräusche.StarteLoop()
 			case 'p': // Pause
 				bpapp.PauseAnAus()
-			case 'n': // nochmal
-				bpapp.NochmalVersuchen()
 			case 'q': // quit
 				geräusche.Stoppe()
 				musik.Stoppe()

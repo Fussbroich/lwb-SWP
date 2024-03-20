@@ -20,6 +20,7 @@ type MiniBillardSpiel interface {
 	GibTaschen() []Tasche
 	GibKugeln() []Kugel
 	GibAktiveKugeln() []Kugel
+	Einlochen(Kugel)
 	GibEingelochteKugeln() []Kugel
 	GibStoßkugel() Kugel
 	GibVStoß() hilf.Vec2
@@ -29,6 +30,8 @@ type MiniBillardSpiel interface {
 	GibRestzeit() time.Duration
 	GibTreffer() uint8
 	GibStrafpunkte() uint8
+	ErhöheStrafpunkte()
+	ReduziereStrafpunkte()
 	GibGröße() (float64, float64)
 }
 
@@ -43,7 +46,7 @@ type spiel struct {
 	stoßricht    hilf.Vec2
 	stoßstärke   float64
 	taschen      []Tasche
-	stößeBisher  uint8
+	eingelochte  []Kugel
 	strafPunkte  uint8
 	stillstand   bool
 	updater      hilf.Prozess
@@ -234,7 +237,6 @@ func (s *spiel) Stoße() {
 		// stoße
 		s.stoßkugel.SetzeV(s.stoßricht.Mal(s.stoßstärke))
 		s.stoßstärke = 5
-		s.stößeBisher++
 		s.stillstand = false
 		klaenge.CueHitsBallSound()
 	}
@@ -252,7 +254,7 @@ func (s *spiel) Reset() {
 		s.kugeln = append(s.kugeln, k.GibKopie()) // Kopien stehen still
 	}
 	s.stoßkugel = s.kugeln[0]
-	s.stößeBisher = 0
+	s.eingelochte = []Kugel{}
 	s.strafPunkte = 0
 	s.stillstand = true
 }
@@ -267,7 +269,6 @@ func (s *spiel) StoßWiederholen() {
 		s.kugeln = append(s.kugeln, k.GibKopie()) // Kopien stehen still
 	}
 	s.stoßkugel = s.kugeln[0]
-	s.strafPunkte++
 	s.stillstand = true
 }
 
@@ -286,16 +287,20 @@ func (s *spiel) GibAktiveKugeln() []Kugel {
 	return ks
 }
 
-func (s *spiel) GibEingelochteKugeln() []Kugel {
-	ks := []Kugel{}
-	for _, k := range s.kugeln {
-		if !k.IstEingelocht() {
-			continue
-		}
-		ks = append(ks, k)
+func (s *spiel) Einlochen(k Kugel) {
+	if k == s.stoßkugel {
+		return
 	}
-	return ks
+	//TODO: Mengen benutzen
+	for _, ke := range s.eingelochte {
+		if k.GibWert() == ke.GibWert() {
+			return
+		}
+	}
+	s.eingelochte = append(s.eingelochte, k)
 }
+
+func (s *spiel) GibEingelochteKugeln() []Kugel { return s.eingelochte }
 
 func (s *spiel) GibGröße() (float64, float64) { return s.breite, s.höhe }
 
@@ -303,13 +308,14 @@ func (s *spiel) GibTaschen() []Tasche { return s.taschen }
 
 func (s *spiel) IstStillstand() bool { return s.stillstand }
 
-func (s *spiel) GibTreffer() (treffer uint8) {
-	for _, k := range s.kugeln {
-		if !(k == s.stoßkugel) && k.IstEingelocht() {
-			treffer++
-		}
-	}
-	return
-}
+func (s *spiel) GibTreffer() uint8 { return uint8(len(s.eingelochte)) }
 
 func (s *spiel) GibStrafpunkte() uint8 { return s.strafPunkte }
+
+func (s *spiel) ErhöheStrafpunkte() { s.strafPunkte++ }
+
+func (s *spiel) ReduziereStrafpunkte() {
+	if s.strafPunkte > 0 {
+		s.strafPunkte--
+	}
+}

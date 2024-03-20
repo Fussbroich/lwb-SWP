@@ -22,8 +22,7 @@ func NewQuizFenster(quiz welt.Quiz, startx, starty, stopx, stopy uint16, hg, vg 
 func (f *quizfenster) MausklickBei(mausX, mausY uint16) {
 	for i, a := range f.as {
 		if a.ImFenster(mausX, mausY) {
-			println("Antwort:", i)
-			f.quiz.Antwort(i)
+			f.quiz.GibAktuelleFrage().Gewählt(i)
 		}
 	}
 }

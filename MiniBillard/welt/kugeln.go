@@ -70,18 +70,17 @@ func (k *kugel) BewegenIn(s MiniBillardSpiel) {
 		if t.GibPos().Minus(k.GibPos()).Betrag() < t.GibRadius() {
 			klaenge.BallInPocketSound().Play()
 			k.eingelocht = true
+			s.Einlochen(k)
 			k.SetzeV(hilf.V2(0, 0))
 			break
 		}
 	}
 }
 
-func (k *kugel) IstEingelocht() bool {
-	return k.eingelocht
-}
+func (k *kugel) IstEingelocht() bool { return k.eingelocht }
 
 func (k *kugel) prüfeBandenKollision(länge, breite float64) {
-	if k.IstEingelocht() {
+	if k.eingelocht {
 		return
 	}
 	// Kugel vorher
