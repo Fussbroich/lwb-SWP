@@ -83,9 +83,9 @@ func (app *bpapp) appSteuerung() {
 				app.billard.ReduziereStrafpunkte()
 				if app.billard.GibStrafpunkte() <= app.billard.GibTreffer() {
 					app.quizmodusAus()
-				} else {
-					app.quiz.NächsteFrage()
 				}
+			} else {
+				app.quiz.NächsteFrage()
 			}
 		}
 		// neues Spiel starten geht immer
