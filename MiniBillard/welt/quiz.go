@@ -35,7 +35,7 @@ type quizfrage struct {
 	antworten        [4]string
 }
 
-func NewFrage(frage, a1, a2, a3, a4 string, richtig uint8) *quizfrage {
+func NewQuizFrage(frage, a1, a2, a3, a4 string, richtig uint8) *quizfrage {
 	return &quizfrage{frage: frage, antworten: [4]string{a1, a2, a3, a4}, richtig: richtig}
 }
 

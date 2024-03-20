@@ -6,6 +6,10 @@ import (
 	"../welt"
 )
 
+type QuizView interface {
+	Fenster
+}
+
 type quizfenster struct {
 	quiz  welt.Quiz
 	frage Fenster

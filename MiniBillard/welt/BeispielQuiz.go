@@ -1,55 +1,49 @@
 package welt
 
 func NewBeispielQuiz() *quiz {
-	return &quiz{
-		fragen: []QuizFrage{
-			&quizfrage{frage: "Wie lautet der erste Buchstabe des Alphabets?",
-				antworten: [4]string{
-					"Der erste Buchstabe des Alphabets lautet A.",
-					"Die Frage ist sinnlos.",
-					"Was ist ein Alphabet?",
-					"D"},
-				richtig: 0},
-			&quizfrage{frage: "Wie lautet der zweite Buchstabe des Alphabets?",
-				antworten: [4]string{
-					"Der Buchstabe, der als zweites kommt, lautet A, nicht wahr?",
-					"B",
-					"Das ist C.",
-					"D"},
-				richtig: 1},
-			&quizfrage{frage: "Wie lautet der dritte Buchstabe des Alphabets?",
-				antworten: [4]string{
-					"A",
-					"Der Buchstabe, der als zweites kommt, lautet B oder C, nicht wahr?",
-					"C",
-					"D"},
-				richtig: 2},
-			&quizfrage{frage: "Wie lautet der vierte Buchstabe des Alphabets?",
-				antworten: [4]string{
-					"A",
-					"B",
-					"Äh vier. Der Buchstabe, der als viertes kommt, lautet C, nicht wahr?",
-					"D"},
-				richtig: 3},
-			&quizfrage{frage: "Wie lautet der fünfte Buchstabe des Alphabets?",
-				antworten: [4]string{
-					"D",
-					"E",
-					"F",
-					"G"},
-				richtig: 0},
-			&quizfrage{frage: "Wie lautet der sechste Buchstabe des Alphabets?",
-				antworten: [4]string{
-					"D",
-					"E",
-					"F",
-					"G"},
-				richtig: 1},
-			&quizfrage{frage: "Wie lautet der siebte Buchstabe des Alphabets?",
-				antworten: [4]string{
-					"D",
-					"E",
-					"F",
-					"G"},
-				richtig: 2}}}
+	quizfragen := []QuizFrage{}
+	quizfragen = append(quizfragen, NewQuizFrage(
+		"Wie lautet der erste Buchstabe des Alphabets?",
+		"Der erste Buchstabe des Alphabets lautet A.",
+		"Die Frage ist sinnlos.",
+		"Was ist ein Alphabet?",
+		"D", 0))
+	quizfragen = append(quizfragen, NewQuizFrage(
+		"Wie lautet der zweite Buchstabe des Alphabets?",
+		"Der Buchstabe, der als zweites kommt, lautet A, nicht wahr?",
+		"B",
+		"Das ist C.",
+		"D", 1))
+	quizfragen = append(quizfragen, NewQuizFrage(
+		"Wie lautet der dritte Buchstabe des Alphabets?",
+		"A",
+		"Der Buchstabe, der als zweites kommt, lautet B oder C, nicht wahr?",
+		"C",
+		"D", 2))
+	quizfragen = append(quizfragen, NewQuizFrage(
+		"Wie lautet der vierte Buchstabe des Alphabets?",
+		"A",
+		"B",
+		"Äh vier. Der Buchstabe, der als viertes kommt, lautet C, nicht wahr?",
+		"D", 3))
+	quizfragen = append(quizfragen, NewQuizFrage(
+		"Wie lautet der fünfte Buchstabe des Alphabets?",
+		"D",
+		"E",
+		"F",
+		"G", 0))
+	quizfragen = append(quizfragen, NewQuizFrage(
+		"Wie lautet der sechste Buchstabe des Alphabets?",
+		"D",
+		"E",
+		"F",
+		"G", 1))
+	quizfragen = append(quizfragen, NewQuizFrage(
+		"Wie lautet der siebte Buchstabe des Alphabets?",
+		"D",
+		"E",
+		"F",
+		"G", 2))
+
+	return &quiz{fragen: quizfragen}
 }

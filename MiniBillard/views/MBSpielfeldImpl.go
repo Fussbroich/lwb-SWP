@@ -7,6 +7,10 @@ import (
 	"../welt"
 )
 
+type MBSpielView interface {
+	Fenster
+}
+
 type miniBSpielfeld struct {
 	billard welt.MiniBillardSpiel
 	fenster
