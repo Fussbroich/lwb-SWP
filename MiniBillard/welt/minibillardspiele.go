@@ -52,7 +52,7 @@ type spiel struct {
 	zeitlupe     uint64
 }
 
-func NewMiniPoolSpiel(br, hö, ra uint16) *spiel {
+func NewMini9BallSpiel(br, hö, ra uint16) *spiel {
 	// Pool-Tisch:  2540 mm × 1270 mm (2:1)
 	// Pool-Kugeln: 57,2 mm
 	var breite, höhe, rK float64 = float64(br), float64(hö), float64(ra)

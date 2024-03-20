@@ -10,31 +10,107 @@ import (
 	"./welt"
 )
 
-/*
 type BrainPoolApp interface {
-	MusikAn()
-	PauseAnAus()
-	DebugAnAus()
-	StoßWiederholen()
-	NeuesSpiel()
+	Starte()
 	Quit()
+	ZeitlupeAnAus()
+	PauseAnAus()
+	QuizmodusAnAus()
 }
 
-type mbapp struct {
+type bpapp struct {
 	billard       welt.MiniBillardSpiel
+	quiz          welt.Quiz
+	quizfenster   views.Fenster
+	standardzeit  time.Duration
 	renderer      views.FensterZeichner
 	maussteuerung hilf.Prozess
+	quizmodus     bool
+	pause         bool
 }
 
-func NewMBApp(billard welt.MiniBillardSpiel, fenster ...views.Fenster) *mbapp {}
+func NewBrainPoolApp(billard welt.MiniBillardSpiel, spieltisch views.Fenster,
+	quiz welt.Quiz, quizfenster views.Fenster,
+	hintergrund, bande, punktezähler, restzeit, neuesSpielButton views.Fenster) *bpapp {
 
-func (app *mbapp) MusikAn() {}
-func (app *mbapp) PauseAnAus() {}
-func (app *mbapp) DebugAnAus() {}
-func (app *mbapp) StoßWiederholen() {}
-func (app *mbapp) NeuesSpiel() {}
-func (app *mbapp) Quit() {}
-*/
+	xs, ys := spieltisch.GibStartkoordinaten()
+	app := bpapp{billard: billard, quiz: quiz, quizfenster: quizfenster,
+		renderer: views.NewFensterZeichner(hintergrund, bande, spieltisch, punktezähler, restzeit, neuesSpielButton)}
+	app.standardzeit = 4 * time.Minute
+
+	app.maussteuerung = hilf.NewProzess("Maussteuerung",
+		func() {
+			// TODO: hier hängt es, wenn die Maus nicht bewegt wird.
+			// Der Mauspuffer ist aber keine Lösung ...
+			taste, _, mausX, mausY := gfx.MausLesen1()
+
+			// Prüfe, wo die Maus gerade ist
+			if app.quizmodus && quizfenster.ImFenster(mausX, mausY) {
+				if taste == 1 {
+					// Antwort prüfen
+				}
+			} else if neuesSpielButton.ImFenster(mausX, mausY) && taste == 1 {
+				app.renderer.ÜberblendeAus()
+				billard.Reset()
+				billard.SetzeRestzeit(app.standardzeit)
+				billard.Starte()
+			} else if billard.Läuft() && billard.IstStillstand() && !billard.GibStoßkugel().IstEingelocht() {
+				switch taste {
+				case 1:
+					billard.Stoße()
+				case 4:
+					billard.SetzeStoßStärke(billard.GibVStoß().Betrag() + 1)
+				case 5:
+					billard.SetzeStoßStärke(billard.GibVStoß().Betrag() - 1)
+				default:
+					billard.SetzeStoßRichtung((hilf.V2(float64(mausX), float64(mausY))).
+						Minus(billard.GibStoßkugel().GibPos()).
+						Minus(hilf.V2(float64(xs), float64(ys))))
+				}
+			}
+		})
+	return &app
+}
+func (app *bpapp) ZeitlupeAnAus() { app.billard.ZeitlupeAnAus() }
+
+func (app *bpapp) PauseAnAus() {
+	if !app.pause {
+		app.billard.Stoppe()
+		app.renderer.ÜberblendeText("Pause", views.F(225, 255, 255), views.F(249, 73, 68), 180)
+	} else {
+		app.renderer.ÜberblendeAus()
+		app.billard.Starte()
+	}
+	app.pause = !app.pause
+}
+
+func (app *bpapp) QuizmodusAnAus() {
+	if !app.quizmodus {
+		app.billard.Stoppe()
+		app.quiz.NächsteFrage()
+		app.renderer.Überblende(app.quizfenster)
+	} else {
+		app.renderer.ÜberblendeAus()
+		app.billard.Starte()
+	}
+	app.quizmodus = !app.quizmodus
+}
+
+func (app *bpapp) Starte() {
+	// ######## starte Spiel-Prozesse ###########################################
+	app.billard.SetzeRestzeit(app.standardzeit)
+	app.billard.Starte()
+	app.renderer.Starte()
+	//renderer.ZeigeLayout()
+	app.maussteuerung.StarteRate(50) // gewünschte Abtastrate je Sekunde
+}
+
+func (app *bpapp) Quit() {
+	app.renderer.ÜberblendeText("Bye!", views.F(225, 255, 255), views.F(249, 73, 68), 30)
+	app.maussteuerung.Stoppe()
+	app.billard.Stoppe()
+	app.renderer.Stoppe()
+}
 
 // ######## Hier kommt die gesamte App #########################################
 func main() {
@@ -44,7 +120,6 @@ func main() {
 	xs, ys, xe, ye := 4*g, 6*g, 28*g, 18*g
 	b, h := 32*g, 22*g
 	g3 := g + g/3
-	standardzeit := 4 * time.Minute
 
 	println("Willkommen bei BrainPool")
 	println("Öffne Gfx-Fenster")
@@ -54,9 +129,9 @@ func main() {
 	// realer Tisch: 2540 mm x 1270 mm, Kugelradius: 57.2 mm
 	var bS, hS uint16 = 24 * g, 12 * g        // Breite, Höhe des "Spielfelds"
 	ra := uint16(0.5 + float64(bS)*57.2/2540) // Zeichenradius der Kugeln
-	var billard welt.MiniBillardSpiel = welt.NewMiniPoolSpiel(bS, hS, ra)
+	var billard welt.MiniBillardSpiel = welt.NewMini9BallSpiel(bS, hS, ra)
 	var quiz welt.Quiz = welt.NewBeispielQuiz()
-	var quizmodus bool
+
 	// ######## erzeuge App-Fenster ###########################################
 	// H: Hallenboden: F(218, 218, 218), Kneipenboden: views.F(104, 76, 65)
 	hintergrund := views.NewFenster(0, 0, b, h,
@@ -80,100 +155,38 @@ func main() {
 	quizfenster := views.NewQuizFenster(quiz, xs-g3, ys-g3, xe+g3, ye+g3,
 		views.Weiß(), views.F(1, 88, 122), g3)
 
-	var renderer views.FensterZeichner = views.NewFensterZeichner(
-		hintergrund,
-		bande, tisch,
-		punktezähler,
-		restzeit,
-		neuesSpielButton)
-
-	// ######## definiere Maussteuerung #########################################^
-
-	mausProzess := hilf.NewProzess("Maussteuerung",
-		func() {
-			// TODO: hier hängt es, wenn die Maus nicht bewegt wird.
-			// Der Mauspuffer ist aber keine Lösung ...
-			taste, _, mausX, mausY := gfx.MausLesen1()
-
-			// Prüfe, wo die Maus gerade ist
-			if quizmodus && quizfenster.ImFenster(mausX, mausY) {
-				if taste == 1 {
-				}
-			} else if neuesSpielButton.ImFenster(mausX, mausY) && taste == 1 {
-				renderer.ÜberblendeAus()
-				billard.Reset()
-				billard.SetzeRestzeit(standardzeit)
-				billard.Starte()
-			} else if billard.Läuft() && billard.IstStillstand() && !billard.GibStoßkugel().IstEingelocht() {
-				switch taste {
-				case 1:
-					billard.Stoße()
-				case 4:
-					billard.SetzeStoßStärke(billard.GibVStoß().Betrag() + 1)
-				case 5:
-					billard.SetzeStoßStärke(billard.GibVStoß().Betrag() - 1)
-				default:
-					billard.SetzeStoßRichtung((hilf.V2(float64(mausX), float64(mausY))).
-						Minus(billard.GibStoßkugel().GibPos()).
-						Minus(hilf.V2(float64(xs), float64(ys))))
-				}
-				// die Stoßstärke wird in "Kugelradien" gemessen
-			}
-		})
+	//erzeuge App-Control
+	var bpapp BrainPoolApp = NewBrainPoolApp(billard, tisch, quiz, quizfenster,
+		hintergrund, bande, punktezähler, restzeit, neuesSpielButton)
 
 	// ######## Musik ###########################################################
 	musik := klaenge.CoolJazz2641SOUND()
 	//pulse := klaenge.MassivePulseSound()
 	geräusche := klaenge.BillardPubAmbienceSOUND()
 
-	// ######## starte Spiel-Prozesse ###########################################
-	billard.SetzeRestzeit(standardzeit)
-	billard.Starte()
-	renderer.Starte()
-	//renderer.ZeigeLayout()
-	mausProzess.StarteRate(50) // gewünschte Abtastrate je Sekunde
-
 	// ######## Tastatur-Loop ###################################################
-	var pause, fragemodus bool
+	bpapp.Starte()
+
 	for {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
 		if gedrückt == 1 {
 			switch taste {
 			case 'f': // erzwinge fragemodus
-				if !fragemodus {
-					billard.Stoppe()
-					quiz.NächsteFrage()
-					renderer.Überblende(quizfenster)
-				} else {
-					renderer.ÜberblendeAus()
-					billard.Starte()
-				}
-				fragemodus = !fragemodus
-			//
+				bpapp.QuizmodusAnAus()
 			case 'd': // Debug
-				billard.ZeitlupeAnAus()
+				bpapp.ZeitlupeAnAus()
 			case 'm': // Musik an
 				// einmal an bleibt an; stoppen geht mit gfx nicht.
 				musik.StarteLoop()
 				geräusche.StarteLoop()
 			case 'p': // Pause
-				if !pause {
-					billard.Stoppe()
-					renderer.ÜberblendeText("Pause", views.F(225, 255, 255), views.F(249, 73, 68), 180)
-				} else {
-					renderer.ÜberblendeAus()
-					billard.Starte()
-				}
-				pause = !pause
+				bpapp.PauseAnAus()
 			case 'n': // nochmal
-				billard.StoßWiederholen() // setze Kugeln wie vor dem letzten Stoß
+				//billard.StoßWiederholen() // setze Kugeln wie vor dem letzten Stoß
 			case 'q': // quit
-				renderer.ÜberblendeText("Bye!", views.F(225, 255, 255), views.F(249, 73, 68), 30)
 				geräusche.Stoppe()
 				musik.Stoppe()
-				mausProzess.Stoppe()
-				billard.Stoppe()
-				renderer.Stoppe()
+				bpapp.Quit()
 				time.Sleep(100 * time.Millisecond)
 				if gfx.FensterOffen() {
 					gfx.FensterAus()
