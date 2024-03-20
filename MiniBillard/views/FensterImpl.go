@@ -33,6 +33,8 @@ func (f *fenster) ImFenster(x, y uint16) bool {
 	return x > xs && x < xs+b && y > ys && y < ys+h
 }
 
+func (f *fenster) MausklickBei(x, y uint16) {}
+
 func (f *fenster) ZeichneLayout() {
 	r, g, b := f.hg.RGB()
 	gfx.Stiftfarbe(r, g, b)

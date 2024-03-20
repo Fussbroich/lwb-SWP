@@ -46,7 +46,7 @@ func NewBPAppControl(billard welt.MiniBillardSpiel, spieltisch, punktezähler, r
 			// Prüfe, wo die Maus gerade ist
 			if app.quizmodus && quizfenster.ImFenster(mausX, mausY) {
 				if taste == 1 {
-					// Antwort prüfen
+					quizfenster.MausklickBei(mausX, mausY)
 				}
 			} else if neuesSpielButton.ImFenster(mausX, mausY) && taste == 1 {
 				app.renderer.ÜberblendeAus()

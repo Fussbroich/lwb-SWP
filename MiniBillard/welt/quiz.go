@@ -5,6 +5,7 @@ import "math/rand"
 type Quiz interface {
 	NächsteFrage()
 	GibAktuelleFrage() QuizFrage
+	Antwort(int)
 }
 
 type quiz struct {
@@ -23,19 +24,23 @@ func (q *quiz) GibAktuelleFrage() QuizFrage {
 	return q.aktuelle
 }
 
+func (q *quiz) Antwort(i int) {
+	q.aktuelle.Gewählt(i)
+}
+
 type QuizFrage interface {
 	GibFrage() string
 	GibAntworten() [4]string
-	IstRichtig(uint8) bool
+	Gewählt(int)
 }
 
 type quizfrage struct {
 	frage            string
-	richtig, gewählt uint8
+	richtig, gewählt int
 	antworten        [4]string
 }
 
-func NewQuizFrage(frage, a1, a2, a3, a4 string, richtig uint8) *quizfrage {
+func NewQuizFrage(frage, a1, a2, a3, a4 string, richtig int) *quizfrage {
 	return &quizfrage{frage: frage, antworten: [4]string{a1, a2, a3, a4}, richtig: richtig}
 }
 
@@ -43,4 +48,4 @@ func (f *quizfrage) GibFrage() string { return f.frage }
 
 func (f *quizfrage) GibAntworten() [4]string { return f.antworten }
 
-func (f *quizfrage) IstRichtig(i uint8) bool { return i == f.richtig }
+func (f *quizfrage) Gewählt(i int) { f.gewählt = i }

@@ -23,6 +23,15 @@ func NewQuizFenster(quiz welt.Quiz, startx, starty, stopx, stopy uint16, hg, vg 
 	return &quizfenster{quiz: quiz, fenster: fenster}
 }
 
+func (f *quizfenster) MauklickBei(mausX, mausY uint16) {
+	for i, a := range f.as {
+		if a.ImFenster(mausX, mausY) {
+			println("Antwort:", i)
+			f.quiz.Antwort(i)
+		}
+	}
+}
+
 func (f *quizfenster) Zeichne() {
 	f.ZeichneRand()
 	f.fenster.Zeichne()
