@@ -29,8 +29,8 @@ type bpapp struct {
 	pause         bool
 }
 
-func NewBPAppControl(billard welt.MiniBillardSpiel, spieltisch, punktezähler, restzeit views.MBSpielView,
-	quiz welt.Quiz, quizfenster views.QuizView, hintergrund, bande, neuesSpielButton views.Fenster) *bpapp {
+func NewBPAppControl(billard welt.MiniBillardSpiel, spieltisch, punktezähler, restzeit views.Fenster,
+	quiz welt.Quiz, quizfenster, hintergrund, bande, neuesSpielButton views.Fenster) *bpapp {
 
 	xs, ys := spieltisch.GibStartkoordinaten()
 	app := bpapp{billard: billard, quiz: quiz, quizfenster: quizfenster,
