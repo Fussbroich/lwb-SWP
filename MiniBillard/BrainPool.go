@@ -27,7 +27,7 @@ func main() {
 	var bS, hS uint16 = 24 * g, 12 * g        // Breite, Höhe des "Spielfelds"
 	ra := uint16(0.5 + float64(bS)*57.2/2540) // Zeichenradius der Kugeln
 	var billard welt.MiniBillardSpiel = welt.NewMini9BallSpiel(bS, hS, ra)
-	var quiz welt.Quiz = welt.NewBeispielQuiz()
+	var quiz welt.Quiz = welt.NewQuizCSV("BeispielQuiz.csv")
 
 	// ######## erzeuge App-Fenster ###########################################
 	// H: Hallenboden: F(218, 218, 218), Kneipenboden: views.F(104, 76, 65)
