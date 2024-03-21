@@ -14,7 +14,6 @@ type BPAppControl interface {
 	Quit()
 	ZeitlupeAnAus()
 	PauseAnAus()
-	QuizmodusAnAus()
 }
 
 type bpapp struct {
@@ -72,7 +71,7 @@ func (app *bpapp) Quit() {
 
 func (app *bpapp) appSteuerung() {
 	// TODO: hier hängt es, wenn die Maus nicht bewegt wird.
-	// Der Mauspuffer ist aber keine Lösung ...
+	// Ist der Mauspuffer eine Lösung ?
 	taste, status, mausX, mausY := gfx.MausLesen1()
 
 	// im Quizmodus
@@ -82,7 +81,7 @@ func (app *bpapp) appSteuerung() {
 			if app.quiz.GibAktuelleFrage().RichtigBeantwortet() {
 				app.billard.ReduziereStrafpunkte()
 				if app.billard.GibStrafpunkte() <= app.billard.GibTreffer() {
-					app.quizmodusAus()
+					app.quizmodusAus() // zurück zum Spielmodus
 				}
 			} else {
 				app.quiz.NächsteFrage()
@@ -96,13 +95,13 @@ func (app *bpapp) appSteuerung() {
 		app.billard.SetzeRestzeit(app.spielzeit)
 		app.billard.Starte()
 		// im Spielmodus
-	} else if app.billard.Läuft() && app.billard.IstStillstand() {
+	} else if app.billard.Läuft() {
 		if app.billard.GibStoßkugel().IstEingelocht() {
 			app.billard.ErhöheStrafpunkte()
 			app.billard.StoßWiederholen()
 		} else if app.billard.GibStrafpunkte() > app.billard.GibTreffer() {
-			app.quizmodusAn()
-		} else {
+			app.quizmodusAn() // zum Quizmodus
+		} else if app.billard.IstStillstand() {
 			switch taste {
 			case 1: // stoßen
 				app.billard.Stoße()
@@ -152,15 +151,4 @@ func (app *bpapp) quizmodusAus() {
 	app.renderer.ÜberblendeAus()
 	app.billard.Starte()
 	app.quizmodus = false
-}
-
-func (app *bpapp) QuizmodusAnAus() {
-	if !app.läuft {
-		return
-	}
-	if !app.quizmodus {
-		app.quizmodusAn()
-	} else {
-		app.quizmodusAus()
-	}
 }

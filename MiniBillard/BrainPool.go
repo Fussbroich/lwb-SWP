@@ -69,8 +69,6 @@ func main() {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
 		if gedrückt == 1 {
 			switch taste {
-			case 'f': // erzwinge fragemodus
-				bpapp.QuizmodusAnAus()
 			case 'd': // Debug
 				bpapp.ZeitlupeAnAus()
 			case 'm': // Musik an
