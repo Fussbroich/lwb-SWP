@@ -58,17 +58,16 @@ func NewMBSpieltischFenster(billard welt.MiniBillardSpiel, startx, starty, stopx
 */
 
 func (f *miniBSpielfeld) Zeichne() {
-	// zeichne das Tuch
-	f.fenster.Zeichne()
 	fp := fontDateipfad("LiberationMono-Regular.ttf")
-	// zeichne die Taschen
-
 	breite, _ := f.GibGröße()
 	kS := f.billard.GibStoßkugel()
 	ra := kS.GibRadius()
+	// zeichne das Tuch
+	f.fenster.Zeichne()
 
+	// zeichne die Taschen
 	for _, t := range f.billard.GibTaschen() {
-		gfxVollKreis(f.startX, f.startY, t.GibPos(), ra, Schwarz())
+		gfxVollKreis(f.startX, f.startY, t.GibPos(), ra*1.3, Schwarz())
 	}
 	// zeichne die Kugeln
 	for _, k := range f.billard.GibAktiveKugeln() {
