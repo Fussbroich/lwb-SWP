@@ -1,0 +1,407 @@
+@startuml
+namespace controls {
+    interface MBAppControl  {
+        + Starte() 
+        + Quit() 
+        + ZeitlupeAnAus() 
+        + PauseAnAus() 
+
+    }
+    class mbapp << (S,Aquamarine) >> {
+        - läuft bool
+        - billard welt.MiniBillardSpiel
+        - spieltisch views.Widget
+        - spielzeit time.Duration
+        - pause bool
+        - neuesSpielButton views.Widget
+        - quiz welt.Quiz
+        - quizmodus bool
+        - quizfenster views.Widget
+        - renderer views.FensterZeichner
+        - steuerProzess hilf.Prozess
+
+        - appSteuerung() 
+        - quizmodusAn() 
+        - quizmodusAus() 
+
+        + Starte() 
+        + Quit() 
+        + ZeitlupeAnAus() 
+        + PauseAnAus() 
+
+    }
+}
+
+"controls.MBAppControl" <|-- "controls.mbapp"
+
+namespace hilf {
+    interface Prozess  {
+        + StarteLoop( time.Duration) 
+        + StarteRate( uint64) 
+        + Starte() 
+        + GibRate() uint64
+        + Stoppe() 
+        + Läuft() bool
+
+    }
+    class Vec2 << (S,Aquamarine) >> {
+        - x float64
+
+        + X() float64
+        + Y() float64
+        + IstNull() bool
+        + Betrag() float64
+        + Normiert() Vec2
+        + Punkt(b Vec2) float64
+        + Plus(b Vec2) Vec2
+        + Minus(b Vec2) Vec2
+        + Mal(f float64) Vec2
+        + ProjiziertAuf(u Vec2) Vec2
+
+    }
+    class prozess << (S,Aquamarine) >> {
+        - name string
+        - frun <font color=blue>func</font>() 
+        - rate uint64
+        - verzögerung time.Duration
+        - stop <font color=blue>chan</font> bool
+
+        + Läuft() bool
+        + StarteLoop(tick time.Duration) 
+        + StarteRate(sollRate uint64) 
+        + Starte() 
+        + GibRate() uint64
+        + Stoppe() 
+
+    }
+}
+
+"hilf.Prozess" <|-- "hilf.prozess"
+
+namespace klaenge {
+    interface Klang  {
+        + Play() 
+        + StarteLoop() 
+        + StoppeLoop() 
+
+    }
+    class klang << (S,Aquamarine) >> {
+        - titel string
+        - dauer time.Duration
+        - autor string
+        - player hilf.Prozess
+        - play <font color=blue>func</font>() 
+
+        + Play() 
+        + StarteLoop() 
+        + Stoppe() 
+
+    }
+}
+
+
+namespace views {
+    interface Farbe  {
+        + RGB() (uint8, uint8, uint8)
+
+    }
+    interface FensterZeichner  {
+        + Starte() 
+        + Stoppe() 
+        + ZeigeLayout() 
+        + Überblende( Widget) 
+        + ÜberblendeText( string,  Farbe,  Farbe,  uint8) 
+        + ÜberblendeAus() 
+
+    }
+    interface MBSpielView  {
+    }
+    interface Widget  {
+        + Zeichne() 
+        + ZeichneRand() 
+        + ZeichneLayout() 
+        + GibStartkoordinaten() (uint16, uint16)
+        + GibGröße() (uint16, uint16)
+        + ImFenster(mausX uint16, mausY uint16) bool
+        + MausklickBei(mausX uint16, mausY uint16) 
+
+    }
+    class button << (S,Aquamarine) >> {
+        - text string
+
+        + Zeichne() 
+
+    }
+    class fzeichner << (S,Aquamarine) >> {
+        - breite uint16
+        - widgets []Widget
+        - overlay Widget
+        - updater hilf.Prozess
+        - updaterLäuft bool
+        - rate uint64
+
+        + Starte() 
+        + Stoppe() 
+        + ZeigeLayout() 
+        + Überblende(f Widget) 
+        + ÜberblendeText(t string, hg Farbe, vg Farbe, tr uint8) 
+        + ÜberblendeAus() 
+
+    }
+    class infotext << (S,Aquamarine) >> {
+        - text string
+
+        + Zeichne() 
+
+    }
+    class miniBRestzeit << (S,Aquamarine) >> {
+        - billard welt.MiniBillardSpiel
+
+        + Zeichne() 
+
+    }
+    class miniBSpielfeld << (S,Aquamarine) >> {
+        - billard welt.MiniBillardSpiel
+
+        + Zeichne() 
+
+    }
+    class miniBSpielinfo << (S,Aquamarine) >> {
+        - billard welt.MiniBillardSpiel
+
+        + Zeichne() 
+
+    }
+    class quizfenster << (S,Aquamarine) >> {
+        - quiz welt.Quiz
+        - frage Widget
+        - as []Widget
+
+        + MausklickBei(mausX uint16, mausY uint16) 
+        + Zeichne() 
+
+    }
+    class rgb << (S,Aquamarine) >> {
+        - r uint8
+
+        + RGB() (uint8, uint8, uint8)
+
+    }
+    class text_overlay << (S,Aquamarine) >> {
+        - text string
+
+        + Zeichne() 
+
+    }
+    class textbox << (S,Aquamarine) >> {
+        - text string
+
+        + Zeichne() 
+
+    }
+    class widget << (S,Aquamarine) >> {
+        - startX uint16
+        - stopX uint16
+        - hg Farbe
+        - transparenz uint8
+        - eckradius uint16
+
+        + GibStartkoordinaten() (uint16, uint16)
+        + GibGröße() (uint16, uint16)
+        + ImFenster(x uint16, y uint16) bool
+        + MausklickBei(x uint16, y uint16) 
+        + ZeichneLayout() 
+        + Zeichne() 
+        + ZeichneRand() 
+
+    }
+}
+"views.Widget" *-- "views.MBSpielView"
+"views.widget" *-- "views.button"
+"views.widget" *-- "views.infotext"
+"views.widget" *-- "views.miniBRestzeit"
+"views.widget" *-- "views.miniBSpielfeld"
+"views.widget" *-- "views.miniBSpielinfo"
+"views.widget" *-- "views.quizfenster"
+"views.widget" *-- "views.text_overlay"
+"views.widget" *-- "views.textbox"
+
+"views.FensterZeichner" <|-- "views.fzeichner"
+"views.Farbe" <|-- "views.rgb"
+"views.Widget" <|-- "views.widget"
+
+namespace welt {
+    interface MBKugel  {
+        + BewegenIn( MiniBillardSpiel) 
+        + SetzeKollidiertMit( MBKugel) 
+        + SetzeKollidiertZurück() 
+        + IstEingelocht() bool
+        + GibV() hilf.Vec2
+        + SetzeV( hilf.Vec2) 
+        + Stop() 
+        + GibPos() hilf.Vec2
+        + SetzePos( hilf.Vec2) 
+        + GibRadius() float64
+        + GibWert() uint8
+        + GibKopie() MBKugel
+
+    }
+    interface MBTasche  {
+        + GibPos() hilf.Vec2
+        + GibRadius() float64
+
+    }
+    interface MiniBillardSpiel  {
+        + Starte() 
+        + Stoppe() 
+        + Läuft() bool
+        + ZeitlupeAnAus() 
+        + IstZeitlupe() bool
+        + Stoße() 
+        + StoßWiederholen() 
+        + Reset() 
+        + IstStillstand() bool
+        + GibTaschen() []MBTasche
+        + GibKugeln() []MBKugel
+        + GibAktiveKugeln() []MBKugel
+        + Einlochen( MBKugel) 
+        + GibEingelochteKugeln() []MBKugel
+        + GibStoßkugel() MBKugel
+        + GibVStoß() hilf.Vec2
+        + SetzeStoßRichtung( hilf.Vec2) 
+        + SetzeStoßStärke( float64) 
+        + SetzeRestzeit( time.Duration) 
+        + GibRestzeit() time.Duration
+        + GibTreffer() uint8
+        + GibStrafpunkte() uint8
+        + ErhöheStrafpunkte() 
+        + ReduziereStrafpunkte() 
+        + GibGröße() (float64, float64)
+
+    }
+    interface Quiz  {
+        + NächsteFrage() 
+        + GibAktuelleFrage() QuizFrage
+
+    }
+    interface QuizFrage  {
+        + GibFrage() string
+        + GibAntworten() []string
+        + Gewählt( int) 
+        + RichtigBeantwortet() bool
+
+    }
+    class mbkugel << (S,Aquamarine) >> {
+        - pos hilf.Vec2
+        - r float64
+        - wert uint8
+        - istKollMit MBKugel
+        - eingelocht bool
+
+        - prüfeBandenKollision(länge float64, breite float64) 
+        - prüfeKugelKollision(k2 MBKugel) 
+
+        + GibKopie() MBKugel
+        + BewegenIn(s MiniBillardSpiel) 
+        + IstEingelocht() bool
+        + SetzeKollidiertMit(k2 MBKugel) 
+        + SetzeKollidiertZurück() 
+        + GibV() hilf.Vec2
+        + SetzeV(v hilf.Vec2) 
+        + Stop() 
+        + GibPos() hilf.Vec2
+        + SetzePos(pos hilf.Vec2) 
+        + GibRadius() float64
+        + GibWert() uint8
+
+    }
+    class mbspiel << (S,Aquamarine) >> {
+        - breite float64
+        - höhe float64
+        - rk float64
+        - kugeln []MBKugel
+        - origKugeln []MBKugel
+        - vorigeKugeln []MBKugel
+        - stoßkugel MBKugel
+        - stoßricht hilf.Vec2
+        - stoßstärke float64
+        - taschen []MBTasche
+        - eingelochte []MBKugel
+        - strafPunkte uint8
+        - stillstand bool
+        - updater hilf.Prozess
+        - startzeit time.Time
+        - restzeit time.Duration
+        - zeitlupe uint64
+
+        - setzeTaschen(t ...MBTasche) 
+        - setzeKugeln(k ...MBKugel) 
+        - kugelSatz3er() []MBKugel
+        - kugelSatz9Ball() []MBKugel
+
+        + SetzeKugeln9Ball() 
+        + Starte() 
+        + Läuft() bool
+        + Stoppe() 
+        + ZeitlupeAnAus() 
+        + IstZeitlupe() bool
+        + GibVStoß() hilf.Vec2
+        + SetzeStoßRichtung(v hilf.Vec2) 
+        + SetzeStoßStärke(v float64) 
+        + Stoße() 
+        + SetzeRestzeit(t time.Duration) 
+        + GibRestzeit() time.Duration
+        + Reset() 
+        + StoßWiederholen() 
+        + GibKugeln() []MBKugel
+        + GibStoßkugel() MBKugel
+        + GibAktiveKugeln() []MBKugel
+        + Einlochen(k MBKugel) 
+        + GibEingelochteKugeln() []MBKugel
+        + GibGröße() (float64, float64)
+        + GibTaschen() []MBTasche
+        + IstStillstand() bool
+        + GibTreffer() uint8
+        + GibStrafpunkte() uint8
+        + ErhöheStrafpunkte() 
+        + ReduziereStrafpunkte() 
+
+    }
+    class quiz << (S,Aquamarine) >> {
+        - fragen []QuizFrage
+        - aktuelle QuizFrage
+
+        + NächsteFrage() 
+        + GibAktuelleFrage() QuizFrage
+        + Antwort(i int) 
+
+    }
+    class quizfrage << (S,Aquamarine) >> {
+        - frage string
+        - richtig int
+        - antworten []string
+
+        + GibFrage() string
+        + GibAntworten() []string
+        + Gewählt(i int) 
+        + RichtigBeantwortet() bool
+
+    }
+    class tasche << (S,Aquamarine) >> {
+        - pos hilf.Vec2
+        - r float64
+
+        + GibPos() hilf.Vec2
+        + GibRadius() float64
+
+    }
+}
+
+"welt.MBKugel" <|-- "welt.mbkugel"
+"welt.MBTasche" <|-- "welt.mbkugel"
+"welt.MiniBillardSpiel" <|-- "welt.mbspiel"
+"welt.Quiz" <|-- "welt.quiz"
+"welt.QuizFrage" <|-- "welt.quizfrage"
+"welt.MBTasche" <|-- "welt.tasche"
+
+@enduml
