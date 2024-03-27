@@ -1,6 +1,7 @@
 package welt
 
 import (
+	"math/rand"
 	"time"
 
 	"../hilf"
@@ -74,9 +75,10 @@ func (sp *mbspiel) SetzeKugeln9Ball() {
 }
 
 func (s *mbspiel) kugelSatz3er() []MBKugel {
-	pStoß := pos(4*s.breite/5, s.höhe/3)
-	p1 := pos(3*s.breite/5, s.höhe/2)
-	dx, dy := 0.866*(2*s.rk+2), 0.5*(2*s.rk+2)
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	pStoß := pos(s.breite-r.Float64()*(s.breite/4), r.Float64()*s.höhe)
+	dx, dy := 0.866*(2*s.rk+1), 0.5*(2*s.rk+1)
+	p1 := pos(s.breite/4, s.höhe/2)
 	p2 := p1.Plus(pos(-dx, -dy))
 	p3 := p1.Plus(pos(-dx, dy))
 	return []MBKugel{NewKugel(pStoß, s.rk, 0),
@@ -86,9 +88,11 @@ func (s *mbspiel) kugelSatz3er() []MBKugel {
 }
 
 func (s *mbspiel) kugelSatz9Ball() []MBKugel {
-	pStoß := pos(4*s.breite/5, s.höhe/2)
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	pStoß := pos(s.breite-s.rk-r.Float64()*(s.breite/4-2*s.rk),
+		r.Float64()*(s.höhe-2*s.rk)+s.rk)
 	dx, dy := 0.866*(2*s.rk+1), 0.5*(2*s.rk+1)
-	p1 := pos(3*s.breite/5, s.höhe/2)
+	p1 := pos(s.breite/4, s.höhe/2)
 	//
 	p2 := p1.Plus(pos(-dx, -dy))
 	p3 := p1.Plus(pos(-dx, dy))
@@ -221,10 +225,7 @@ func (s *mbspiel) SetzeRestzeit(t time.Duration) { s.restzeit = t }
 func (s *mbspiel) GibRestzeit() time.Duration { return s.restzeit }
 
 func (s *mbspiel) Reset() {
-	s.kugeln = []MBKugel{}
-	for _, k := range s.origKugeln {
-		s.kugeln = append(s.kugeln, k.GibKopie()) // Kopien stehen still
-	}
+	s.kugeln = s.kugelSatz9Ball()
 	s.stoßkugel = s.kugeln[0]
 	s.eingelochte = []MBKugel{}
 	s.strafPunkte = 0

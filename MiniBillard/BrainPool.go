@@ -65,7 +65,7 @@ func main() {
 	geräusche := klaenge.BillardPubAmbienceSOUND()
 
 	// ######## Tastatur-Loop #########################################
-	bpapp.Starte()
+	bpapp.Run()
 	for {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
 		if gedrückt == 1 {

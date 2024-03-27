@@ -29,6 +29,9 @@ func (f *miniBSpielfeld) Zeichne() {
 	// zeichne das Tuch
 	f.widget.Zeichne()
 
+	// zeichne Punkte und Diamanten
+	//TODO
+
 	// zeichne die Taschen
 	for _, t := range f.billard.GibTaschen() {
 		gfxVollKreis(f.startX, f.startY, t.GibPos(), ra*1.3, Schwarz())

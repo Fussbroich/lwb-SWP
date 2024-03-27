@@ -10,7 +10,7 @@ import (
 )
 
 type MBAppControl interface {
-	Starte()
+	Run()
 	Quit()
 	ZeitlupeAnAus()
 	PauseAnAus()
@@ -44,7 +44,7 @@ func NewMBAppControl(billard welt.MiniBillardSpiel,
 	return &app
 }
 
-func (app *mbapp) Starte() {
+func (app *mbapp) Run() {
 	if app.läuft {
 		return
 	}
@@ -52,7 +52,9 @@ func (app *mbapp) Starte() {
 	app.billard.Starte()
 	app.renderer.Starte()
 	//renderer.ZeigeLayout()
-	app.steuerProzess = hilf.NewProzess("Maussteuerung", app.appSteuerung)
+	app.steuerProzess = hilf.NewProzess(
+		"Maussteuerung",
+		app.appSteuerung)
 	app.steuerProzess.StarteRate(50) // gewünschte Abtastrate je Sekunde
 	app.läuft = true
 }
