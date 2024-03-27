@@ -4,19 +4,19 @@ import "gfx"
 
 type button struct {
 	text string
-	fenster
+	widget
 }
 
 // Buttons haben einen Text in der Mitte
 func NewButton(startx, starty, stopx, stopy uint16, t string, hg, vg Farbe, tr uint8, ra uint16) *button {
-	fenster := fenster{startX: startx, startY: starty, stopX: stopx, stopY: stopy,
+	fenster := widget{startX: startx, startY: starty, stopX: stopx, stopY: stopy,
 		hg: hg, vg: vg, transparenz: 0, eckradius: ra}
-	return &button{text: t, fenster: fenster}
+	return &button{text: t, widget: fenster}
 }
 
 func (f *button) Zeichne() {
 	f.ZeichneRand()
-	f.fenster.Zeichne()
+	f.widget.Zeichne()
 	fp := fontDateipfad("LiberationMono-Regular.ttf")
 	r, g, b := f.vg.RGB()
 	gfx.Stiftfarbe(r, g, b)

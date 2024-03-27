@@ -9,11 +9,6 @@ import (
 	"strconv"
 )
 
-type Quiz interface {
-	NächsteFrage()
-	GibAktuelleFrage() QuizFrage
-}
-
 type quiz struct {
 	fragen   []QuizFrage
 	aktuelle QuizFrage
@@ -32,13 +27,6 @@ func (q *quiz) GibAktuelleFrage() QuizFrage {
 
 func (q *quiz) Antwort(i int) {
 	q.aktuelle.Gewählt(i)
-}
-
-type QuizFrage interface {
-	GibFrage() string
-	GibAntworten() [4]string
-	Gewählt(int)
-	RichtigBeantwortet() bool
 }
 
 type quizfrage struct {

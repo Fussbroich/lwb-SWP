@@ -11,7 +11,7 @@ import (
 	"../welt"
 )
 
-type fenster struct {
+type widget struct {
 	startX, startY uint16
 	stopX, stopY   uint16
 	hg, vg         Farbe
@@ -19,23 +19,23 @@ type fenster struct {
 	eckradius      uint16
 }
 
-func NewFenster(startx, starty, stopx, stopy uint16, hg, vg Farbe, tr uint8, ra uint16) *fenster {
-	return &fenster{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr, eckradius: ra}
+func NewFenster(startx, starty, stopx, stopy uint16, hg, vg Farbe, tr uint8, ra uint16) *widget {
+	return &widget{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr, eckradius: ra}
 }
 
-func (f *fenster) GibStartkoordinaten() (uint16, uint16) { return f.startX, f.startY }
+func (f *widget) GibStartkoordinaten() (uint16, uint16) { return f.startX, f.startY }
 
-func (f *fenster) GibGröße() (uint16, uint16) { return f.stopX - f.startX, f.stopY - f.startY }
+func (f *widget) GibGröße() (uint16, uint16) { return f.stopX - f.startX, f.stopY - f.startY }
 
-func (f *fenster) ImFenster(x, y uint16) bool {
+func (f *widget) ImFenster(x, y uint16) bool {
 	xs, ys := f.startX+f.eckradius*3/10, f.startY+f.eckradius*3/10
 	b, h := f.stopX-f.startX-f.eckradius*6/10, f.stopY-f.startY-f.eckradius*6/10
 	return x > xs && x < xs+b && y > ys && y < ys+h
 }
 
-func (f *fenster) MausklickBei(x, y uint16) {}
+func (f *widget) MausklickBei(x, y uint16) {}
 
-func (f *fenster) ZeichneLayout() {
+func (f *widget) ZeichneLayout() {
 	r, g, b := f.hg.RGB()
 	gfx.Stiftfarbe(r, g, b)
 	gfx.Transparenz(f.transparenz)
@@ -54,7 +54,7 @@ func (f *fenster) ZeichneLayout() {
 	gfx.Transparenz(0)
 }
 
-func (f *fenster) Zeichne() {
+func (f *widget) Zeichne() {
 	r, g, b := f.hg.RGB()
 	gfx.Stiftfarbe(r, g, b)
 	gfx.Transparenz(f.transparenz)
@@ -73,7 +73,7 @@ func (f *fenster) Zeichne() {
 	gfx.Transparenz(0)
 }
 
-func (f *fenster) ZeichneRand() {
+func (f *widget) ZeichneRand() {
 	r, g, b := f.vg.RGB()
 	gfx.Stiftfarbe(r, g, b)
 	gfx.Transparenz(0)
@@ -148,7 +148,7 @@ func fontDateipfad(filename string) string {
 	return fp
 }
 
-func zeichneKugel(startX, startY uint16, p hilf.Vec2, k welt.Kugel) {
+func zeichneKugel(startX, startY uint16, p hilf.Vec2, k welt.MBKugel) {
 	fp := fontDateipfad("LiberationMono-Bold.ttf")
 	schriftgröße := int(k.GibRadius()) - 3
 	gfxVollKreis(startX, startY, p, k.GibRadius(), F(48, 49, 54))
@@ -198,37 +198,16 @@ func gfxVollKreissektor(startX, startY uint16, pos hilf.Vec2, radius float64, wV
 		uint16(0.5+radius), wVon, wBis)
 }
 
-func gfxVollRechteck(startX, startY uint16, pos hilf.Vec2, breite, höhe float64, c Farbe) {
-	cr, cg, cb := c.RGB()
-	gfx.Stiftfarbe(cr, cg, cb)
-	gfx.Vollrechteck(
-		startX+uint16(0.5+pos.X()), startY+uint16(0.5+pos.Y()),
-		uint16(0.5+breite), uint16(0.5+höhe))
-}
-
-func gfxVollDreieck(startX, startY uint16, p1, p2, p3 hilf.Vec2, c Farbe) {
-	cr, cg, cb := c.RGB()
-	gfx.Stiftfarbe(cr, cg, cb)
-	gfx.Volldreieck(
-		startX+uint16(0.5+p1.X()), startY+uint16(0.5+p1.Y()),
-		startX+uint16(0.5+p2.X()), startY+uint16(0.5+p2.Y()),
-		startX+uint16(0.5+p3.X()), startY+uint16(0.5+p3.Y()))
-}
-
 func gfxBreiteLinie(startX, startY uint16, pV, pN hilf.Vec2, breite float64, c Farbe) {
 	richt := pN.Minus(pV).Normiert()
 	d := hilf.V2(richt.Y(), -richt.X())
+	cr, cg, cb := c.RGB()
+	gfx.Stiftfarbe(cr, cg, cb)
 
 	pA := pV.Minus(d.Mal(breite / 2))
 	pB := pV.Plus(d.Mal(breite / 2))
 	pC := pN.Plus(d.Mal(breite / 2))
 	pD := pN.Minus(d.Mal(breite / 2))
-	gfxVollDreieck(startX, startY, pA, pB, pC, c)
-	gfxVollDreieck(startX, startY, pA, pC, pD, c)
-	cr, cg, cb := c.RGB()
-	gfx.Stiftfarbe(cr, cg, cb)
-	//gfx.Vollkreis(
-	//	startX+uint16(0.5+pV.X()), startY+uint16(0.5+pV.Y()), uint16(0.5+breite/2))
-	//gfx.Vollkreis(
-	//	startX+uint16(0.5+pN.X()), startX+uint16(0.5+pN.Y()), uint16(0.5+breite/2))
+	gfx.Volldreieck(startX+uint16(0.5+pA.X()), startY+uint16(0.5+pA.Y()), startX+uint16(0.5+pB.X()), startY+uint16(0.5+pB.Y()), startX+uint16(0.5+pC.X()), startY+uint16(0.5+pC.Y()))
+	gfx.Volldreieck(startX+uint16(0.5+pA.X()), startY+uint16(0.5+pA.Y()), startX+uint16(0.5+pC.X()), startY+uint16(0.5+pC.Y()), startX+uint16(0.5+pD.X()), startY+uint16(0.5+pD.Y()))
 }

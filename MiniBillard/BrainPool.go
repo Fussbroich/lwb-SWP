@@ -43,17 +43,18 @@ func main() {
 	bande := views.NewFenster(xs-g3, ys-g3, xe+g3, ye+g3,
 		views.F(1, 88, 122), views.Schwarz(), 0, g3)
 	// Spielfeld
-	tisch := views.NewMBSpieltischFenster(billard, xs, ys, xe, ye,
+	tisch := views.NewMBSpieltisch(billard, xs, ys, xe, ye,
 		views.F(92, 179, 193), views.Schwarz(), 0, 0)
 	// neues-Spiel-Button
-	neuesSpielButton := views.NewButton(b/2-2*g, ye+g3+g/2, b/2+2*g, ye+g3+g3, "neues Spiel",
+	neuesSpielButton := views.NewButton(b/2-2*g, ye+g3+g/2, b/2+2*g, ye+g3+g3,
+		"neues Spiel",
 		views.Weiß(), views.F(1, 88, 122), 100, g/3)
 	//Quizfenster
 	quizfenster := views.NewQuizFenster(quiz, xs-g3, ys-g3, xe+g3, ye+g3,
 		views.Weiß(), views.F(1, 88, 122), g3)
 
 	//erzeuge App-Control
-	var bpapp controls.BPAppControl = controls.NewBPAppControl(
+	var bpapp controls.MBAppControl = controls.NewMBAppControl(
 		billard, tisch, punktezähler, restzeit,
 		quiz, quizfenster,
 		hintergrund, bande, neuesSpielButton)

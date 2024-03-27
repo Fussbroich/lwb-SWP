@@ -5,44 +5,29 @@ import (
 	"../klaenge"
 )
 
-type Kugel interface {
-	BewegenIn(MiniBillardSpiel)
-	SetzeKollidiertMit(Kugel)
-	SetzeKollidiertZurück()
-	IstEingelocht() bool
-	GibV() hilf.Vec2
-	SetzeV(hilf.Vec2)
-	Stop()
-	GibPos() hilf.Vec2
-	SetzePos(hilf.Vec2)
-	GibRadius() float64
-	GibWert() uint8
-	GibKopie() Kugel
-}
-
-type kugel struct {
+type mbkugel struct {
 	pos, v     hilf.Vec2
 	r          float64
 	wert       uint8
-	istKollMit Kugel
+	istKollMit MBKugel
 	eingelocht bool
 }
 
-func NewKugel(pos hilf.Vec2, r float64, wert uint8) *kugel {
-	return &kugel{
+func NewKugel(pos hilf.Vec2, r float64, wert uint8) *mbkugel {
+	return &mbkugel{
 		pos:  pos,
 		r:    r,
 		wert: wert}
 }
 
-func (k *kugel) GibKopie() Kugel {
-	return &kugel{
+func (k *mbkugel) GibKopie() MBKugel {
+	return &mbkugel{
 		pos: k.pos, v: hilf.V2(0, 0),
 		r:    k.r,
 		wert: k.wert}
 }
 
-func (k *kugel) BewegenIn(s MiniBillardSpiel) {
+func (k *mbkugel) BewegenIn(s MiniBillardSpiel) {
 	if k.eingelocht {
 		return
 	}
@@ -77,9 +62,9 @@ func (k *kugel) BewegenIn(s MiniBillardSpiel) {
 	}
 }
 
-func (k *kugel) IstEingelocht() bool { return k.eingelocht }
+func (k *mbkugel) IstEingelocht() bool { return k.eingelocht }
 
-func (k *kugel) prüfeBandenKollision(länge, breite float64) {
+func (k *mbkugel) prüfeBandenKollision(länge, breite float64) {
 	if k.eingelocht {
 		return
 	}
@@ -113,7 +98,7 @@ func (k *kugel) prüfeBandenKollision(länge, breite float64) {
 	}
 }
 
-func (k1 *kugel) prüfeKugelKollision(k2 Kugel) {
+func (k1 *mbkugel) prüfeKugelKollision(k2 MBKugel) {
 	if k1.istKollMit == k2 {
 		//if (k1.wert == 7 && k2.GibWert() == 2) || (k1.wert == 2 && k2.GibWert() == 7) {
 		//	fmt.Printf("schon geprüft: %d->%d\n", k1.wert, k2.GibWert())
@@ -168,38 +153,38 @@ func (k1 *kugel) prüfeKugelKollision(k2 Kugel) {
 	k2.SetzeKollidiertMit(k1)
 }
 
-func (k1 *kugel) SetzeKollidiertMit(k2 Kugel) {
+func (k1 *mbkugel) SetzeKollidiertMit(k2 MBKugel) {
 	k1.istKollMit = k2
 }
 
-func (k1 *kugel) SetzeKollidiertZurück() {
+func (k1 *mbkugel) SetzeKollidiertZurück() {
 	k1.istKollMit = nil
 }
 
-func (k *kugel) GibV() hilf.Vec2 {
+func (k *mbkugel) GibV() hilf.Vec2 {
 	return k.v
 }
 
-func (k *kugel) SetzeV(v hilf.Vec2) {
+func (k *mbkugel) SetzeV(v hilf.Vec2) {
 	k.v = v
 }
 
-func (k *kugel) Stop() {
+func (k *mbkugel) Stop() {
 	k.v = hilf.V2(0, 0)
 }
 
-func (k *kugel) GibPos() hilf.Vec2 {
+func (k *mbkugel) GibPos() hilf.Vec2 {
 	return k.pos
 }
 
-func (k *kugel) SetzePos(pos hilf.Vec2) {
+func (k *mbkugel) SetzePos(pos hilf.Vec2) {
 	k.pos = pos
 }
 
-func (k *kugel) GibRadius() float64 {
+func (k *mbkugel) GibRadius() float64 {
 	return k.r
 }
 
-func (k *kugel) GibWert() uint8 {
+func (k *mbkugel) GibWert() uint8 {
 	return k.wert
 }

@@ -9,33 +9,33 @@ import (
 	"../welt"
 )
 
-type BPAppControl interface {
+type MBAppControl interface {
 	Starte()
 	Quit()
 	ZeitlupeAnAus()
 	PauseAnAus()
 }
 
-type bpapp struct {
+type mbapp struct {
 	läuft            bool
 	billard          welt.MiniBillardSpiel
-	spieltisch       views.Fenster
+	spieltisch       views.Widget
 	spielzeit        time.Duration
 	pause            bool
-	neuesSpielButton views.Fenster
+	neuesSpielButton views.Widget
 	quiz             welt.Quiz
 	quizmodus        bool
-	quizfenster      views.Fenster
+	quizfenster      views.Widget
 	renderer         views.FensterZeichner
 	steuerProzess    hilf.Prozess
 }
 
-func NewBPAppControl(billard welt.MiniBillardSpiel,
-	spieltisch, punktezähler, restzeit views.Fenster,
+func NewMBAppControl(billard welt.MiniBillardSpiel,
+	spieltisch, punktezähler, restzeit views.Widget,
 	quiz welt.Quiz, quizfenster,
-	hintergrund, bande, neuesSpielButton views.Fenster) *bpapp {
+	hintergrund, bande, neuesSpielButton views.Widget) *mbapp {
 
-	app := bpapp{
+	app := mbapp{
 		billard: billard, neuesSpielButton: neuesSpielButton, spieltisch: spieltisch,
 		quiz: quiz, quizfenster: quizfenster,
 		renderer: views.NewFensterZeichner(
@@ -44,7 +44,7 @@ func NewBPAppControl(billard welt.MiniBillardSpiel,
 	return &app
 }
 
-func (app *bpapp) Starte() {
+func (app *mbapp) Starte() {
 	if app.läuft {
 		return
 	}
@@ -57,7 +57,7 @@ func (app *bpapp) Starte() {
 	app.läuft = true
 }
 
-func (app *bpapp) Quit() {
+func (app *mbapp) Quit() {
 	if !app.läuft {
 		return
 	}
@@ -69,7 +69,7 @@ func (app *bpapp) Quit() {
 	time.Sleep(100 * time.Millisecond)
 }
 
-func (app *bpapp) appSteuerung() {
+func (app *mbapp) appSteuerung() {
 	// TODO: hier hängt es, wenn die Maus nicht bewegt wird.
 	// Ist der Mauspuffer eine Lösung ?
 	taste, status, mausX, mausY := gfx.MausLesen1()
@@ -119,14 +119,14 @@ func (app *bpapp) appSteuerung() {
 	}
 }
 
-func (app *bpapp) ZeitlupeAnAus() {
+func (app *mbapp) ZeitlupeAnAus() {
 	if !app.läuft {
 		return
 	}
 	app.billard.ZeitlupeAnAus()
 }
 
-func (app *bpapp) PauseAnAus() {
+func (app *mbapp) PauseAnAus() {
 	if !app.läuft {
 		return
 	}
@@ -140,14 +140,14 @@ func (app *bpapp) PauseAnAus() {
 	app.pause = !app.pause
 }
 
-func (app *bpapp) quizmodusAn() {
+func (app *mbapp) quizmodusAn() {
 	app.billard.Stoppe()
 	app.quiz.NächsteFrage()
 	app.renderer.Überblende(app.quizfenster)
 	app.quizmodus = true
 }
 
-func (app *bpapp) quizmodusAus() {
+func (app *mbapp) quizmodusAus() {
 	app.renderer.ÜberblendeAus()
 	app.billard.Starte()
 	app.quizmodus = false

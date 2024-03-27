@@ -1,6 +1,6 @@
 package views
 
-type Fenster interface {
+type Widget interface {
 	Zeichne()
 	ZeichneRand()
 	ZeichneLayout()

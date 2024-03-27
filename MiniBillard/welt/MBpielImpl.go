@@ -7,46 +7,18 @@ import (
 	"../klaenge"
 )
 
-type MiniBillardSpiel interface {
-	Starte()
-	Stoppe()
-	Läuft() bool
-	ZeitlupeAnAus()
-	IstZeitlupe() bool
-	Stoße()
-	StoßWiederholen()
-	Reset()
-	IstStillstand() bool
-	GibTaschen() []Tasche
-	GibKugeln() []Kugel
-	GibAktiveKugeln() []Kugel
-	Einlochen(Kugel)
-	GibEingelochteKugeln() []Kugel
-	GibStoßkugel() Kugel
-	GibVStoß() hilf.Vec2
-	SetzeStoßRichtung(hilf.Vec2)
-	SetzeStoßStärke(float64)
-	SetzeRestzeit(time.Duration)
-	GibRestzeit() time.Duration
-	GibTreffer() uint8
-	GibStrafpunkte() uint8
-	ErhöheStrafpunkte()
-	ReduziereStrafpunkte()
-	GibGröße() (float64, float64)
-}
-
-type spiel struct {
+type mbspiel struct {
 	breite       float64
 	höhe         float64
 	rk           float64
-	kugeln       []Kugel
-	origKugeln   []Kugel
-	vorigeKugeln []Kugel
-	stoßkugel    Kugel
+	kugeln       []MBKugel
+	origKugeln   []MBKugel
+	vorigeKugeln []MBKugel
+	stoßkugel    MBKugel
 	stoßricht    hilf.Vec2
 	stoßstärke   float64
-	taschen      []Tasche
-	eingelochte  []Kugel
+	taschen      []MBTasche
+	eingelochte  []MBKugel
 	strafPunkte  uint8
 	stillstand   bool
 	updater      hilf.Prozess
@@ -55,11 +27,11 @@ type spiel struct {
 	zeitlupe     uint64
 }
 
-func NewMini9BallSpiel(br, hö, ra uint16) *spiel {
+func NewMini9BallSpiel(br, hö, ra uint16) *mbspiel {
 	// Pool-Tisch:  2540 mm × 1270 mm (2:1)
 	// Pool-Kugeln: 57,2 mm
 	var breite, höhe, rK float64 = float64(br), float64(hö), float64(ra)
-	sp := &spiel{breite: breite, höhe: höhe, rk: rK}
+	sp := &mbspiel{breite: breite, höhe: höhe, rk: rK}
 	rt, rtm := 1.9*sp.rk, 1.5*sp.rk
 	sp.setzeTaschen(
 		NewTasche(pos(0, 0), rt),
@@ -77,13 +49,13 @@ func pos(x, y float64) hilf.Vec2 {
 	return hilf.V2(x, y)
 }
 
-func (s *spiel) setzeTaschen(t ...Tasche) {
-	s.taschen = []Tasche{}
+func (s *mbspiel) setzeTaschen(t ...MBTasche) {
+	s.taschen = []MBTasche{}
 	s.taschen = append(s.taschen, t...)
 }
 
-func (s *spiel) setzeKugeln(k ...Kugel) {
-	s.kugeln = []Kugel{}
+func (s *mbspiel) setzeKugeln(k ...MBKugel) {
+	s.kugeln = []MBKugel{}
 	for _, k := range k {
 		k.Stop()
 		s.kugeln = append(s.kugeln, k.GibKopie())
@@ -91,29 +63,29 @@ func (s *spiel) setzeKugeln(k ...Kugel) {
 	s.stoßkugel = s.kugeln[0]
 
 	// sichere den Zustand vor dem Anstoß
-	s.origKugeln = []Kugel{}
+	s.origKugeln = []MBKugel{}
 	for _, k := range s.kugeln {
 		s.origKugeln = append(s.origKugeln, k.GibKopie())
 	}
 }
 
-func (sp *spiel) SetzeKugeln9Ball() {
+func (sp *mbspiel) SetzeKugeln9Ball() {
 	sp.setzeKugeln(sp.kugelSatz9Ball()...)
 }
 
-func (s *spiel) kugelSatz3er() []Kugel {
+func (s *mbspiel) kugelSatz3er() []MBKugel {
 	pStoß := pos(4*s.breite/5, s.höhe/3)
 	p1 := pos(3*s.breite/5, s.höhe/2)
 	dx, dy := 0.866*(2*s.rk+2), 0.5*(2*s.rk+2)
 	p2 := p1.Plus(pos(-dx, -dy))
 	p3 := p1.Plus(pos(-dx, dy))
-	return []Kugel{NewKugel(pStoß, s.rk, 0),
+	return []MBKugel{NewKugel(pStoß, s.rk, 0),
 		NewKugel(p1, s.rk, 1),
 		NewKugel(p2, s.rk, 2),
 		NewKugel(p3, s.rk, 3)}
 }
 
-func (s *spiel) kugelSatz9Ball() []Kugel {
+func (s *mbspiel) kugelSatz9Ball() []MBKugel {
 	pStoß := pos(4*s.breite/5, s.höhe/2)
 	dx, dy := 0.866*(2*s.rk+1), 0.5*(2*s.rk+1)
 	p1 := pos(3*s.breite/5, s.höhe/2)
@@ -129,7 +101,7 @@ func (s *spiel) kugelSatz9Ball() []Kugel {
 	p7 := p1.Plus(pos(-3*dx, dy))
 	//
 	p8 := p1.Plus(pos(-4*dx, 0))
-	return []Kugel{NewKugel(pStoß, s.rk, 0),
+	return []MBKugel{NewKugel(pStoß, s.rk, 0),
 		NewKugel(p1, s.rk, 1),
 		NewKugel(p2, s.rk, 2),
 		NewKugel(p3, s.rk, 3),
@@ -143,7 +115,7 @@ func (s *spiel) kugelSatz9Ball() []Kugel {
 }
 
 // ######## die Lebens- und Pause-Methode ###########################################################
-func (s *spiel) Starte() {
+func (s *mbspiel) Starte() {
 	s.startzeit = time.Now()
 	s.stoßstärke = 5
 	if s.updater == nil {
@@ -183,17 +155,17 @@ func (s *spiel) Starte() {
 	}
 }
 
-func (s *spiel) Läuft() bool {
+func (s *mbspiel) Läuft() bool {
 	return s.updater != nil && s.updater.Läuft()
 }
 
-func (s *spiel) Stoppe() {
+func (s *mbspiel) Stoppe() {
 	if s.updater != nil {
 		s.updater.Stoppe()
 	}
 }
 
-func (s *spiel) ZeitlupeAnAus() {
+func (s *mbspiel) ZeitlupeAnAus() {
 	if s.zeitlupe > 1 {
 		s.zeitlupe = 1 // wieder normal schnell
 	} else {
@@ -205,15 +177,15 @@ func (s *spiel) ZeitlupeAnAus() {
 	}
 }
 
-func (s *spiel) IstZeitlupe() bool { return s.zeitlupe > 1 }
+func (s *mbspiel) IstZeitlupe() bool { return s.zeitlupe > 1 }
 
 // ######## die Methoden zum Stoßen #################################################
 
-func (s *spiel) GibVStoß() hilf.Vec2 { return s.stoßricht.Mal(s.stoßstärke) }
+func (s *mbspiel) GibVStoß() hilf.Vec2 { return s.stoßricht.Mal(s.stoßstärke) }
 
-func (s *spiel) SetzeStoßRichtung(v hilf.Vec2) { s.stoßricht = v.Normiert() }
+func (s *mbspiel) SetzeStoßRichtung(v hilf.Vec2) { s.stoßricht = v.Normiert() }
 
-func (s *spiel) SetzeStoßStärke(v float64) {
+func (s *mbspiel) SetzeStoßStärke(v float64) {
 	// Die "Geschwindigkeit/Stärke" ist auf 12 (m/s) begrenzt
 	if v > 12 {
 		v = 12
@@ -223,13 +195,13 @@ func (s *spiel) SetzeStoßStärke(v float64) {
 	s.stoßstärke = v
 }
 
-func (s *spiel) Stoße() {
+func (s *mbspiel) Stoße() {
 	if !s.stillstand {
 		println("Fehler: Stoßen während laufender Bewegungen ist verboten!")
 		return
 	}
 	// sichere den Zustand vor dem Stoß
-	s.vorigeKugeln = []Kugel{}
+	s.vorigeKugeln = []MBKugel{}
 	for _, k := range s.kugeln {
 		s.vorigeKugeln = append(s.vorigeKugeln, k.GibKopie()) // Kopien stehen still
 	}
@@ -244,27 +216,27 @@ func (s *spiel) Stoße() {
 
 // ######## die übrigen Methoden ####################################################
 
-func (s *spiel) SetzeRestzeit(t time.Duration) { s.restzeit = t }
+func (s *mbspiel) SetzeRestzeit(t time.Duration) { s.restzeit = t }
 
-func (s *spiel) GibRestzeit() time.Duration { return s.restzeit }
+func (s *mbspiel) GibRestzeit() time.Duration { return s.restzeit }
 
-func (s *spiel) Reset() {
-	s.kugeln = []Kugel{}
+func (s *mbspiel) Reset() {
+	s.kugeln = []MBKugel{}
 	for _, k := range s.origKugeln {
 		s.kugeln = append(s.kugeln, k.GibKopie()) // Kopien stehen still
 	}
 	s.stoßkugel = s.kugeln[0]
-	s.eingelochte = []Kugel{}
+	s.eingelochte = []MBKugel{}
 	s.strafPunkte = 0
 	s.stillstand = true
 }
 
-func (s *spiel) StoßWiederholen() {
+func (s *mbspiel) StoßWiederholen() {
 	if s.vorigeKugeln == nil {
 		return
 	}
 	// stelle den Zustand vor dem letzten Stoß wieder her
-	s.kugeln = []Kugel{}
+	s.kugeln = []MBKugel{}
 	for _, k := range s.vorigeKugeln {
 		s.kugeln = append(s.kugeln, k.GibKopie()) // Kopien stehen still
 	}
@@ -272,12 +244,12 @@ func (s *spiel) StoßWiederholen() {
 	s.stillstand = true
 }
 
-func (s *spiel) GibKugeln() []Kugel { return s.kugeln }
+func (s *mbspiel) GibKugeln() []MBKugel { return s.kugeln }
 
-func (s *spiel) GibStoßkugel() Kugel { return s.stoßkugel }
+func (s *mbspiel) GibStoßkugel() MBKugel { return s.stoßkugel }
 
-func (s *spiel) GibAktiveKugeln() []Kugel {
-	ks := []Kugel{}
+func (s *mbspiel) GibAktiveKugeln() []MBKugel {
+	ks := []MBKugel{}
 	for _, k := range s.kugeln {
 		if k.IstEingelocht() {
 			continue
@@ -287,7 +259,7 @@ func (s *spiel) GibAktiveKugeln() []Kugel {
 	return ks
 }
 
-func (s *spiel) Einlochen(k Kugel) {
+func (s *mbspiel) Einlochen(k MBKugel) {
 	if k == s.stoßkugel {
 		return
 	}
@@ -300,21 +272,21 @@ func (s *spiel) Einlochen(k Kugel) {
 	s.eingelochte = append(s.eingelochte, k)
 }
 
-func (s *spiel) GibEingelochteKugeln() []Kugel { return s.eingelochte }
+func (s *mbspiel) GibEingelochteKugeln() []MBKugel { return s.eingelochte }
 
-func (s *spiel) GibGröße() (float64, float64) { return s.breite, s.höhe }
+func (s *mbspiel) GibGröße() (float64, float64) { return s.breite, s.höhe }
 
-func (s *spiel) GibTaschen() []Tasche { return s.taschen }
+func (s *mbspiel) GibTaschen() []MBTasche { return s.taschen }
 
-func (s *spiel) IstStillstand() bool { return s.stillstand }
+func (s *mbspiel) IstStillstand() bool { return s.stillstand }
 
-func (s *spiel) GibTreffer() uint8 { return uint8(len(s.eingelochte)) }
+func (s *mbspiel) GibTreffer() uint8 { return uint8(len(s.eingelochte)) }
 
-func (s *spiel) GibStrafpunkte() uint8 { return s.strafPunkte }
+func (s *mbspiel) GibStrafpunkte() uint8 { return s.strafPunkte }
 
-func (s *spiel) ErhöheStrafpunkte() { s.strafPunkte++ }
+func (s *mbspiel) ErhöheStrafpunkte() { s.strafPunkte++ }
 
-func (s *spiel) ReduziereStrafpunkte() {
+func (s *mbspiel) ReduziereStrafpunkte() {
 	if s.strafPunkte > 0 {
 		s.strafPunkte--
 	}

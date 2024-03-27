@@ -2,11 +2,6 @@ package welt
 
 import "../hilf"
 
-type Tasche interface {
-	GibPos() hilf.Vec2
-	GibRadius() float64
-}
-
 type tasche struct {
 	pos hilf.Vec2
 	r   float64

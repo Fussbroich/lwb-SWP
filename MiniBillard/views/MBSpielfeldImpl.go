@@ -8,54 +8,18 @@ import (
 )
 
 type MBSpielView interface {
-	Fenster
+	Widget
 }
 
 type miniBSpielfeld struct {
 	billard welt.MiniBillardSpiel
-	fenster
+	widget
 }
 
-func NewMBSpieltischFenster(billard welt.MiniBillardSpiel, startx, starty, stopx, stopy uint16, hg, vg Farbe, tr uint8, ra uint16) *miniBSpielfeld {
-	fenster := fenster{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr, eckradius: ra}
-	return &miniBSpielfeld{billard: billard, fenster: fenster}
+func NewMBSpieltisch(billard welt.MiniBillardSpiel, startx, starty, stopx, stopy uint16, hg, vg Farbe, tr uint8, ra uint16) *miniBSpielfeld {
+	fenster := widget{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr, eckradius: ra}
+	return &miniBSpielfeld{billard: billard, widget: fenster}
 }
-
-/*
-	func (f *fenster) findeSchnittPunktMitRand(u, r hilf.Vec2) hilf.Vec2 {
-		mx := func(x float64) float64 { return (x - u.X()) / r.X() }
-		my := func(y float64) float64 { return (y - u.Y()) / r.Y() }
-		xm := func(m float64) float64 { return u.X() + m*r.X() }
-		ym := func(m float64) float64 { return u.Y() + m*r.Y() }
-
-		var m, x, y float64
-		if m = my(float64(f.startY)); m >= 0 {
-			x = xm(m)
-			if f.startX <= uint16(x+0.5) && f.stopX >= uint16(x+0.5) {
-				return hilf.V2(x, float64(f.startY))
-			}
-		}
-		if m = my(float64(f.stopY)); m >= 0 {
-			x = xm(m)
-			if f.startX <= uint16(x+0.5) && f.stopX >= uint16(x+0.5) {
-				return hilf.V2(x, float64(f.stopY))
-			}
-		}
-		if m = mx(float64(f.startX)); m >= 0 {
-			y = ym(m)
-			if f.startY <= uint16(y+0.5) && f.stopY >= uint16(y+0.5) {
-				return hilf.V2(float64(f.startX), y)
-			}
-		}
-		if m = mx(float64(f.stopX)); m >= 0 {
-			y = ym(m)
-			if f.startY <= uint16(y+0.5) && f.stopY >= uint16(y+0.5) {
-				return hilf.V2(float64(f.stopX), y)
-			}
-		}
-		return u.Plus(r.Mal(1000))
-	}
-*/
 
 func (f *miniBSpielfeld) Zeichne() {
 	fp := fontDateipfad("LiberationMono-Regular.ttf")
@@ -63,7 +27,7 @@ func (f *miniBSpielfeld) Zeichne() {
 	kS := f.billard.GibStoßkugel()
 	ra := kS.GibRadius()
 	// zeichne das Tuch
-	f.fenster.Zeichne()
+	f.widget.Zeichne()
 
 	// zeichne die Taschen
 	for _, t := range f.billard.GibTaschen() {

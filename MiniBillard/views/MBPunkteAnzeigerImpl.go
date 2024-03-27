@@ -10,16 +10,16 @@ import (
 
 type miniBSpielinfo struct {
 	billard welt.MiniBillardSpiel
-	fenster
+	widget
 }
 
 func NewMBPunkteAnzeiger(billard welt.MiniBillardSpiel, startx, starty, stopx, stopy uint16, hg, vg Farbe, tr uint8) *miniBSpielinfo {
-	fenster := fenster{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr}
-	return &miniBSpielinfo{billard: billard, fenster: fenster}
+	fenster := widget{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr}
+	return &miniBSpielinfo{billard: billard, widget: fenster}
 }
 
 func (f *miniBSpielinfo) Zeichne() {
-	f.fenster.Zeichne()
+	f.widget.Zeichne()
 	fp := fontDateipfad("LiberationMono-Bold.ttf")
 	vr, vg, vb := f.vg.RGB()
 	hr, hg, hb := f.hg.RGB()

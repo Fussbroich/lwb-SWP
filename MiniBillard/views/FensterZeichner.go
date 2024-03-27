@@ -11,23 +11,23 @@ type FensterZeichner interface {
 	Starte()
 	Stoppe()
 	ZeigeLayout()
-	Überblende(Fenster)
+	Überblende(Widget)
 	ÜberblendeText(string, Farbe, Farbe, uint8)
 	ÜberblendeAus()
 }
 
 type fzeichner struct {
 	breite, höhe uint16
-	fenster      []Fenster
-	overlay      Fenster
+	widgets      []Widget
+	overlay      Widget
 	updater      hilf.Prozess
 	updaterLäuft bool
 	rate         uint64
 }
 
-func NewFensterZeichner(fenster ...Fenster) *fzeichner {
-	bMax, hMax := fenster[0].GibGröße()
-	return &fzeichner{fenster: fenster, breite: bMax, höhe: hMax, rate: 80}
+func NewFensterZeichner(w ...Widget) *fzeichner {
+	bMax, hMax := w[0].GibGröße()
+	return &fzeichner{widgets: w, breite: bMax, höhe: hMax, rate: 80}
 }
 
 // ######## die Start- und Stop-Methode ###########################################################
@@ -41,7 +41,7 @@ func (r *fzeichner) Starte() {
 		func() {
 			gfx.UpdateAus()
 			gfx.Cls()
-			for _, f := range r.fenster {
+			for _, f := range r.widgets {
 				f.Zeichne()
 			}
 			// zeige die frame rate
@@ -68,7 +68,7 @@ func (r *fzeichner) Stoppe() {
 // ######## die übrigen Methoden ####################################################
 
 func (r *fzeichner) ZeigeLayout() {
-	for _, f := range r.fenster {
+	for _, f := range r.widgets {
 		f.ZeichneLayout()
 	}
 	if r.overlay != nil {
@@ -77,7 +77,7 @@ func (r *fzeichner) ZeigeLayout() {
 	NewInfoText(r.breite/2, 0, r.breite/2, r.höhe/10, "Layout-Ansicht", F(240, 255, 255)).Zeichne()
 }
 
-func (r *fzeichner) Überblende(f Fenster) {
+func (r *fzeichner) Überblende(f Widget) {
 	r.overlay = f
 	if r.updaterLäuft {
 		r.Stoppe()

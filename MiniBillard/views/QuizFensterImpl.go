@@ -8,15 +8,15 @@ import (
 
 type quizfenster struct {
 	quiz  welt.Quiz
-	frage Fenster
-	as    [4]Fenster
-	fenster
+	frage Widget
+	as    [4]Widget
+	widget
 }
 
 // TextOverlay zeigt den Hintergrund
 func NewQuizFenster(quiz welt.Quiz, startx, starty, stopx, stopy uint16, hg, vg Farbe, ra uint16) *quizfenster {
-	fenster := fenster{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: 0, eckradius: ra}
-	return &quizfenster{quiz: quiz, fenster: fenster}
+	fenster := widget{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: 0, eckradius: ra}
+	return &quizfenster{quiz: quiz, widget: fenster}
 }
 
 func (f *quizfenster) MausklickBei(mausX, mausY uint16) {
@@ -29,7 +29,7 @@ func (f *quizfenster) MausklickBei(mausX, mausY uint16) {
 
 func (f *quizfenster) Zeichne() {
 	f.ZeichneRand()
-	f.fenster.Zeichne()
+	f.widget.Zeichne()
 	r, g, b := f.vg.RGB()
 	gfx.Stiftfarbe(r, g, b)
 
@@ -40,7 +40,7 @@ func (f *quizfenster) Zeichne() {
 	var d uint16 = 3
 	f.frage = NewTextFenster(sx, sy, sx+breite, sy+höhe*3/7-d,
 		f.quiz.GibAktuelleFrage().GibFrage(), f.hg, f.vg, f.transparenz, 0)
-	f.as = [4]Fenster{
+	f.as = [4]Widget{
 		NewTextFenster(sx, sy+höhe*3/7, sx+breite/2-d, sy+höhe*5/7-d,
 			f.quiz.GibAktuelleFrage().GibAntworten()[0], F(155, 155, 0), f.vg, f.transparenz, 0),
 		NewTextFenster(sx+breite/2+d, sy+höhe*3/7, sx+breite, sy+höhe*5/7-d,

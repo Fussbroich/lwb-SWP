@@ -10,12 +10,12 @@ import (
 
 type miniBRestzeit struct {
 	billard welt.MiniBillardSpiel
-	fenster
+	widget
 }
 
 func NewMBRestzeitAnzeiger(billard welt.MiniBillardSpiel, startx, starty, stopx, stopy uint16, hg, vg Farbe, tr uint8) *miniBRestzeit {
-	fenster := fenster{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr}
-	return &miniBRestzeit{billard: billard, fenster: fenster}
+	fenster := widget{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr}
+	return &miniBRestzeit{billard: billard, widget: fenster}
 }
 
 func fmtRestzeit(d time.Duration) string {
@@ -26,7 +26,7 @@ func fmtRestzeit(d time.Duration) string {
 	return fmt.Sprintf("%02d:%02d", m%60, s)
 }
 func (f *miniBRestzeit) Zeichne() {
-	f.fenster.Zeichne()
+	f.widget.Zeichne()
 	fp := fontDateipfad("LiberationMono-Bold.ttf")
 	breite, höhe := f.GibGröße()
 	schriftgröße := int(höhe) * 4 / 5
