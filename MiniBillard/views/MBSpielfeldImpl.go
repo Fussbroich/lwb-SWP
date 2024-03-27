@@ -21,17 +21,30 @@ func NewMBSpieltisch(billard welt.MiniBillardSpiel, startx, starty, stopx, stopy
 	return &miniBSpielfeld{billard: billard, widget: fenster}
 }
 
+func (f *miniBSpielfeld) zeichneDiamant(x, y, d uint16) {
+	gfx.Volldreieck(x-d/2, y, x+d/2, y, x, y-d/2)
+	gfx.Volldreieck(x-d/2, y, x+d/2, y, x, y+d/2)
+}
+
 func (f *miniBSpielfeld) Zeichne() {
 	fp := fontDateipfad("LiberationMono-Regular.ttf")
-	breite, _ := f.GibGröße()
+	breite, höhe := f.GibGröße()
 	kS := f.billard.GibStoßkugel()
 	ra := kS.GibRadius()
 	// zeichne das Tuch
 	f.widget.Zeichne()
 
-	// zeichne Punkte und Diamanten
-	//TODO
-
+	// zeichne Diamanten
+	r, g, b := f.vg.RGB()
+	gfx.Stiftfarbe(r, g, b)
+	for _, i := range []uint16{1, 2, 3, 5, 6, 7} {
+		f.zeichneDiamant(f.startX+i*breite/8, f.startY-uint16(ra+0.5), uint16(ra/3+0.5))
+		f.zeichneDiamant(f.startX+i*breite/8, f.startY+höhe+uint16(ra+0.5), uint16(ra/3+0.5))
+	}
+	for _, i := range []uint16{1, 2, 3} {
+		f.zeichneDiamant(f.startX-uint16(ra+0.5), f.startY+i*höhe/4, uint16(ra/3+0.5))
+		f.zeichneDiamant(f.startX+breite+uint16(ra+0.5), f.startY+i*höhe/4, uint16(ra/3+0.5))
+	}
 	// zeichne die Taschen
 	for _, t := range f.billard.GibTaschen() {
 		gfxVollKreis(f.startX, f.startY, t.GibPos(), ra*1.3, Schwarz())

@@ -44,7 +44,7 @@ func main() {
 		views.F(1, 88, 122), views.Schwarz(), 0, g3)
 	// Spielfeld
 	tisch := views.NewMBSpieltisch(billard, xs, ys, xe, ye,
-		views.F(92, 179, 193), views.Schwarz(), 0, 0)
+		views.F(92, 179, 193), views.F(180, 230, 255), 0, 0)
 	// neues-Spiel-Button
 	neuesSpielButton := views.NewButton(b/2-2*g, ye+g3+g/2, b/2+2*g, ye+g3+g3,
 		"neues Spiel",

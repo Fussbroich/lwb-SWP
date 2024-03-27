@@ -198,6 +198,15 @@ func gfxVollKreissektor(startX, startY uint16, pos hilf.Vec2, radius float64, wV
 		uint16(0.5+radius), wVon, wBis)
 }
 
+func gfxVollDreieck(startX, startY uint16, p1, p2, p3 hilf.Vec2, c Farbe) {
+	cr, cg, cb := c.RGB()
+	gfx.Stiftfarbe(cr, cg, cb)
+	gfx.Volldreieck(
+		startX+uint16(0.5+p1.X()), startY+uint16(0.5+p1.Y()),
+		startX+uint16(0.5+p2.X()), startY+uint16(0.5+p2.Y()),
+		startX+uint16(0.5+p3.X()), startY+uint16(0.5+p3.Y()))
+}
+
 func gfxBreiteLinie(startX, startY uint16, pV, pN hilf.Vec2, breite float64, c Farbe) {
 	richt := pN.Minus(pV).Normiert()
 	d := hilf.V2(richt.Y(), -richt.X())
