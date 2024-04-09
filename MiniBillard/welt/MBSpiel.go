@@ -29,7 +29,6 @@ type MiniBillardSpiel interface {
 	GibRestzeit() time.Duration
 	GibTreffer() uint8
 	GibStrafpunkte() uint8
-	ErhöheStrafpunkte()
 	ReduziereStrafpunkte()
 	GibGröße() (float64, float64)
 }

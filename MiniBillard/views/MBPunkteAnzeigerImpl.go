@@ -29,7 +29,7 @@ func (f *miniBSpielinfo) Zeichne() {
 	var zeilenhöhe uint16
 	var schriftgröße int
 
-	// Display rechts zeigt Treffer und Strafen an
+	// dieses Widget zeigt Treffer und Strafen an
 	var anzKugeln uint8 = uint8(len(f.billard.GibKugeln()) - 1)
 	tr, st := f.billard.GibTreffer(), math.Min(float64(anzKugeln), float64(f.billard.GibStrafpunkte()))
 	zeilenhöhe = höhe / 2
@@ -45,7 +45,7 @@ func (f *miniBSpielinfo) Zeichne() {
 	gfx.SchreibeFont(f.startX+2*ra+d, f.startY+d, "Treffer")
 	gfx.SchreibeFont(f.startX+2*ra+d, f.startY+zeilenhöhe+d, "Fouls")
 
-	// zeichne Fortschritts-Balken
+	// zeichne beide Fortschritts-Balken
 	gfx.Stiftfarbe(243, 186, 0) // Treffer gelb
 	gfx.Vollrechteck(xSBalken, f.startY+1, bBalken*uint16(tr)/uint16(anzKugeln), zeilenhöhe-2)
 	gfx.Stiftfarbe(219, 80, 0) // Fouls in Warnrot

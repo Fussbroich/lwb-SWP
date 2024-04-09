@@ -125,6 +125,7 @@ func (s *mbspiel) Starte() {
 	if s.updater == nil {
 		s.updater = hilf.NewProzess("Spiel-Logik",
 			func() {
+				// zähle Zeit herunter
 				vergangen := time.Since(s.startzeit)
 				if s.zeitlupe > 0 {
 					vergangen = vergangen / time.Duration(s.zeitlupe)
@@ -134,19 +135,25 @@ func (s *mbspiel) Starte() {
 				} else {
 					s.restzeit -= vergangen
 				}
+				// bewege jede Kugel
 				s.startzeit = time.Now()
 				for _, k := range s.kugeln {
 					k.BewegenIn(s)
 				}
+				// prüfe Stillstand
 				still := true
 				for _, k := range s.kugeln {
 					k.SetzeKollidiertZurück()
-					//prüfe Stillstand
 					if !k.GibV().IstNull() {
 						still = false
 					}
 				}
 				s.stillstand = still
+				// prüfe Regeln
+				if s.stoßkugel.IstEingelocht() {
+					s.strafPunkte++
+					s.StoßWiederholen()
+				}
 			})
 	}
 	// ein konstanter Takt regelt die "Geschwindigkeit"
@@ -285,7 +292,7 @@ func (s *mbspiel) GibTreffer() uint8 { return uint8(len(s.eingelochte)) }
 
 func (s *mbspiel) GibStrafpunkte() uint8 { return s.strafPunkte }
 
-func (s *mbspiel) ErhöheStrafpunkte() { s.strafPunkte++ }
+// func (s *mbspiel) ErhöheStrafpunkte() { s.strafPunkte++ }
 
 func (s *mbspiel) ReduziereStrafpunkte() {
 	if s.strafPunkte > 0 {

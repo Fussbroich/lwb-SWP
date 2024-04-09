@@ -98,12 +98,10 @@ func (app *mbapp) appSteuerung() {
 		// im Spielmodus
 	} else if app.billard.Läuft() {
 		// TODO Maussteuerung und Regelprüfung trennen!
-		if app.billard.GibStoßkugel().IstEingelocht() {
-			app.billard.ErhöheStrafpunkte()
-			app.billard.StoßWiederholen()
-		} else if app.billard.GibStrafpunkte() > app.billard.GibTreffer() {
+		if app.billard.GibStrafpunkte() > app.billard.GibTreffer() {
 			app.quizmodusAn() // zum Quizmodus
 		} else if app.billard.IstStillstand() {
+			// zielen und stoßen
 			switch taste {
 			case 1: // stoßen
 				app.billard.Stoße()
