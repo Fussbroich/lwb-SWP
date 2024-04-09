@@ -73,7 +73,6 @@ func (app *mbapp) Quit() {
 
 func (app *mbapp) appSteuerung() {
 	// TODO: hier hängt es, wenn die Maus nicht bewegt wird.
-	// Ist der Mauspuffer eine Lösung ?
 	taste, status, mausX, mausY := gfx.MausLesen1()
 
 	// im Quizmodus
@@ -98,6 +97,7 @@ func (app *mbapp) appSteuerung() {
 		app.billard.Starte()
 		// im Spielmodus
 	} else if app.billard.Läuft() {
+		// TODO Maussteuerung und Regelprüfung trennen!
 		if app.billard.GibStoßkugel().IstEingelocht() {
 			app.billard.ErhöheStrafpunkte()
 			app.billard.StoßWiederholen()
