@@ -70,7 +70,6 @@ func (proc *prozess) StarteRate(sollRate uint64) {
 			laufzeit = time.Since(startzeit)
 			if laufzeit >= time.Second/20 { // Rate alle 20stel Sekunde anpassen
 				proc.rate = uint64(läufe / laufzeit.Seconds()) // Rate ist Läufe je Sekunde
-				println(proc.name, "läuft mit", proc.rate, "Hz")
 				if proc.rate < minRate {
 					if proc.verzögerung > 0 {
 						proc.verzögerung -= time.Millisecond
