@@ -20,6 +20,7 @@ func NewTextFenster(startx, starty, stopx, stopy uint16, t string, hg, vg Farbe,
 
 func worteInZeilen(worte []string, lMax int) (zeilen []string) {
 	var zeile string
+	// Baue Zeilen aus Worten.
 	for _, wort := range worte {
 		if utf8.RuneCountInString(wort) > lMax {
 			zeilen = append(zeilen, wort)
@@ -69,7 +70,6 @@ func (f *textbox) Zeichne() {
 	// Schriftgröße automatisch anpasssen bzgl. Gesamtfläche der Box
 	var sh, sb int
 	sh = int(math.Min(24, math.Sqrt(float64(B*H)/float64(utf8.RuneCountInString(f.text))*12/7*5/6)))
-	println("berechnet:", sh)
 	sb = 7 * sh / 12
 	gfx.SetzeFont(fp, sh)
 	zMax, cMax := int(H)/sh, int(B)/sb
