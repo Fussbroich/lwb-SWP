@@ -11,6 +11,7 @@ type MiniBillardSpiel interface {
 	Stoppe()
 	Läuft() bool
 	ZeitlupeAnAus()
+	PauseAnAus()
 	IstZeitlupe() bool
 	Stoße()
 	StoßWiederholen()

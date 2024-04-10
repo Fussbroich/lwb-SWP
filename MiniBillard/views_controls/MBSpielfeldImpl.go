@@ -81,7 +81,13 @@ func (f *miniBSpielfeld) Zeichne() {
 		gfx.SchreibeFont(f.startX+uint16(pStärke.X()), f.startY+uint16(pStärke.Y()-2*ra), fmt.Sprintf("Stärke: %d", uint16(stärke+0.5)))
 	}
 	// debugging
-	if f.billard.IstZeitlupe() {
+	if !f.billard.Läuft() {
+		// Pause
+		gfx.Stiftfarbe(100, 100, 100)
+		font.SetzeSchriftgröße(int(f.billard.GibStoßkugel().GibRadius() + 0.5))
+		gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgröße())
+		gfx.SchreibeFont(4*breite/5, f.startY+5, "Pause")
+	} else if f.billard.IstZeitlupe() {
 		// zeichne Geschwindigkeiten
 		for _, k := range f.billard.GibAktiveKugeln() {
 			if !k.GibV().IstNull() {

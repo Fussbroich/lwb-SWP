@@ -188,6 +188,15 @@ func (s *mbspiel) ZeitlupeAnAus() {
 	}
 }
 
+func (s *mbspiel) PauseAnAus() {
+	if s.Läuft() {
+		s.Stoppe()
+	} else {
+		s.zeitlupe = 1
+		s.Starte()
+	}
+}
+
 func (s *mbspiel) IstZeitlupe() bool { return s.zeitlupe > 1 }
 
 // ######## die Methoden zum Stoßen #################################################

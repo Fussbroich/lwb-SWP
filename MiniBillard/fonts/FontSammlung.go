@@ -23,21 +23,21 @@ func fontDateipfad(filename string) string {
 
 func LiberationMonoBold(größe int) *font {
 	return &font{
-		name:         "LiberationMono-Bold",
+		name:         "LiberationMono bold",
 		dateipfad:    fontDateipfad("LiberationMono-Bold.ttf"),
 		schriftgröße: größe}
 }
 
 func LiberationMonoRegular(größe int) *font {
 	return &font{
-		name:         "LiberationMono-Regular",
+		name:         "LiberationMono regular",
 		dateipfad:    fontDateipfad("LiberationMono-Regular.ttf"),
 		schriftgröße: größe}
 }
 
-func LiberationSerifBoldItalic(größe int) *font {
+func LiberationMonoBoldItalic(größe int) *font {
 	return &font{
-		name:         "LiberationSerif-BoldItalic",
-		dateipfad:    fontDateipfad("LiberationSerif-BoldItalic.ttf"),
+		name:         "LiberationMono bold, italic",
+		dateipfad:    fontDateipfad("LiberationMono-BoldItalic.ttf"),
 		schriftgröße: größe}
 }
