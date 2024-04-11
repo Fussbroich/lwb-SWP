@@ -183,7 +183,7 @@ func (s *mbspiel) ZeitlupeAnAus() {
 	if s.zeitlupe > 1 {
 		s.zeitlupe = 1 // wieder normal schnell
 	} else {
-		s.zeitlupe = 10 // langsamer
+		s.zeitlupe = 5 // langsamer
 	}
 	if s.updater != nil && s.updater.Läuft() {
 		s.Stoppe()
@@ -305,7 +305,7 @@ func (s *mbspiel) GibTreffer() uint8 { return uint8(len(s.eingelochte)) }
 
 func (s *mbspiel) GibStrafpunkte() uint8 { return s.strafPunkte }
 
-// func (s *mbspiel) ErhöheStrafpunkte() { s.strafPunkte++ }
+func (s *mbspiel) ErhöheStrafpunkte() { s.strafPunkte++ }
 
 func (s *mbspiel) ReduziereStrafpunkte() {
 	if s.strafPunkte > 0 {
