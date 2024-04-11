@@ -1,0 +1,13 @@
+@startuml Parameter
+skinparam Style strictuml
+skinparam classAttributeIconSize 0
+
+skinparam class {
+BackgroundColor PaleGreen
+ArrowColor SeaGreen
+BorderColor SpringGreen
+BackgroundColor<<Foo>> Wheat
+BorderColor<<Foo>> Tomato
+}
+skinparam stereotypeCBackgroundColor YellowGreen
+@enduml
