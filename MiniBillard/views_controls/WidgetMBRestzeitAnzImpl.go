@@ -2,10 +2,8 @@ package views_controls
 
 import (
 	"fmt"
-	"gfx"
 	"time"
 
-	"../fonts"
 	"../modelle"
 )
 
@@ -30,10 +28,9 @@ func fmtRestzeit(d time.Duration) string {
 func (f *miniBRestzeit) Zeichne() {
 	f.widget.Zeichne()
 	breite, höhe := f.GibGroesse()
-	font := fonts.LiberationMonoBold(int(höhe) * 4 / 5)
+	schreiber := LiberationMonoBold(int(höhe) * 4 / 5)
 	anzeige := fmtRestzeit(f.billard.GibRestzeit())
-	dx := (breite - uint16(len(anzeige)*font.GibSchriftgroesse()*3/5)) / 2
-	dy := (höhe - uint16(font.GibSchriftgroesse())) / 2
-	gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgroesse())
-	gfx.SchreibeFont(f.startX+dx, f.startY+dy, anzeige)
+	dx := (breite - uint16(len(anzeige)*schreiber.GibSchriftgroesse()*3/5)) / 2
+	dy := (höhe - uint16(schreiber.GibSchriftgroesse())) / 2
+	schreiber.Schreibe(f.startX+dx, f.startY+dy, anzeige)
 }

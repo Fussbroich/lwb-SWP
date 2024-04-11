@@ -5,8 +5,6 @@ import (
 	"math"
 	"unicode"
 	"unicode/utf8"
-
-	"../fonts"
 )
 
 // Eine simple Box, die Text in Zeilen umbricht und anzeigt.
@@ -69,15 +67,16 @@ func (f *textbox) Zeichne() {
 	r, g, b := f.vg.RGB()
 	gfx.Stiftfarbe(r, g, b)
 	// Schriftgroesse automatisch anpasssen bzgl. Gesamtfläche der Box
+	schreiber := LiberationMonoRegular(
+		int(math.Min(
+			24,
+			math.Sqrt(float64(B*H)/float64(utf8.RuneCountInString(f.text))*12/7*5/6))))
 
-	font := fonts.LiberationMonoRegular(int(math.Min(24, math.Sqrt(float64(B*H)/float64(utf8.RuneCountInString(f.text))*12/7*5/6))))
-
-	gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgroesse())
-	zMax, cMax := int(H)/font.GibSchriftgroesse(), int(B)/(7*font.GibSchriftgroesse()/12)
+	zMax, cMax := int(H)/schreiber.GibSchriftgroesse(), int(B)/(7*schreiber.GibSchriftgroesse()/12)
 	for z, zeile := range worteInZeilen(textInWorte(f.text), cMax) {
 		if z > zMax {
 			break
 		}
-		gfx.SchreibeFont(f.startX+f.eckradius, f.startY+f.eckradius+uint16(z*(font.GibSchriftgroesse()*6/5)), zeile)
+		schreiber.Schreibe(f.startX+f.eckradius, f.startY+f.eckradius+uint16(z*(schreiber.GibSchriftgroesse()*6/5)), zeile)
 	}
 }

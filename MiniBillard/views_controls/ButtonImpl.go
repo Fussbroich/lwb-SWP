@@ -1,10 +1,6 @@
 package views_controls
 
-import (
-	"gfx"
-
-	"../fonts"
-)
+import "gfx"
 
 type button struct {
 	text string
@@ -23,12 +19,11 @@ func (f *button) Zeichne() {
 	f.widget.Zeichne()
 	breite, höhe := f.GibGroesse()
 
-	font := fonts.LiberationMonoRegular(int(höhe) * 3 / 5)
+	font := LiberationMonoRegular(int(höhe) * 3 / 5)
 	r, g, b := f.vg.RGB()
 	gfx.Stiftfarbe(r, g, b)
 
 	d := (höhe - uint16(font.GibSchriftgroesse())) / 2
 
-	gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgroesse())
-	gfx.SchreibeFont(f.startX+(breite/2)-uint16(len(f.text)*font.GibSchriftgroesse()*7/24), f.startY+d, f.text)
+	font.Schreibe(f.startX+(breite/2)-uint16(len(f.text)*font.GibSchriftgroesse()*7/24), f.startY+d, f.text)
 }

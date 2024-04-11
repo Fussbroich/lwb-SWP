@@ -64,7 +64,7 @@ func (k *mbkugel) BewegenIn(s MiniBillardSpiel) {
 
 func (k *mbkugel) IstEingelocht() bool { return k.eingelocht }
 
-func (k *mbkugel) pruefeBandenKollision(länge, breite float64) {
+func (k *mbkugel) pruefeBandenKollision(laenge, breite float64) {
 	if k.eingelocht {
 		return
 	}
@@ -74,12 +74,12 @@ func (k *mbkugel) pruefeBandenKollision(länge, breite float64) {
 
 	var willHit bool
 	// reflektiere die Kugel
-	var berührt bool = !((xK >= k.r) && (xK <= länge-k.r) && (yK >= k.r) && (yK <= breite-k.r))
+	var berührt bool = !((xK >= k.r) && (xK <= laenge-k.r) && (yK >= k.r) && (yK <= breite-k.r))
 	if !berührt && xK+vx < k.r {
 		vx *= -1
 		willHit = true
 	}
-	if !berührt && xK+vx > länge-k.r {
+	if !berührt && xK+vx > laenge-k.r {
 		vx *= -1
 		willHit = true
 	}

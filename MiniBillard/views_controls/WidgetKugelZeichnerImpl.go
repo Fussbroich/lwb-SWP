@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"gfx"
 
-	"../fonts"
 	"../modelle"
 )
 
@@ -66,7 +65,7 @@ func (w *KugelZeichner) SetzeEnglishPoolPalette() {
 }
 
 func (w *KugelZeichner) ZeichneKugel(startX, startY uint16, k modelle.MBKugel) {
-	font := fonts.LiberationMonoBold(int(k.GibRadius()) - 3)
+	schreiber := LiberationMonoBold(int(k.GibRadius()) - 3)
 	gfxVollKreis(startX, startY, k.GibPos(), k.GibRadius(), F(48, 49, 54))
 	gfxVollKreis(startX, startY, k.GibPos(), k.GibRadius()-1, F(252, 253, 242))
 	c := w.GibKugelPalette()[k.GibWert()]
@@ -84,16 +83,16 @@ func (w *KugelZeichner) ZeichneKugel(startX, startY uint16, k modelle.MBKugel) {
 	if k.GibWert() != 0 {
 		gfxVollKreis(startX, startY, k.GibPos(), (k.GibRadius()-1)/2, F(252, 253, 242))
 		gfx.Stiftfarbe(0, 0, 0)
-		gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgroesse())
+
 		if k.GibWert() < 10 {
-			gfx.SchreibeFont(
-				startX-uint16(font.GibSchriftgroesse())/4+uint16(k.GibPos().X()+0.5),
-				startY-uint16(font.GibSchriftgroesse())/2+uint16(k.GibPos().Y()+0.5),
+			schreiber.Schreibe(
+				startX-uint16(schreiber.GibSchriftgroesse())/4+uint16(k.GibPos().X()+0.5),
+				startY-uint16(schreiber.GibSchriftgroesse())/2+uint16(k.GibPos().Y()+0.5),
 				fmt.Sprintf("%d", k.GibWert()))
 		} else {
-			gfx.SchreibeFont(
-				startX-uint16(font.GibSchriftgroesse())/2+uint16(k.GibPos().X()+0.5),
-				startY-uint16(font.GibSchriftgroesse())/2+uint16(k.GibPos().Y()+0.5),
+			schreiber.Schreibe(
+				startX-uint16(schreiber.GibSchriftgroesse())/2+uint16(k.GibPos().X()+0.5),
+				startY-uint16(schreiber.GibSchriftgroesse())/2+uint16(k.GibPos().Y()+0.5),
 				fmt.Sprintf("%d", k.GibWert()))
 		}
 	}
