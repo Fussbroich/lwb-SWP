@@ -11,7 +11,6 @@ import (
 )
 
 var (
-	musik, geräusche klaenge.Klang = klaenge.CoolJazz2641SOUND(), klaenge.BillardPubAmbienceSOUND()
 	// Modelle
 	billard   modelle.MiniBillardSpiel
 	quiz      modelle.Quiz
@@ -113,12 +112,14 @@ func main() {
 	gfx.Fenster(b, h) //Fenstergröße
 	gfx.Fenstertitel("BrainPool - Das MiniBillard für Schlaue.")
 	billard.Starte()
-	geräusche.StarteLoop()
-	musik.StarteLoop()
 	renderer.Starte()
 	mausSteuerung.Starte()
 
 	// ######## Tastatur-Loop #########################################
+	var musik, geräusche klaenge.Klang = klaenge.CoolJazz2641SOUND(), klaenge.BillardPubAmbienceSOUND()
+	geräusche.StarteLoop()
+	musik.StarteLoop()
+
 	for {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
 		if gedrückt == 1 {
