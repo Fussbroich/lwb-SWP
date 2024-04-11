@@ -16,12 +16,12 @@ var (
 	quiz      modelle.Quiz
 	quizmodus bool
 	// Views
-	hintergrund, bande     views_controls.Widget
-	punktezähler, restzeit views_controls.Widget
-	spieltisch             views_controls.Widget
-	neuesSpielButton       views_controls.Widget
-	quizfenster            views_controls.Widget
-	renderer               views_controls.FensterZeichner
+	hintergrund, bande      views_controls.Widget
+	punktezaehler, restzeit views_controls.Widget
+	spieltisch              views_controls.Widget
+	neuesSpielButton        views_controls.Widget
+	quizfenster             views_controls.Widget
+	renderer                views_controls.FensterZeichner
 	// Controls
 	mausSteuerung views_controls.EingabeProzess
 )
@@ -34,40 +34,40 @@ func mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16) {
 			if quiz.GibAktuelleFrage().RichtigBeantwortet() {
 				billard.ReduziereStrafpunkte()
 				if billard.GibStrafpunkte() <= billard.GibTreffer() {
-					renderer.ÜberblendeAus()
+					renderer.UeberblendeAus()
 					billard.Starte()
 					quizmodus = false // zurück zum Spielmodus
 				}
 			} else {
-				quiz.NächsteFrage()
+				quiz.NaechsteFrage()
 			}
 		}
 		// neues Spiel starten geht immer
 	} else if neuesSpielButton.ImFenster(mausX, mausY) && taste == 1 {
-		renderer.ÜberblendeAus()
+		renderer.UeberblendeAus()
 		quizmodus = false
 		billard.Reset()
 		billard.Starte()
 		// im Spielmodus
-	} else if billard.Läuft() {
+	} else if billard.Laeuft() {
 		if billard.GibStrafpunkte() > billard.GibTreffer() {
 			billard.Stoppe()
-			quiz.NächsteFrage()
-			renderer.Überblende(quizfenster)
+			quiz.NaechsteFrage()
+			renderer.Ueberblende(quizfenster)
 			quizmodus = true // zum Quizmodus
 		} else if billard.IstStillstand() {
 			// zielen und stoßen
 			switch taste {
 			case 1: // stoßen
-				billard.Stoße()
+				billard.Stosse()
 			case 4: // Stoßkraft erhöhen
-				billard.SetzeStoßStärke(billard.GibVStoß().Betrag() + 1)
+				billard.SetzeStosskraft(billard.GibVStoss().Betrag() + 1)
 			case 5: // Stoßkraft verringern
-				billard.SetzeStoßStärke(billard.GibVStoß().Betrag() - 1)
+				billard.SetzeStosskraft(billard.GibVStoss().Betrag() - 1)
 			default: // zielen
 				xs, ys := spieltisch.GibStartkoordinaten()
-				billard.SetzeStoßRichtung((hilf.V2(float64(mausX), float64(mausY))).
-					Minus(billard.GibStoßkugel().GibPos()).
+				billard.SetzeStossRichtung((hilf.V2(float64(mausX), float64(mausY))).
+					Minus(billard.GibSpielkugel().GibPos()).
 					Minus(hilf.V2(float64(xs), float64(ys))))
 			}
 		}
@@ -96,7 +96,7 @@ func main() {
 	var xs, ys, xe, ye uint16 = 4 * rastermaß, 6 * rastermaß, 28 * rastermaß, 18 * rastermaß
 	var g3 uint16 = rastermaß + rastermaß/3
 
-	punktezähler = views_controls.NewMBPunkteAnzeiger(billard, xs-g3, 1*rastermaß, 18*rastermaß, 3*rastermaß, views_controls.Weiß(), views_controls.F(1, 88, 122), 255)
+	punktezaehler = views_controls.NewMBPunkteAnzeiger(billard, xs-g3, 1*rastermaß, 18*rastermaß, 3*rastermaß, views_controls.Weiß(), views_controls.F(1, 88, 122), 255)
 	restzeit = views_controls.NewMBRestzeitAnzeiger(billard, 20*rastermaß+g3, rastermaß, xe+g3, 3*rastermaß, views_controls.Weiß(), views_controls.F(1, 88, 122), 0)
 	bande = views_controls.NewFenster(xs-g3, ys-g3, xe+g3, ye+g3, views_controls.F(1, 88, 122), views_controls.Schwarz(), 0, g3)
 	spieltisch = views_controls.NewMBSpieltisch(billard, xs, ys, xe, ye, views_controls.F(92, 179, 193), views_controls.F(180, 230, 255), 0, 0)
@@ -105,7 +105,7 @@ func main() {
 
 	// ######## Starte alles #########################################
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
-	renderer = views_controls.NewFensterZeichner(hintergrund, bande, spieltisch, punktezähler, restzeit, neuesSpielButton)
+	renderer = views_controls.NewFensterZeichner(hintergrund, bande, spieltisch, punktezaehler, restzeit, neuesSpielButton)
 	mausSteuerung = views_controls.NewMausProzess(mausSteuerFunktion)
 
 	println("Öffne Gfx-Fenster")
@@ -132,7 +132,7 @@ func main() {
 				// ######## Stoppe alles #########################################
 				geräusche.Stoppe()
 				musik.Stoppe()
-				renderer.ÜberblendeText("Bye!", views_controls.F(225, 255, 255), views_controls.F(249, 73, 68), 30)
+				renderer.UeberblendeText("Bye!", views_controls.F(225, 255, 255), views_controls.F(249, 73, 68), 30)
 				mausSteuerung.Stoppe()
 				billard.Stoppe()
 				renderer.Stoppe()

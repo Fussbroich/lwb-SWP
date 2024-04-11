@@ -30,8 +30,8 @@ func (f *miniBSpielfeld) zeichneDiamant(x, y, d uint16) {
 }
 
 func (f *miniBSpielfeld) Zeichne() {
-	breite, höhe := f.GibGröße()
-	kS := f.billard.GibStoßkugel()
+	breite, höhe := f.GibGroesse()
+	kS := f.billard.GibSpielkugel()
 	ra := kS.GibRadius()
 	font := fonts.LiberationMonoRegular(24)
 	// zeichne das Tuch
@@ -56,10 +56,10 @@ func (f *miniBSpielfeld) Zeichne() {
 	for _, k := range f.billard.GibAktiveKugeln() {
 		f.kugelZeichner.ZeichneKugel(f.startX, f.startY, k)
 	}
-	if f.billard.IstStillstand() && !f.billard.GibStoßkugel().IstEingelocht() {
+	if f.billard.IstStillstand() && !f.billard.GibSpielkugel().IstEingelocht() {
 		pK := kS.GibPos()
 		// zeichne die Stoßrichtung und -stärke bezogen auf Kugelradien
-		stärke := f.billard.GibVStoß().Betrag()
+		stärke := f.billard.GibVStoss().Betrag()
 		var farbe Farbe
 		if stärke < 7 {
 			farbe = F(47, 159, 52)
@@ -69,21 +69,21 @@ func (f *miniBSpielfeld) Zeichne() {
 			farbe = F(250, 175, 50)
 		}
 		gfxBreiteLinie(f.startX, f.startY,
-			pK, pK.Plus(f.billard.GibVStoß().Mal(ra)),
+			pK, pK.Plus(f.billard.GibVStoss().Mal(ra)),
 			4, farbe)
 		// Schreibe den Wert der Stärke daneben
 		gfx.Stiftfarbe(100, 100, 100)
-		font.SetzeSchriftgröße(int(ra*0.67 + 0.5))
-		gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgröße())
-		pStärke := pK.Plus(f.billard.GibVStoß().Mal(ra * 3 / 4))
+		font.SetzeSchriftgroesse(int(ra*0.67 + 0.5))
+		gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgroesse())
+		pStärke := pK.Plus(f.billard.GibVStoss().Mal(ra * 3 / 4))
 		gfx.SchreibeFont(f.startX+uint16(pStärke.X()), f.startY+uint16(pStärke.Y()-2*ra), fmt.Sprintf("Stärke: %d", uint16(stärke+0.5)))
 	}
 	// debugging
-	if !f.billard.Läuft() {
+	if !f.billard.Laeuft() {
 		// Pause
 		gfx.Stiftfarbe(100, 100, 100)
-		font.SetzeSchriftgröße(int(f.billard.GibStoßkugel().GibRadius() + 0.5))
-		gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgröße())
+		font.SetzeSchriftgroesse(int(f.billard.GibSpielkugel().GibRadius() + 0.5))
+		gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgroesse())
 		gfx.SchreibeFont(4*breite/5, f.startY+5, "Pause")
 	} else if f.billard.IstZeitlupe() {
 		// zeichne Geschwindigkeiten
@@ -95,8 +95,8 @@ func (f *miniBSpielfeld) Zeichne() {
 			}
 		}
 		gfx.Stiftfarbe(100, 100, 100)
-		font.SetzeSchriftgröße(int(f.billard.GibStoßkugel().GibRadius() + 0.5))
-		gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgröße())
+		font.SetzeSchriftgroesse(int(f.billard.GibSpielkugel().GibRadius() + 0.5))
+		gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgroesse())
 		gfx.SchreibeFont(4*breite/5, f.startY+5, "Zeitlupe")
 	}
 }

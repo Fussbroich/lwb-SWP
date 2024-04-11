@@ -1,9 +1,9 @@
 package fonts
 
 type font struct {
-	name         string
-	dateipfad    string
-	schriftgröße int
+	name           string
+	dateipfad      string
+	schriftgroesse int
 }
 
 func (f *font) GibName() string {
@@ -14,10 +14,10 @@ func (f *font) GibDateipfad() string {
 	return f.dateipfad
 }
 
-func (f *font) GibSchriftgröße() int {
-	return f.schriftgröße
+func (f *font) GibSchriftgroesse() int {
+	return f.schriftgroesse
 }
 
-func (f *font) SetzeSchriftgröße(größe int) {
-	f.schriftgröße = größe
+func (f *font) SetzeSchriftgroesse(größe int) {
+	f.schriftgroesse = größe
 }

@@ -27,7 +27,7 @@ func (f *text_overlay) Zeichne() {
 	r, g, b := f.vg.RGB()
 	gfx.Stiftfarbe(r, g, b)
 	font := fonts.LiberationMonoBoldItalic(int(f.stopY-f.startY) / 5)
-	gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgröße())
+	gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgroesse())
 	gfx.SchreibeFont((f.stopX-f.startX)/3, (f.stopY-f.startY)/4, f.text)
 }
 
@@ -43,10 +43,10 @@ func (f *infotext) Zeichne() {
 	r, g, b := f.vg.RGB()
 	gfx.Stiftfarbe(r, g, b)
 
-	_, höhe := f.GibGröße()
+	_, höhe := f.GibGroesse()
 	font := fonts.LiberationMonoBoldItalic(int(höhe) * 3 / 5)
-	d := (höhe - uint16(font.GibSchriftgröße())) / 2
+	d := (höhe - uint16(font.GibSchriftgroesse())) / 2
 
-	gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgröße())
+	gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgroesse())
 	gfx.SchreibeFont(f.startX+d, f.startY+d, f.text)
 }

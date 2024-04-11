@@ -21,14 +21,14 @@ func NewButton(startx, starty, stopx, stopy uint16, t string, hg, vg Farbe, tr u
 func (f *button) Zeichne() {
 	f.ZeichneRand()
 	f.widget.Zeichne()
-	breite, höhe := f.GibGröße()
+	breite, höhe := f.GibGroesse()
 
 	font := fonts.LiberationMonoRegular(int(höhe) * 3 / 5)
 	r, g, b := f.vg.RGB()
 	gfx.Stiftfarbe(r, g, b)
 
-	d := (höhe - uint16(font.GibSchriftgröße())) / 2
+	d := (höhe - uint16(font.GibSchriftgroesse())) / 2
 
-	gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgröße())
-	gfx.SchreibeFont(f.startX+(breite/2)-uint16(len(f.text)*font.GibSchriftgröße()*7/24), f.startY+d, f.text)
+	gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgroesse())
+	gfx.SchreibeFont(f.startX+(breite/2)-uint16(len(f.text)*font.GibSchriftgroesse()*7/24), f.startY+d, f.text)
 }

@@ -9,7 +9,7 @@ type quiz struct {
 	aktuelle QuizFrage
 }
 
-func (q *quiz) NächsteFrage() {
+func (q *quiz) NaechsteFrage() {
 	q.aktuelle = q.fragen[rand.Intn(len(q.fragen))]
 }
 
@@ -21,5 +21,5 @@ func (q *quiz) GibAktuelleFrage() QuizFrage {
 }
 
 func (q *quiz) Antwort(i int) {
-	q.aktuelle.Gewählt(i)
+	q.aktuelle.Gewaehlt(i)
 }

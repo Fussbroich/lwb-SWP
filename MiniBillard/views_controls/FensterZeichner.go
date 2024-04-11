@@ -4,7 +4,7 @@ type FensterZeichner interface {
 	Starte()
 	Stoppe()
 	ZeigeLayout()
-	Überblende(Widget)
-	ÜberblendeText(string, Farbe, Farbe, uint8)
-	ÜberblendeAus()
+	Ueberblende(Widget)
+	UeberblendeText(string, Farbe, Farbe, uint8)
+	UeberblendeAus()
 }

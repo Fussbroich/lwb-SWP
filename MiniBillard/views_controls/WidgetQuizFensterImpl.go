@@ -7,9 +7,9 @@ import (
 )
 
 type quizfenster struct {
-	quiz  modelle.Quiz
-	frage Widget
-	as    [4]Widget
+	quiz      modelle.Quiz
+	frage     Widget
+	antworten [4]Widget
 	widget
 }
 
@@ -20,9 +20,9 @@ func NewQuizFenster(quiz modelle.Quiz, startx, starty, stopx, stopy uint16, hg, 
 }
 
 func (f *quizfenster) MausklickBei(mausX, mausY uint16) {
-	for i, a := range f.as {
+	for i, a := range f.antworten {
 		if a.ImFenster(mausX, mausY) {
-			f.quiz.GibAktuelleFrage().Gewählt(i)
+			f.quiz.GibAktuelleFrage().Gewaehlt(i)
 		}
 	}
 }
@@ -33,14 +33,14 @@ func (f *quizfenster) Zeichne() {
 	r, g, b := f.vg.RGB()
 	gfx.Stiftfarbe(r, g, b)
 
-	breite, höhe := f.GibGröße()
+	breite, höhe := f.GibGroesse()
 	ra := f.eckradius
 	breite, höhe = breite-2*ra, höhe-2*ra
 	sx, sy := f.startX+ra, f.startY+ra
 	var d uint16 = 3
 	f.frage = NewTextFenster(sx, sy, sx+breite, sy+höhe*3/7-d,
 		f.quiz.GibAktuelleFrage().GibFrage(), f.hg, f.vg, f.transparenz, 0)
-	f.as = [4]Widget{
+	f.antworten = [4]Widget{
 		NewTextFenster(sx, sy+höhe*3/7, sx+breite/2-d, sy+höhe*5/7-d,
 			f.quiz.GibAktuelleFrage().GibAntworten()[0], F(155, 155, 0), f.vg, f.transparenz, 0),
 		NewTextFenster(sx+breite/2+d, sy+höhe*3/7, sx+breite, sy+höhe*5/7-d,
@@ -50,7 +50,7 @@ func (f *quizfenster) Zeichne() {
 		NewTextFenster(sx+breite/2+d, sy+höhe*5/7+d, sx+breite, sy+höhe,
 			f.quiz.GibAktuelleFrage().GibAntworten()[3], F(255, 0, 255), f.vg, f.transparenz, 0)}
 	f.frage.Zeichne()
-	for _, af := range f.as {
+	for _, af := range f.antworten {
 		af.ZeichneRand()
 		af.Zeichne()
 	}

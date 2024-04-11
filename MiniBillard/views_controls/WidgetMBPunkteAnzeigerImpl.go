@@ -25,7 +25,7 @@ func (f *miniBSpielinfo) Zeichne() {
 	font := fonts.LiberationMonoBold(24)
 	vr, vg, vb := f.vg.RGB()
 	hr, hg, hb := f.hg.RGB()
-	breite, höhe := f.GibGröße()
+	breite, höhe := f.GibGroesse()
 	ra := höhe / 2
 
 	var zeilenhöhe uint16
@@ -33,15 +33,15 @@ func (f *miniBSpielinfo) Zeichne() {
 	var anzKugeln uint8 = uint8(len(f.billard.GibKugeln()) - 1)
 	tr, st := f.billard.GibTreffer(), math.Min(float64(anzKugeln), float64(f.billard.GibStrafpunkte()))
 	zeilenhöhe = höhe / 2
-	font.SetzeSchriftgröße(int(zeilenhöhe) * 3 / 5)
-	d := (zeilenhöhe - uint16(font.GibSchriftgröße())) / 2
-	var bBalken, xSBalken uint16 = breite - 2*ra - 5*uint16(font.GibSchriftgröße()), f.startX + 2*ra + 5*uint16(font.GibSchriftgröße())
+	font.SetzeSchriftgroesse(int(zeilenhöhe) * 3 / 5)
+	d := (zeilenhöhe - uint16(font.GibSchriftgroesse())) / 2
+	var bBalken, xSBalken uint16 = breite - 2*ra - 5*uint16(font.GibSchriftgroesse()), f.startX + 2*ra + 5*uint16(font.GibSchriftgroesse())
 
 	gfx.Stiftfarbe(hr, hg, hb)
 	gfx.Vollkreis(f.startX+ra, f.startY+ra, ra)
 	gfx.Vollrechteck(f.startX+ra, f.startY, xSBalken-f.startX-ra, höhe)
 	gfx.Stiftfarbe(vr, vg, vb)
-	gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgröße())
+	gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgroesse())
 	gfx.SchreibeFont(f.startX+2*ra+d, f.startY+d, "Treffer")
 	gfx.SchreibeFont(f.startX+2*ra+d, f.startY+zeilenhöhe+d, "Fouls")
 
@@ -52,17 +52,17 @@ func (f *miniBSpielinfo) Zeichne() {
 	gfx.Vollrechteck(xSBalken, f.startY+zeilenhöhe+1, bBalken*uint16(st)/uint16(anzKugeln), zeilenhöhe-2)
 
 	// Kreis links zeigt Treffer an
-	font.SetzeSchriftgröße(int(ra * 4 / 3))
+	font.SetzeSchriftgroesse(int(ra * 4 / 3))
 	gfx.Stiftfarbe(vr, vg, vb)
 	gfx.Kreis(ra+f.startX, ra+f.startY, ra)
-	gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgröße())
+	gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgroesse())
 	var x, y uint16
 	if tr > 9 {
-		x = ra + f.startX - uint16(font.GibSchriftgröße())*2/5
-		y = ra + f.startY - uint16(font.GibSchriftgröße())/2
+		x = ra + f.startX - uint16(font.GibSchriftgroesse())*2/5
+		y = ra + f.startY - uint16(font.GibSchriftgroesse())/2
 	} else {
-		x = ra + f.startX - uint16(font.GibSchriftgröße())/4
-		y = ra + f.startY - uint16(font.GibSchriftgröße())/2
+		x = ra + f.startX - uint16(font.GibSchriftgroesse())/4
+		y = ra + f.startY - uint16(font.GibSchriftgroesse())/2
 	}
 	gfx.SchreibeFont(x, y, fmt.Sprintf("%d", tr))
 }

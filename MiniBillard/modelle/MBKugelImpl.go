@@ -34,13 +34,13 @@ func (k *mbkugel) BewegenIn(s MiniBillardSpiel) {
 	// prüfe Kollisionen
 	for _, k2 := range s.GibKugeln() {
 		if (k != k2) && !k2.IstEingelocht() {
-			k.prüfeKugelKollision(k2)
+			k.pruefeKugelKollision(k2)
 		}
 	}
 	// setze kollidierte zurück
 	k.istKollMit = nil
 	// Prüfe Berührung mit der Bande.
-	k.prüfeBandenKollision(s.GibGröße())
+	k.pruefeBandenKollision(s.GibGroesse())
 	// Bewege Kugel einen Tick weiter.
 	k.pos = k.pos.Plus(k.v)
 	vabs := k.v.Betrag()
@@ -64,7 +64,7 @@ func (k *mbkugel) BewegenIn(s MiniBillardSpiel) {
 
 func (k *mbkugel) IstEingelocht() bool { return k.eingelocht }
 
-func (k *mbkugel) prüfeBandenKollision(länge, breite float64) {
+func (k *mbkugel) pruefeBandenKollision(länge, breite float64) {
 	if k.eingelocht {
 		return
 	}
@@ -98,7 +98,7 @@ func (k *mbkugel) prüfeBandenKollision(länge, breite float64) {
 	}
 }
 
-func (k1 *mbkugel) prüfeKugelKollision(k2 MBKugel) {
+func (k1 *mbkugel) pruefeKugelKollision(k2 MBKugel) {
 	if k1.istKollMit == k2 {
 		//if (k1.wert == 7 && k2.GibWert() == 2) || (k1.wert == 2 && k2.GibWert() == 7) {
 		//	fmt.Printf("schon geprüft: %d->%d\n", k1.wert, k2.GibWert())
@@ -157,7 +157,7 @@ func (k1 *mbkugel) SetzeKollidiertMit(k2 MBKugel) {
 	k1.istKollMit = k2
 }
 
-func (k1 *mbkugel) SetzeKollidiertZurück() {
+func (k1 *mbkugel) SetzeKollidiertZurueck() {
 	k1.istKollMit = nil
 }
 

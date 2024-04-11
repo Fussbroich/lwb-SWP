@@ -65,19 +65,19 @@ func textInWorte(text string) (worte []string) {
 
 func (f *textbox) Zeichne() {
 	f.widget.Zeichne()
-	B, H := f.GibGröße()
+	B, H := f.GibGroesse()
 	r, g, b := f.vg.RGB()
 	gfx.Stiftfarbe(r, g, b)
-	// Schriftgröße automatisch anpasssen bzgl. Gesamtfläche der Box
+	// Schriftgroesse automatisch anpasssen bzgl. Gesamtfläche der Box
 
 	font := fonts.LiberationMonoRegular(int(math.Min(24, math.Sqrt(float64(B*H)/float64(utf8.RuneCountInString(f.text))*12/7*5/6))))
 
-	gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgröße())
-	zMax, cMax := int(H)/font.GibSchriftgröße(), int(B)/(7*font.GibSchriftgröße()/12)
+	gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgroesse())
+	zMax, cMax := int(H)/font.GibSchriftgroesse(), int(B)/(7*font.GibSchriftgroesse()/12)
 	for z, zeile := range worteInZeilen(textInWorte(f.text), cMax) {
 		if z > zMax {
 			break
 		}
-		gfx.SchreibeFont(f.startX+f.eckradius, f.startY+f.eckradius+uint16(z*(font.GibSchriftgröße()*6/5)), zeile)
+		gfx.SchreibeFont(f.startX+f.eckradius, f.startY+f.eckradius+uint16(z*(font.GibSchriftgroesse()*6/5)), zeile)
 	}
 }

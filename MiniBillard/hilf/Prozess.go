@@ -8,5 +8,5 @@ type Prozess interface {
 	Starte()
 	GibRate() uint64
 	Stoppe()
-	Läuft() bool
+	Laeuft() bool
 }

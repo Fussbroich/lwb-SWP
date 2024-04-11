@@ -1,6 +1,6 @@
 package modelle
 
 type Quiz interface {
-	NächsteFrage()
+	NaechsteFrage()
 	GibAktuelleFrage() QuizFrage
 }

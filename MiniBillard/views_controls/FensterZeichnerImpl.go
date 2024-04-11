@@ -8,23 +8,23 @@ import (
 )
 
 type fzeichner struct {
-	breite, höhe uint16
-	widgets      []Widget
-	overlay      Widget
-	updater      hilf.Prozess
-	updaterLäuft bool
-	rate         uint64
+	breite, hoehe uint16
+	widgets       []Widget
+	overlay       Widget
+	updater       hilf.Prozess
+	updaterLaeuft bool
+	rate          uint64
 }
 
 func NewFensterZeichner(w ...Widget) *fzeichner {
-	bMax, hMax := w[0].GibGröße()
-	return &fzeichner{widgets: w, breite: bMax, höhe: hMax, rate: 80}
+	bMax, hMax := w[0].GibGroesse()
+	return &fzeichner{widgets: w, breite: bMax, hoehe: hMax, rate: 80}
 }
 
 // ######## die Start- und Stop-Methode ###########################################################
 
 func (r *fzeichner) Starte() {
-	if r.updaterLäuft {
+	if r.updaterLaeuft {
 		return
 	}
 
@@ -37,24 +37,24 @@ func (r *fzeichner) Starte() {
 			}
 			// zeige die frame rate
 			info := fmt.Sprintf("%04d fps", r.updater.GibRate()/10*10)
-			NewInfoText(0, 0, r.breite/2, r.höhe/30, info, F(240, 255, 255)).Zeichne()
-			NewInfoText(2*r.breite/3, 0, r.breite, r.höhe/30, "(c)2024 Bettina Chang, Thomas Schrader", F(240, 255, 255)).Zeichne()
+			NewInfoText(0, 0, r.breite/2, r.hoehe/30, info, F(240, 255, 255)).Zeichne()
+			NewInfoText(2*r.breite/3, 0, r.breite, r.hoehe/30, "(c)2024 Bettina Chang, Thomas Schrader", F(240, 255, 255)).Zeichne()
 			if r.overlay != nil {
 				r.overlay.Zeichne()
 			}
 			gfx.UpdateAn()
 		})
-	r.updaterLäuft = true
+	r.updaterLaeuft = true
 	r.updater.StarteRate(r.rate)
 	//r.updater.Starte()
 }
 
 func (r *fzeichner) Stoppe() {
-	if !r.updaterLäuft {
+	if !r.updaterLaeuft {
 		return
 	}
 	r.updater.Stoppe()
-	r.updaterLäuft = false
+	r.updaterLaeuft = false
 }
 
 // ######## die übrigen Methoden ####################################################
@@ -66,28 +66,28 @@ func (r *fzeichner) ZeigeLayout() {
 	if r.overlay != nil {
 		r.overlay.Zeichne()
 	}
-	NewInfoText(r.breite/2, 0, r.breite/2, r.höhe/10, "Layout-Ansicht", F(240, 255, 255)).Zeichne()
+	NewInfoText(r.breite/2, 0, r.breite/2, r.hoehe/10, "Layout-Ansicht", F(240, 255, 255)).Zeichne()
 }
 
-func (r *fzeichner) Überblende(f Widget) {
+func (r *fzeichner) Ueberblende(f Widget) {
 	r.overlay = f
-	if r.updaterLäuft {
+	if r.updaterLaeuft {
 		r.Stoppe()
 		r.Starte()
 	}
 }
 
-func (r *fzeichner) ÜberblendeText(t string, hg, vg Farbe, tr uint8) {
-	r.overlay = NewTextOverlay(0, 0, r.breite, r.höhe, t, hg, vg, tr)
-	if r.updaterLäuft {
+func (r *fzeichner) UeberblendeText(t string, hg, vg Farbe, tr uint8) {
+	r.overlay = NewTextOverlay(0, 0, r.breite, r.hoehe, t, hg, vg, tr)
+	if r.updaterLaeuft {
 		r.Stoppe()
 		r.Starte()
 	}
 }
 
-func (r *fzeichner) ÜberblendeAus() {
+func (r *fzeichner) UeberblendeAus() {
 	r.overlay = nil
-	if r.updaterLäuft {
+	if r.updaterLaeuft {
 		r.Stoppe()
 		r.Starte()
 	}

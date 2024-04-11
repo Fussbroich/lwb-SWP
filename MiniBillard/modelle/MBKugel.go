@@ -5,7 +5,7 @@ import "../hilf"
 type MBKugel interface {
 	BewegenIn(MiniBillardSpiel)
 	SetzeKollidiertMit(MBKugel)
-	SetzeKollidiertZurück()
+	SetzeKollidiertZurueck()
 	IstEingelocht() bool
 	GibV() hilf.Vec2
 	SetzeV(hilf.Vec2)

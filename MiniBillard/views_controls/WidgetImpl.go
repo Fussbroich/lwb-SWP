@@ -37,7 +37,7 @@ func (f *widget) SetzeEckradius(ra uint16) {
 
 func (f *widget) GibStartkoordinaten() (uint16, uint16) { return f.startX, f.startY }
 
-func (f *widget) GibGröße() (uint16, uint16) { return f.stopX - f.startX, f.stopY - f.startY }
+func (f *widget) GibGroesse() (uint16, uint16) { return f.stopX - f.startX, f.stopY - f.startY }
 
 func (f *widget) ImFenster(x, y uint16) bool {
 	xs, ys := f.startX+f.eckradius*3/10, f.startY+f.eckradius*3/10
@@ -129,15 +129,6 @@ func gfxVollKreissektor(startX, startY uint16, pos hilf.Vec2, radius float64, wV
 	gfx.Vollkreissektor(
 		startX+uint16(0.5+pos.X()), startY+uint16(0.5+pos.Y()),
 		uint16(0.5+radius), wVon, wBis)
-}
-
-func gfxVollDreieck(startX, startY uint16, p1, p2, p3 hilf.Vec2, c Farbe) {
-	cr, cg, cb := c.RGB()
-	gfx.Stiftfarbe(cr, cg, cb)
-	gfx.Volldreieck(
-		startX+uint16(0.5+p1.X()), startY+uint16(0.5+p1.Y()),
-		startX+uint16(0.5+p2.X()), startY+uint16(0.5+p2.Y()),
-		startX+uint16(0.5+p3.X()), startY+uint16(0.5+p3.Y()))
 }
 
 func gfxBreiteLinie(startX, startY uint16, pV, pN hilf.Vec2, breite float64, c Farbe) {

@@ -3,11 +3,11 @@ package hilf
 import "time"
 
 type prozess struct {
-	name        string
-	frun        func()
-	rate        uint64 // Hertz
-	verzögerung time.Duration
-	stop        chan bool
+	name         string
+	frun         func()
+	rate         uint64 // Hertz
+	verzoegerung time.Duration
+	stop         chan bool
 }
 
 func NewProzess(name string, f func()) *prozess {
@@ -16,7 +16,7 @@ func NewProzess(name string, f func()) *prozess {
 		frun: f}
 }
 
-func (proc *prozess) Läuft() bool { return proc.stop != nil }
+func (proc *prozess) Laeuft() bool { return proc.stop != nil }
 
 func (proc *prozess) StarteLoop(tick time.Duration) {
 	proc.rate = 1e9 / uint64(tick.Nanoseconds())
@@ -49,7 +49,7 @@ func (proc *prozess) StarteRate(sollRate uint64) {
 		return
 	}
 	proc.rate = sollRate
-	proc.verzögerung = 0
+	proc.verzoegerung = 0
 	maxVerzögerung := time.Second / 5
 	var minRate, maxRate uint64 = sollRate * 4 / 5, sollRate * 6 / 5
 	proc.stop = make(chan bool)
@@ -62,13 +62,13 @@ func (proc *prozess) StarteRate(sollRate uint64) {
 			if laufzeit >= time.Second/20 { // Rate alle 20stel Sekunde anpassen
 				proc.rate = uint64(läufe / laufzeit.Seconds()) // Rate ist Läufe je Sekunde
 				if proc.rate < minRate {
-					if proc.verzögerung > 0 {
-						proc.verzögerung -= time.Millisecond
+					if proc.verzoegerung > 0 {
+						proc.verzoegerung -= time.Millisecond
 					}
 				}
 				if proc.rate > maxRate {
-					if proc.verzögerung < maxVerzögerung {
-						proc.verzögerung += time.Millisecond
+					if proc.verzoegerung < maxVerzögerung {
+						proc.verzoegerung += time.Millisecond
 					}
 				}
 				startzeit = time.Now()
@@ -81,7 +81,7 @@ func (proc *prozess) StarteRate(sollRate uint64) {
 			default:
 				proc.frun()
 				läufe++
-				time.Sleep(time.Duration(proc.verzögerung))
+				time.Sleep(time.Duration(proc.verzoegerung))
 			}
 		}
 	}
@@ -96,7 +96,7 @@ func (proc *prozess) Starte() {
 		return
 	}
 	proc.rate = 1e9
-	proc.verzögerung = 0
+	proc.verzoegerung = 0
 	proc.stop = make(chan bool)
 	runner := func() {
 		var startzeit time.Time = time.Now()

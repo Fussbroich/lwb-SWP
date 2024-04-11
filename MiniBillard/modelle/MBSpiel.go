@@ -9,12 +9,12 @@ import (
 type MiniBillardSpiel interface {
 	Starte()
 	Stoppe()
-	Läuft() bool
+	Laeuft() bool
 	ZeitlupeAnAus()
 	PauseAnAus()
 	IstZeitlupe() bool
-	Stoße()
-	StoßWiederholen()
+	Stosse()
+	StossWiederholen()
 	Reset()
 	IstStillstand() bool
 	GibTaschen() []MBTasche
@@ -22,14 +22,14 @@ type MiniBillardSpiel interface {
 	GibAktiveKugeln() []MBKugel
 	Einlochen(MBKugel)
 	GibEingelochteKugeln() []MBKugel
-	GibStoßkugel() MBKugel
-	GibVStoß() hilf.Vec2
-	SetzeStoßRichtung(hilf.Vec2)
-	SetzeStoßStärke(float64)
+	GibSpielkugel() MBKugel
+	GibVStoss() hilf.Vec2
+	SetzeStossRichtung(hilf.Vec2)
+	SetzeStosskraft(float64)
 	SetzeRestzeit(time.Duration)
 	GibRestzeit() time.Duration
 	GibTreffer() uint8
 	GibStrafpunkte() uint8
 	ReduziereStrafpunkte()
-	GibGröße() (float64, float64)
+	GibGroesse() (float64, float64)
 }
