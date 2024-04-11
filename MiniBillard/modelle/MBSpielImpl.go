@@ -9,23 +9,23 @@ import (
 )
 
 type mbspiel struct {
-	breite       float64
-	höhe         float64
-	rk           float64
-	kugeln       []MBKugel
-	origKugeln   []MBKugel
-	vorigeKugeln []MBKugel
-	stoßkugel    MBKugel
-	stoßricht    hilf.Vec2
-	stoßstärke   float64
-	taschen      []MBTasche
-	eingelochte  []MBKugel
-	strafPunkte  uint8
-	stillstand   bool
-	updater      hilf.Prozess
-	startzeit    time.Time
-	restzeit     time.Duration
-	zeitlupe     uint64
+	breite              float64
+	höhe                float64
+	rk                  float64
+	kugeln              []MBKugel
+	origKugeln          []MBKugel
+	vorigeKugeln        []MBKugel
+	stoßkugel           MBKugel
+	stoßricht           hilf.Vec2
+	stoßstärke          float64
+	taschen             []MBTasche
+	eingelochte         []MBKugel
+	strafPunkte         uint8
+	stillstand          bool
+	updater             hilf.Prozess
+	startzeit           time.Time
+	spielzeit, restzeit time.Duration
+	zeitlupe            uint64
 }
 
 func NewMini9BallSpiel(br, hö, ra uint16) *mbspiel {
@@ -33,7 +33,7 @@ func NewMini9BallSpiel(br, hö, ra uint16) *mbspiel {
 	// Pool-Kugeln: 57,2 mm
 	var breite, höhe, rK float64 = float64(br), float64(hö), float64(ra)
 	sp := &mbspiel{breite: breite, höhe: höhe, rk: rK}
-	rt, rtm := 1.9*sp.rk, 1.5*sp.rk
+	rt, rtm := 1.9*sp.rk, 1.5*sp.rk // Radien der Taschen
 	sp.setzeTaschen(
 		NewTasche(pos(0, 0), rt),
 		NewTasche(pos(0, höhe), rt),
@@ -42,6 +42,8 @@ func NewMini9BallSpiel(br, hö, ra uint16) *mbspiel {
 		NewTasche(pos(breite, 0), rt),
 		NewTasche(pos(breite/2, 0), rtm))
 	sp.setzeKugeln(sp.kugelSatz9Ball()...)
+	sp.spielzeit = 4 * time.Minute
+	sp.restzeit = sp.spielzeit
 	return sp
 }
 
@@ -120,6 +122,7 @@ func (s *mbspiel) kugelSatz9Ball() []MBKugel {
 
 // ######## die Lebens- und Pause-Methode ###########################################################
 func (s *mbspiel) Starte() {
+	// Kann zwischendrin gestoppt (Pause) und wieder gestartet werden ...
 	s.startzeit = time.Now()
 	s.stoßstärke = 5
 	if s.updater == nil {
@@ -246,6 +249,7 @@ func (s *mbspiel) Reset() {
 	s.eingelochte = []MBKugel{}
 	s.strafPunkte = 0
 	s.stillstand = true
+	s.restzeit = s.spielzeit
 }
 
 func (s *mbspiel) StoßWiederholen() {

@@ -1,12 +1,10 @@
 package views_controls
 
 import (
-	"fmt"
 	"gfx"
 
-	"../fonts"
 	"../hilf"
-	"../modelle"
+	//	"../modelle"
 )
 
 type widget struct {
@@ -19,6 +17,22 @@ type widget struct {
 
 func NewFenster(startx, starty, stopx, stopy uint16, hg, vg Farbe, tr uint8, ra uint16) *widget {
 	return &widget{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr, eckradius: ra}
+}
+
+func (f *widget) SetzeKoordinaten(startx, starty, stopx, stopy uint16) {
+	f.startX, f.startY, f.stopY, f.stopY = startx, starty, stopx, stopy
+}
+
+func (f *widget) SetzeFarben(hg, vg Farbe) {
+	f.hg, f.vg = hg, vg
+}
+
+func (f *widget) SetzeTransparenz(tr uint8) {
+	f.transparenz = tr
+}
+
+func (f *widget) SetzeEckradius(ra uint16) {
+	f.eckradius = ra
 }
 
 func (f *widget) GibStartkoordinaten() (uint16, uint16) { return f.startX, f.startY }
@@ -100,66 +114,6 @@ func (f *widget) ZeichneRand() {
 }
 
 // ######## Hilfsfunktionen #######################################################################
-
-var (
-	kugelPalette *[16]Farbe
-)
-
-func mBKugelPalette() *[16]Farbe {
-	if kugelPalette == nil {
-		kugelPalette = &[16]Farbe{
-			F(252, 253, 242), // weiß
-			F(255, 201, 78),  // gelb
-			F(34, 88, 175),   // blau
-			F(249, 73, 68),   // hellrot
-			F(84, 73, 149),   // violett
-			F(255, 139, 33),  // orange
-			F(47, 159, 52),   // grün
-			F(155, 53, 30),   // dunkelrot
-			F(48, 49, 54),    // schwarz
-			F(255, 201, 78),  // gelb
-			F(34, 88, 175),   // blau
-			F(249, 73, 68),   // hellrot
-			F(84, 73, 149),   // violett
-			F(255, 139, 33),  // orange
-			F(47, 159, 52),   // grün
-			F(155, 53, 30)}   // dunkelrot
-	}
-	return kugelPalette
-}
-
-func zeichneKugel(startX, startY uint16, p hilf.Vec2, k modelle.MBKugel) {
-	font := fonts.LiberationMonoBold(int(k.GibRadius()) - 3)
-	gfxVollKreis(startX, startY, p, k.GibRadius(), F(48, 49, 54))
-	gfxVollKreis(startX, startY, p, k.GibRadius()-1, F(252, 253, 242))
-	c := mBKugelPalette()[k.GibWert()]
-	if k.GibWert() <= 8 {
-		gfxVollKreis(startX, startY, p, k.GibRadius()-1, c)
-	} else {
-		r, g, b := c.RGB()
-		gfx.Stiftfarbe(r, g, b)
-		gfx.Vollrechteck(startX+uint16(p.X()-k.GibRadius()*0.75+0.5), startY+uint16(p.Y()-k.GibRadius()*0.6+0.5),
-			uint16(2*0.75*k.GibRadius()+0.5), uint16(2*0.6*k.GibRadius()+0.5))
-		gfxVollKreissektor(startX, startY, p, k.GibRadius()-1, 325, 35, c)
-		gfxVollKreissektor(startX, startY, p, k.GibRadius()-1, 145, 215, c)
-	}
-	if k.GibWert() != 0 {
-		gfxVollKreis(startX, startY, p, (k.GibRadius()-1)/2, F(252, 253, 242))
-		gfx.Stiftfarbe(0, 0, 0)
-		gfx.SetzeFont(font.GibDateipfad(), font.GibSchriftgröße())
-		if k.GibWert() < 10 {
-			gfx.SchreibeFont(
-				startX-uint16(font.GibSchriftgröße())/4+uint16(p.X()+0.5),
-				startY-uint16(font.GibSchriftgröße())/2+uint16(p.Y()+0.5),
-				fmt.Sprintf("%d", k.GibWert()))
-		} else {
-			gfx.SchreibeFont(
-				startX-uint16(font.GibSchriftgröße())/2+uint16(p.X()+0.5),
-				startY-uint16(font.GibSchriftgröße())/2+uint16(p.Y()+0.5),
-				fmt.Sprintf("%d", k.GibWert()))
-		}
-	}
-}
 
 func gfxVollKreis(startX, startY uint16, pos hilf.Vec2, radius float64, c Farbe) {
 	cr, cg, cb := c.RGB()

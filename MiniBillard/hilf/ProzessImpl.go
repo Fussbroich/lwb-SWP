@@ -106,7 +106,6 @@ func (proc *prozess) Starte() {
 			laufzeit = time.Since(startzeit)
 			if laufzeit >= time.Second/20 { // Rate alle 20stel Sekunde messen
 				proc.rate = uint64(läufe / laufzeit.Seconds()) // Rate ist Läufe je Sekunde
-				println("Maus", proc.rate)
 				startzeit = time.Now()
 				läufe = 0
 			}

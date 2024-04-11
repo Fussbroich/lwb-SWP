@@ -15,10 +15,14 @@ type klang struct {
 }
 
 func (s *klang) Play() {
-	go s.play()
+	if s.play != nil {
+		// spielt den Klang einmal ab - nicht mehr stoppbar
+		go s.play()
+	}
 }
 
 func (s *klang) StarteLoop() {
+	// Spielt den Klang in Dauerschleife.
 	if s.player == nil {
 		s.player = hilf.NewProzess(s.titel, s.play)
 	}
@@ -26,6 +30,7 @@ func (s *klang) StarteLoop() {
 }
 
 func (s *klang) Stoppe() {
+	// Todo: Der Klang läuft dennoch ganz durch und stoppt dann erst.
 	if s.player != nil {
 		s.player.Stoppe()
 	}
