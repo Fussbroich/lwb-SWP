@@ -19,7 +19,7 @@ type miniBSpielfeld struct {
 
 func NewMBSpieltisch(billard modelle.MiniBillardSpiel, startx, starty, stopx, stopy uint16, hg, vg Farbe, tr uint8, ra uint16) *miniBSpielfeld {
 	fenster := widget{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr, eckradius: ra}
-	kzeichner := &KugelZeichner{}
+	kzeichner := &KugelZeichner{widget: fenster}
 	return &miniBSpielfeld{billard: billard, kugelZeichner: kzeichner, widget: fenster}
 }
 
@@ -37,8 +37,7 @@ func (f *miniBSpielfeld) Zeichne() {
 	f.widget.Zeichne()
 
 	// zeichne Diamanten
-	r, g, b := f.vg.RGB()
-	gfx.Stiftfarbe(r, g, b)
+	f.Stiftfarbe(f.vg)
 	for _, i := range []uint16{1, 2, 3, 5, 6, 7} {
 		f.zeichneDiamant(f.startX+i*breite/8, f.startY-uint16(ra+0.5), uint16(ra/3+0.5))
 		f.zeichneDiamant(f.startX+i*breite/8, f.startY+höhe+uint16(ra+0.5), uint16(ra/3+0.5))
@@ -49,11 +48,11 @@ func (f *miniBSpielfeld) Zeichne() {
 	}
 	// zeichne die Taschen
 	for _, t := range f.billard.GibTaschen() {
-		gfxVollKreis(f.startX, f.startY, t.GibPos(), ra*1.3, Schwarz())
+		f.VollKreis(t.GibPos(), ra*1.3, Schwarz())
 	}
 	// zeichne die Kugeln
 	for _, k := range f.billard.GibAktiveKugeln() {
-		f.kugelZeichner.ZeichneKugel(f.startX, f.startY, k)
+		f.kugelZeichner.ZeichneKugel(k)
 	}
 	if f.billard.IstStillstand() && !f.billard.GibSpielkugel().IstEingelocht() {
 		pK := kS.GibPos()
@@ -67,11 +66,9 @@ func (f *miniBSpielfeld) Zeichne() {
 		} else {
 			farbe = F(250, 175, 50)
 		}
-		gfxBreiteLinie(f.startX, f.startY,
-			pK, pK.Plus(f.billard.GibVStoss().Mal(ra)),
-			4, farbe)
+		f.BreiteLinie(pK, pK.Plus(f.billard.GibVStoss().Mal(ra)), 4, farbe)
 		// Schreibe den Wert der Stärke daneben
-		gfx.Stiftfarbe(100, 100, 100)
+		f.Stiftfarbe(F(100, 100, 100))
 		schreiber.SetzeSchriftgroesse(int(ra*0.67 + 0.5))
 		pStärke := pK.Plus(f.billard.GibVStoss().Mal(ra * 3 / 4))
 		schreiber.Schreibe(f.startX+uint16(pStärke.X()), f.startY+uint16(pStärke.Y()-2*ra), fmt.Sprintf("Stärke: %d", uint16(stärke+0.5)))
@@ -79,19 +76,17 @@ func (f *miniBSpielfeld) Zeichne() {
 	// debugging
 	if !f.billard.Laeuft() {
 		// Pause
-		gfx.Stiftfarbe(100, 100, 100)
+		f.Stiftfarbe(F(100, 100, 100))
 		schreiber.SetzeSchriftgroesse(int(f.billard.GibSpielkugel().GibRadius() + 0.5))
 		schreiber.Schreibe(4*breite/5, f.startY+5, "Pause")
 	} else if f.billard.IstZeitlupe() {
 		// zeichne Geschwindigkeiten
 		for _, k := range f.billard.GibAktiveKugeln() {
 			if !k.GibV().IstNull() {
-				gfxBreiteLinie(f.startX, f.startY,
-					k.GibPos(), k.GibPos().Plus(k.GibV().Mal(k.GibRadius())),
-					2, F(250, 175, 50))
+				f.BreiteLinie(k.GibPos(), k.GibPos().Plus(k.GibV().Mal(k.GibRadius())), 2, F(250, 175, 50))
 			}
 		}
-		gfx.Stiftfarbe(100, 100, 100)
+		f.Stiftfarbe(F(100, 100, 100))
 		schreiber.SetzeSchriftgroesse(int(f.billard.GibSpielkugel().GibRadius() + 0.5))
 		schreiber.Schreibe(4*breite/5, f.startY+5, "Zeitlupe")
 	}

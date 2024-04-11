@@ -2,13 +2,13 @@ package views_controls
 
 import (
 	"fmt"
-	"gfx"
 
 	"../modelle"
 )
 
 type KugelZeichner struct {
 	kugelPalette *[16]Farbe
+	widget
 }
 
 var (
@@ -64,35 +64,36 @@ func (w *KugelZeichner) SetzeEnglishPoolPalette() {
 	w.kugelPalette = &englishPoolPalette
 }
 
-func (w *KugelZeichner) ZeichneKugel(startX, startY uint16, k modelle.MBKugel) {
+func (w *KugelZeichner) ZeichneKugel(k modelle.MBKugel) {
 	schreiber := LiberationMonoBold(int(k.GibRadius()) - 3)
-	gfxVollKreis(startX, startY, k.GibPos(), k.GibRadius(), F(48, 49, 54))
-	gfxVollKreis(startX, startY, k.GibPos(), k.GibRadius()-1, F(252, 253, 242))
+	w.VollKreis(k.GibPos(), k.GibRadius(), F(48, 49, 54))
+	w.VollKreis(k.GibPos(), k.GibRadius()-1, F(252, 253, 242))
 	c := w.GibKugelPalette()[k.GibWert()]
 	if k.GibWert() <= 8 {
-		gfxVollKreis(startX, startY, k.GibPos(), k.GibRadius()-1, c)
+		w.VollKreis(k.GibPos(), k.GibRadius()-1, c)
 	} else {
-		r, g, b := c.RGB()
-		gfx.Stiftfarbe(r, g, b)
-		gfx.Vollrechteck(startX+uint16(k.GibPos().X()-k.GibRadius()*0.75+0.5), startY+uint16(k.GibPos().Y()-k.GibRadius()*0.6+0.5),
-			uint16(2*0.75*k.GibRadius()+0.5), uint16(2*0.6*k.GibRadius()+0.5))
-		gfxVollKreissektor(startX, startY, k.GibPos(), k.GibRadius()-1, 325, 35, c)
-		gfxVollKreissektor(startX, startY, k.GibPos(), k.GibRadius()-1, 145, 215, c)
+		w.Stiftfarbe(c)
+		w.VollRechteckGFX(
+			uint16(k.GibPos().X()-k.GibRadius()*0.75+0.5),
+			uint16(k.GibPos().Y()-k.GibRadius()*0.6+0.5),
+			uint16(2*0.75*k.GibRadius()+0.5),
+			uint16(2*0.6*k.GibRadius()+0.5))
+		w.VollKreissektor(k.GibPos(), k.GibRadius()-1, 325, 35, c)
+		w.VollKreissektor(k.GibPos(), k.GibRadius()-1, 145, 215, c)
 	}
 	// Nur die weiße erhält keine Nummer.
 	if k.GibWert() != 0 {
-		gfxVollKreis(startX, startY, k.GibPos(), (k.GibRadius()-1)/2, F(252, 253, 242))
-		gfx.Stiftfarbe(0, 0, 0)
-
+		w.VollKreis(k.GibPos(), (k.GibRadius()-1)/2, F(252, 253, 242))
+		w.Stiftfarbe(Schwarz())
 		if k.GibWert() < 10 {
 			schreiber.Schreibe(
-				startX-uint16(schreiber.GibSchriftgroesse())/4+uint16(k.GibPos().X()+0.5),
-				startY-uint16(schreiber.GibSchriftgroesse())/2+uint16(k.GibPos().Y()+0.5),
+				w.startX-uint16(schreiber.GibSchriftgroesse())/4+uint16(k.GibPos().X()+0.5),
+				w.startY-uint16(schreiber.GibSchriftgroesse())/2+uint16(k.GibPos().Y()+0.5),
 				fmt.Sprintf("%d", k.GibWert()))
 		} else {
 			schreiber.Schreibe(
-				startX-uint16(schreiber.GibSchriftgroesse())/2+uint16(k.GibPos().X()+0.5),
-				startY-uint16(schreiber.GibSchriftgroesse())/2+uint16(k.GibPos().Y()+0.5),
+				w.startX-uint16(schreiber.GibSchriftgroesse())/2+uint16(k.GibPos().X()+0.5),
+				w.startY-uint16(schreiber.GibSchriftgroesse())/2+uint16(k.GibPos().Y()+0.5),
 				fmt.Sprintf("%d", k.GibWert()))
 		}
 	}

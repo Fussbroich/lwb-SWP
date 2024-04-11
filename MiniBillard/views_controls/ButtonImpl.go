@@ -1,7 +1,5 @@
 package views_controls
 
-import "gfx"
-
 type button struct {
 	text string
 	widget
@@ -20,8 +18,7 @@ func (f *button) Zeichne() {
 	breite, höhe := f.GibGroesse()
 
 	font := LiberationMonoRegular(int(höhe) * 3 / 5)
-	r, g, b := f.vg.RGB()
-	gfx.Stiftfarbe(r, g, b)
+	f.Stiftfarbe(f.vg)
 
 	d := (höhe - uint16(font.GibSchriftgroesse())) / 2
 
