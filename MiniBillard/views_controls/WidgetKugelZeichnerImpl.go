@@ -6,8 +6,9 @@ import (
 	"../modelle"
 )
 
-type KugelZeichner struct {
-	kugelPalette *[16]Farbe
+type kugelZeichner struct {
+	kugel   modelle.MBKugel
+	english bool
 	widget
 }
 
@@ -47,29 +48,31 @@ var (
 		F(255, 201, 78),  // gelb
 		F(255, 201, 78),  // gelb
 		F(255, 201, 78)}  // gelb
+
 )
 
-func (w *KugelZeichner) GibKugelPalette() *[16]Farbe {
-	if w.kugelPalette == nil {
-		w.kugelPalette = &standardPoolPalette
+func (w *kugelZeichner) GibKugelPalette() *[16]Farbe {
+	if w.english {
+		return &englishPoolPalette
 	}
-	return w.kugelPalette
+	return &standardPoolPalette
 }
 
-func (w *KugelZeichner) SetzeStandardPoolPalette() {
-	w.kugelPalette = &standardPoolPalette
+func (w *kugelZeichner) SetzeEnglish() {
+	w.english = true
 }
 
-func (w *KugelZeichner) SetzeEnglishPoolPalette() {
-	w.kugelPalette = &englishPoolPalette
+func (w *kugelZeichner) SetzeKugel(k modelle.MBKugel) {
+	w.kugel = k
 }
 
-func (w *KugelZeichner) ZeichneKugel(k modelle.MBKugel) {
+func (w *kugelZeichner) Zeichne() {
+	k := w.kugel
 	schreiber := LiberationMonoBold(int(k.GibRadius()) - 3)
 	w.VollKreis(k.GibPos(), k.GibRadius(), F(48, 49, 54))
 	w.VollKreis(k.GibPos(), k.GibRadius()-1, F(252, 253, 242))
 	c := w.GibKugelPalette()[k.GibWert()]
-	if k.GibWert() <= 8 {
+	if k.GibWert() <= 8 || w.english {
 		w.VollKreis(k.GibPos(), k.GibRadius()-1, c)
 	} else {
 		w.Stiftfarbe(c)
@@ -81,8 +84,8 @@ func (w *KugelZeichner) ZeichneKugel(k modelle.MBKugel) {
 		w.VollKreissektor(k.GibPos(), k.GibRadius()-1, 325, 35, c)
 		w.VollKreissektor(k.GibPos(), k.GibRadius()-1, 145, 215, c)
 	}
-	// Nur die weiße erhält keine Nummer.
-	if k.GibWert() != 0 {
+	// Die weiße erhält keine Nummer.
+	if k.GibWert() != 0 && !w.english {
 		w.VollKreis(k.GibPos(), (k.GibRadius()-1)/2, F(252, 253, 242))
 		w.Stiftfarbe(Schwarz())
 		if k.GibWert() < 10 {

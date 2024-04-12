@@ -13,13 +13,13 @@ type MBSpielView interface {
 
 type miniBSpielfeld struct {
 	billard       modelle.MiniBillardSpiel
-	kugelZeichner *KugelZeichner
+	kugelZeichner *kugelZeichner
 	widget
 }
 
 func NewMBSpieltisch(billard modelle.MiniBillardSpiel, startx, starty, stopx, stopy uint16, hg, vg Farbe, tr uint8, ra uint16) *miniBSpielfeld {
 	fenster := widget{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr, eckradius: ra}
-	kzeichner := &KugelZeichner{widget: fenster}
+	kzeichner := &kugelZeichner{widget: fenster}
 	return &miniBSpielfeld{billard: billard, kugelZeichner: kzeichner, widget: fenster}
 }
 
@@ -29,6 +29,8 @@ func (f *miniBSpielfeld) zeichneDiamant(x, y, d uint16) {
 }
 
 func (f *miniBSpielfeld) Zeichne() {
+	//f.kugelZeichner.SetzeEnglish()
+
 	breite, höhe := f.GibGroesse()
 	kS := f.billard.GibSpielkugel()
 	ra := kS.GibRadius()
@@ -52,7 +54,8 @@ func (f *miniBSpielfeld) Zeichne() {
 	}
 	// zeichne die Kugeln
 	for _, k := range f.billard.GibAktiveKugeln() {
-		f.kugelZeichner.ZeichneKugel(k)
+		f.kugelZeichner.SetzeKugel(k)
+		f.kugelZeichner.Zeichne()
 	}
 	if f.billard.IstStillstand() && !f.billard.GibSpielkugel().IstEingelocht() {
 		pK := kS.GibPos()
