@@ -21,20 +21,25 @@ func fontDateipfad(filename string) string {
 	return fp
 }
 
-func LiberationMonoBold(größe int) *schreiber {
-	return &schreiber{
-		fontdatei:      fontDateipfad("LiberationMono-Bold.ttf"),
-		schriftgroesse: größe}
+var (
+	liberationMonoBoldFont       = fontDateipfad("LiberationMono-Bold.ttf")
+	liberationMonoRegularFont    = fontDateipfad("LiberationMono-Regular.ttf")
+	liberationMonoBoldItalicFont = fontDateipfad("LiberationMono-BoldItalic.ttf")
+)
+
+func (f *widget) LiberationMonoBoldSchreiber() *schreiber {
+	return &schreiber{fontdatei: liberationMonoBoldFont,
+		schriftgroesse: 24}
 }
 
-func LiberationMonoRegular(größe int) *schreiber {
+func (f *widget) LiberationMonoRegularSchreiber() *schreiber {
 	return &schreiber{
-		fontdatei:      fontDateipfad("LiberationMono-Regular.ttf"),
-		schriftgroesse: größe}
+		fontdatei:      liberationMonoRegularFont,
+		schriftgroesse: 24}
 }
 
-func LiberationMonoBoldItalic(größe int) *schreiber {
+func (f *widget) LiberationMonoBoldItalicSchreiber() *schreiber {
 	return &schreiber{
-		fontdatei:      fontDateipfad("LiberationMono-BoldItalic.ttf"),
-		schriftgroesse: größe}
+		fontdatei:      liberationMonoBoldItalicFont,
+		schriftgroesse: 24}
 }

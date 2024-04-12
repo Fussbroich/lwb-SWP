@@ -1,7 +1,6 @@
 package views_controls
 
 import (
-	"gfx"
 	"math"
 	"unicode"
 	"unicode/utf8"
@@ -13,10 +12,7 @@ type textbox struct {
 	widget
 }
 
-func NewTextFenster(startx, starty, stopx, stopy uint16, t string, hg, vg Farbe, tr uint8, ra uint16) *textbox {
-	fenster := widget{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr, eckradius: ra}
-	return &textbox{text: t, widget: fenster}
-}
+func NewTextBox(t string) *textbox { return &textbox{text: t, widget: widget{}} }
 
 func worteInZeilen(worte []string, lMax int) (zeilen []string) {
 	var zeile string
@@ -64,10 +60,10 @@ func textInWorte(text string) (worte []string) {
 func (f *textbox) Zeichne() {
 	f.widget.Zeichne()
 	B, H := f.GibGroesse()
-	r, g, b := f.vg.RGB()
-	gfx.Stiftfarbe(r, g, b)
+	f.Stiftfarbe(f.vg)
 	// Schriftgroesse automatisch anpasssen bzgl. Gesamtfläche der Box
-	schreiber := LiberationMonoRegular(
+	schreiber := f.LiberationMonoRegularSchreiber()
+	schreiber.SetzeSchriftgroesse(
 		int(math.Min(
 			24,
 			math.Sqrt(float64(B*H)/float64(utf8.RuneCountInString(f.text))*12/7*5/6))))

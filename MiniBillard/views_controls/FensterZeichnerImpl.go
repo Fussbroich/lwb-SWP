@@ -36,9 +36,15 @@ func (r *fzeichner) Starte() {
 				f.Zeichne()
 			}
 			// zeige die frame rate
-			info := fmt.Sprintf("%04d fps", r.updater.GibRate()/10*10)
-			NewInfoText(0, 0, r.breite/2, r.hoehe/30, info, F(240, 255, 255)).Zeichne()
-			NewInfoText(2*r.breite/3, 0, r.breite, r.hoehe/30, "(c)2024 Bettina Chang, Thomas Schrader", F(240, 255, 255)).Zeichne()
+			fps := NewInfoText(fmt.Sprintf("%04d fps", r.updater.GibRate()/10*10))
+			fps.SetzeKoordinaten(0, 0, r.breite/2, r.hoehe/30)
+			fps.SetzeFarben(Weiß(), F(240, 255, 255))
+			fps.Zeichne()
+			// zeige das copyright an
+			copy := NewInfoText("(c)2024 Bettina Chang, Thomas Schrader")
+			copy.SetzeKoordinaten(2*r.breite/3, 0, r.breite, r.hoehe/30)
+			copy.SetzeFarben(Weiß(), F(240, 255, 255))
+			copy.Zeichne()
 			if r.overlay != nil {
 				r.overlay.Zeichne()
 			}
@@ -66,29 +72,23 @@ func (r *fzeichner) ZeigeLayout() {
 	if r.overlay != nil {
 		r.overlay.Zeichne()
 	}
-	NewInfoText(r.breite/2, 0, r.breite/2, r.hoehe/10, "Layout-Ansicht", F(240, 255, 255)).Zeichne()
+	info := NewInfoText("Layout-Ansicht")
+	info.SetzeKoordinaten(r.breite/2, 0, r.breite/2, r.hoehe/10)
+	info.SetzeFarben(Weiß(), F(240, 255, 255))
+	info.Zeichne()
 }
 
 func (r *fzeichner) Ueberblende(f Widget) {
 	r.overlay = f
-	if r.updaterLaeuft {
-		r.Stoppe()
-		r.Starte()
-	}
 }
 
 func (r *fzeichner) UeberblendeText(t string, hg, vg Farbe, tr uint8) {
-	r.overlay = NewTextOverlay(0, 0, r.breite, r.hoehe, t, hg, vg, tr)
-	if r.updaterLaeuft {
-		r.Stoppe()
-		r.Starte()
-	}
+	r.overlay = NewTextOverlay(t)
+	r.overlay.SetzeKoordinaten(0, 0, r.breite, r.hoehe)
+	r.overlay.SetzeFarben(hg, vg)
+	r.overlay.SetzeTransparenz(tr)
 }
 
 func (r *fzeichner) UeberblendeAus() {
 	r.overlay = nil
-	if r.updaterLaeuft {
-		r.Stoppe()
-		r.Starte()
-	}
 }

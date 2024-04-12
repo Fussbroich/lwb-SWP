@@ -1,8 +1,6 @@
 package views_controls
 
 import (
-	"gfx"
-
 	"../modelle"
 )
 
@@ -14,9 +12,8 @@ type quizfenster struct {
 }
 
 // TextOverlay zeigt den Hintergrund
-func NewQuizFenster(quiz modelle.Quiz, startx, starty, stopx, stopy uint16, hg, vg Farbe, ra uint16) *quizfenster {
-	fenster := widget{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: 0, eckradius: ra}
-	return &quizfenster{quiz: quiz, widget: fenster}
+func NewQuizFenster(quiz modelle.Quiz) *quizfenster {
+	return &quizfenster{quiz: quiz, widget: widget{}}
 }
 
 func (f *quizfenster) MausklickBei(mausX, mausY uint16) {
@@ -30,25 +27,36 @@ func (f *quizfenster) MausklickBei(mausX, mausY uint16) {
 func (f *quizfenster) Zeichne() {
 	f.ZeichneRand()
 	f.widget.Zeichne()
-	r, g, b := f.vg.RGB()
-	gfx.Stiftfarbe(r, g, b)
+	f.Stiftfarbe(f.vg)
 
 	breite, höhe := f.GibGroesse()
 	ra := f.eckradius
 	breite, höhe = breite-2*ra, höhe-2*ra
 	sx, sy := f.startX+ra, f.startY+ra
 	var d uint16 = 3
-	f.frage = NewTextFenster(sx, sy, sx+breite, sy+höhe*3/7-d,
-		f.quiz.GibAktuelleFrage().GibFrage(), f.hg, f.vg, f.transparenz, 0)
-	f.antworten = [4]Widget{
-		NewTextFenster(sx, sy+höhe*3/7, sx+breite/2-d, sy+höhe*5/7-d,
-			f.quiz.GibAktuelleFrage().GibAntworten()[0], F(155, 155, 0), f.vg, f.transparenz, 0),
-		NewTextFenster(sx+breite/2+d, sy+höhe*3/7, sx+breite, sy+höhe*5/7-d,
-			f.quiz.GibAktuelleFrage().GibAntworten()[1], F(255, 255, 0), f.vg, f.transparenz, 0),
-		NewTextFenster(sx, sy+höhe*5/7+d, sx+breite/2-d, sy+höhe,
-			f.quiz.GibAktuelleFrage().GibAntworten()[2], F(0, 255, 255), f.vg, f.transparenz, 0),
-		NewTextFenster(sx+breite/2+d, sy+höhe*5/7+d, sx+breite, sy+höhe,
-			f.quiz.GibAktuelleFrage().GibAntworten()[3], F(255, 0, 255), f.vg, f.transparenz, 0)}
+	f.frage = NewTextBox(f.quiz.GibAktuelleFrage().GibFrage())
+	f.frage.SetzeKoordinaten(sx, sy, sx+breite, sy+höhe*3/7-d)
+	a0 := NewTextBox(f.quiz.GibAktuelleFrage().GibAntworten()[0])
+	a0.SetzeKoordinaten(sx, sy+höhe*3/7, sx+breite/2-d, sy+höhe*5/7-d)
+	a1 := NewTextBox(f.quiz.GibAktuelleFrage().GibAntworten()[1])
+	a1.SetzeKoordinaten(sx+breite/2+d, sy+höhe*3/7, sx+breite, sy+höhe*5/7-d)
+	a2 := NewTextBox(f.quiz.GibAktuelleFrage().GibAntworten()[2])
+	a2.SetzeKoordinaten(sx, sy+höhe*5/7+d, sx+breite/2-d, sy+höhe)
+	a3 := NewTextBox(f.quiz.GibAktuelleFrage().GibAntworten()[3])
+	a3.SetzeKoordinaten(sx+breite/2+d, sy+höhe*5/7+d, sx+breite, sy+höhe)
+
+	f.frage.SetzeFarben(f.hg, f.vg)
+	a0.SetzeFarben(F(155, 155, 0), f.vg)
+	a1.SetzeFarben(F(255, 255, 0), f.vg)
+	a2.SetzeFarben(F(0, 255, 255), f.vg)
+	a3.SetzeFarben(F(255, 0, 255), f.vg)
+
+	a0.SetzeTransparenz(f.transparenz)
+	a1.SetzeTransparenz(f.transparenz)
+	a2.SetzeTransparenz(f.transparenz)
+	a3.SetzeTransparenz(f.transparenz)
+
+	f.antworten = [4]Widget{a0, a1, a2, a3}
 	f.frage.Zeichne()
 	for _, af := range f.antworten {
 		af.ZeichneRand()

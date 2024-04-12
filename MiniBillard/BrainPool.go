@@ -46,8 +46,7 @@ func mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16) {
 	} else if neuesSpielButton.ImFenster(mausX, mausY) && taste == 1 {
 		renderer.UeberblendeAus()
 		quizmodus = false
-		billard.Reset()
-		billard.Starte()
+		neuesSpielButton.MausklickBei(mausX, mausY)
 		// im Spielmodus
 	} else if billard.Laeuft() {
 		if billard.GibStrafpunkte() > billard.GibTreffer() {
@@ -91,17 +90,41 @@ func main() {
 	quiz = modelle.NewQuizCSV("BeispielQuiz.csv")
 
 	// Views erzeugen
-	hintergrund = views_controls.NewFenster(0, 0, b, h, views_controls.F(225, 232, 236), views_controls.F(1, 88, 122), 0, 0)
+	hintergrund = views_controls.NewFenster()
+	punktezaehler = views_controls.NewMBPunkteAnzeiger(billard)
+	restzeit = views_controls.NewMBRestzeitAnzeiger(billard)
+	bande = views_controls.NewFenster()
+	spieltisch = views_controls.NewMBSpieltisch(billard)
+	quizfenster = views_controls.NewQuizFenster(quiz)
+	neuesSpielButton = views_controls.NewButton("neues Spiel",
+		func() {
+			billard.Reset()
+			billard.Starte()
+		})
 
+	// Abmessungen
+	hintergrund.SetzeKoordinaten(0, 0, b, h)
 	var xs, ys, xe, ye uint16 = 4 * rastermaß, 6 * rastermaß, 28 * rastermaß, 18 * rastermaß
 	var g3 uint16 = rastermaß + rastermaß/3
+	punktezaehler.SetzeKoordinaten(xs-g3, 1*rastermaß, 18*rastermaß, 3*rastermaß)
+	restzeit.SetzeKoordinaten(20*rastermaß+g3, rastermaß, xe+g3, 3*rastermaß)
+	bande.SetzeKoordinaten(xs-g3, ys-g3, xe+g3, ye+g3)
+	bande.SetzeEckradius(g3)
+	spieltisch.SetzeKoordinaten(xs, ys, xe, ye)
+	quizfenster.SetzeKoordinaten(xs-g3, ys-g3, xe+g3, ye+g3)
+	quizfenster.SetzeEckradius(g3)
+	neuesSpielButton.SetzeKoordinaten(b/2-2*rastermaß, ye+g3+rastermaß/2, b/2+2*rastermaß, ye+g3+g3)
+	neuesSpielButton.SetzeEckradius(rastermaß / 3)
 
-	punktezaehler = views_controls.NewMBPunkteAnzeiger(billard, xs-g3, 1*rastermaß, 18*rastermaß, 3*rastermaß, views_controls.Weiß(), views_controls.F(1, 88, 122), 255)
-	restzeit = views_controls.NewMBRestzeitAnzeiger(billard, 20*rastermaß+g3, rastermaß, xe+g3, 3*rastermaß, views_controls.Weiß(), views_controls.F(1, 88, 122), 0)
-	bande = views_controls.NewFenster(xs-g3, ys-g3, xe+g3, ye+g3, views_controls.F(1, 88, 122), views_controls.Schwarz(), 0, g3)
-	spieltisch = views_controls.NewMBSpieltisch(billard, xs, ys, xe, ye, views_controls.F(92, 179, 193), views_controls.F(180, 230, 255), 0, 0)
-	neuesSpielButton = views_controls.NewButton(b/2-2*rastermaß, ye+g3+rastermaß/2, b/2+2*rastermaß, ye+g3+g3, "neues Spiel", views_controls.Weiß(), views_controls.F(1, 88, 122), 100, rastermaß/3)
-	quizfenster = views_controls.NewQuizFenster(quiz, xs-g3, ys-g3, xe+g3, ye+g3, views_controls.Weiß(), views_controls.F(1, 88, 122), g3)
+	// Farben
+	hintergrund.SetzeFarben(views_controls.F(225, 232, 236), views_controls.F(1, 88, 122))
+	spieltisch.SetzeFarben(views_controls.F(92, 179, 193), views_controls.F(180, 230, 255))
+	bande.SetzeFarben(views_controls.F(1, 88, 122), views_controls.Schwarz())
+	punktezaehler.SetzeFarben(views_controls.Weiß(), views_controls.F(1, 88, 122))
+	punktezaehler.SetzeTransparenz(255)
+	restzeit.SetzeFarben(views_controls.Weiß(), views_controls.F(1, 88, 122))
+	quizfenster.SetzeFarben(views_controls.Weiß(), views_controls.F(1, 88, 122))
+	neuesSpielButton.SetzeFarben(views_controls.Weiß(), views_controls.F(1, 88, 122))
 
 	// ######## Starte alles #########################################
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)

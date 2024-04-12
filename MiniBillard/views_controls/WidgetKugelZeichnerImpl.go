@@ -68,7 +68,8 @@ func (w *kugelZeichner) SetzeKugel(k modelle.MBKugel) {
 
 func (w *kugelZeichner) Zeichne() {
 	k := w.kugel
-	schreiber := LiberationMonoBold(int(k.GibRadius()) - 3)
+	schreiber := w.LiberationMonoBoldSchreiber()
+	schreiber.SetzeSchriftgroesse(int(k.GibRadius()) - 3)
 	w.VollKreis(k.GibPos(), k.GibRadius(), F(48, 49, 54))
 	w.VollKreis(k.GibPos(), k.GibRadius()-1, F(252, 253, 242))
 	c := w.GibKugelPalette()[k.GibWert()]

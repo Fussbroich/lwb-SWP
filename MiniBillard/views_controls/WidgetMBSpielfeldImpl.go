@@ -8,6 +8,7 @@ import (
 )
 
 type MBSpielView interface {
+	MakeKugelZeichner()
 	Widget
 }
 
@@ -17,10 +18,12 @@ type miniBSpielfeld struct {
 	widget
 }
 
-func NewMBSpieltisch(billard modelle.MiniBillardSpiel, startx, starty, stopx, stopy uint16, hg, vg Farbe, tr uint8, ra uint16) *miniBSpielfeld {
-	fenster := widget{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr, eckradius: ra}
-	kzeichner := &kugelZeichner{widget: fenster}
-	return &miniBSpielfeld{billard: billard, kugelZeichner: kzeichner, widget: fenster}
+func NewMBSpieltisch(billard modelle.MiniBillardSpiel) *miniBSpielfeld {
+	return &miniBSpielfeld{billard: billard, widget: widget{}}
+}
+
+func (f *miniBSpielfeld) MakeKugelZeichner() *kugelZeichner {
+	return &kugelZeichner{widget: f.widget}
 }
 
 func (f *miniBSpielfeld) zeichneDiamant(x, y, d uint16) {
@@ -29,12 +32,13 @@ func (f *miniBSpielfeld) zeichneDiamant(x, y, d uint16) {
 }
 
 func (f *miniBSpielfeld) Zeichne() {
-	//f.kugelZeichner.SetzeEnglish()
-
+	if f.kugelZeichner == nil {
+		f.kugelZeichner = f.MakeKugelZeichner()
+	}
 	breite, höhe := f.GibGroesse()
 	kS := f.billard.GibSpielkugel()
 	ra := kS.GibRadius()
-	schreiber := LiberationMonoRegular(24)
+	schreiber := f.LiberationMonoRegularSchreiber()
 	// zeichne das Tuch
 	f.widget.Zeichne()
 

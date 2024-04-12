@@ -1,15 +1,20 @@
 package views_controls
 
 type button struct {
-	text string
+	text   string
+	action func()
 	widget
 }
 
 // Buttons haben einen Text in der Mitte
-func NewButton(startx, starty, stopx, stopy uint16, t string, hg, vg Farbe, tr uint8, ra uint16) *button {
-	fenster := widget{startX: startx, startY: starty, stopX: stopx, stopY: stopy,
-		hg: hg, vg: vg, transparenz: 0, eckradius: ra}
-	return &button{text: t, widget: fenster}
+func NewButton(t string, action func()) *button {
+	return &button{text: t, action: action, widget: widget{}}
+}
+
+func (f *button) MausklickBei(mausX, mausY uint16) {
+	if f.ImFenster(mausX, mausY) {
+		f.action()
+	}
 }
 
 func (f *button) Zeichne() {
@@ -17,10 +22,13 @@ func (f *button) Zeichne() {
 	f.widget.Zeichne()
 	breite, höhe := f.GibGroesse()
 
-	font := LiberationMonoRegular(int(höhe) * 3 / 5)
+	schreiber := f.LiberationMonoRegularSchreiber()
+	schreiber.SetzeSchriftgroesse(int(höhe) * 3 / 5)
 	f.Stiftfarbe(f.vg)
 
-	d := (höhe - uint16(font.GibSchriftgroesse())) / 2
+	d := (höhe - uint16(schreiber.GibSchriftgroesse())) / 2
 
-	font.Schreibe(f.startX+(breite/2)-uint16(len(f.text)*font.GibSchriftgroesse()*7/24), f.startY+d, f.text)
+	schreiber.Schreibe(
+		f.startX+(breite/2)-uint16(len(f.text)*schreiber.GibSchriftgroesse()*7/24), f.startY+d,
+		f.text)
 }

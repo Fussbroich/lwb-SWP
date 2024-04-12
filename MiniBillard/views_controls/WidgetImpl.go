@@ -1,10 +1,10 @@
 package views_controls
 
 import (
+	"fmt"
 	"gfx"
 
 	"../hilf"
-	//	"../modelle"
 )
 
 type widget struct {
@@ -15,12 +15,10 @@ type widget struct {
 	eckradius      uint16
 }
 
-func NewFenster(startx, starty, stopx, stopy uint16, hg, vg Farbe, tr uint8, ra uint16) *widget {
-	return &widget{startX: startx, startY: starty, stopX: stopx, stopY: stopy, hg: hg, vg: vg, transparenz: tr, eckradius: ra}
-}
+func NewFenster() *widget { return &widget{} }
 
 func (f *widget) SetzeKoordinaten(startx, starty, stopx, stopy uint16) {
-	f.startX, f.startY, f.stopY, f.stopY = startx, starty, stopx, stopy
+	f.startX, f.startY, f.stopX, f.stopY = startx, starty, stopx, stopy
 }
 
 func (f *widget) SetzeFarben(hg, vg Farbe) {
@@ -45,7 +43,9 @@ func (f *widget) ImFenster(x, y uint16) bool {
 	return x > xs && x < xs+b && y > ys && y < ys+h
 }
 
-func (f *widget) MausklickBei(x, y uint16) {}
+func (f *widget) MausklickBei(x, y uint16) {
+	fmt.Println("Unbeachteter Mausklick bei", x, y)
+}
 
 func (f *widget) ZeichneLayout() {
 	f.Stiftfarbe(f.hg)
@@ -134,6 +134,10 @@ func (f *widget) VollKreis(pos hilf.Vec2, radius float64, c Farbe) {
 
 func (f *widget) VollKreisGFX(x, y, ra uint16) {
 	gfx.Vollkreis(f.startX+x, f.startY+y, ra)
+}
+
+func (f *widget) KreisGFX(x, y, ra uint16) {
+	gfx.Kreis(f.startX+x, f.startY+y, ra)
 }
 
 func (f *widget) Kreissektor(pos hilf.Vec2, radius float64, wVon, wBis uint16, c Farbe) {
