@@ -28,7 +28,8 @@ var (
 )
 
 func (f *widget) LiberationMonoBoldSchreiber() *schreiber {
-	return &schreiber{fontdatei: liberationMonoBoldFont,
+	return &schreiber{
+		fontdatei:      liberationMonoBoldFont,
 		schriftgroesse: 24}
 }
 

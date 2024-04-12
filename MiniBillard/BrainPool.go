@@ -117,14 +117,16 @@ func main() {
 	neuesSpielButton.SetzeEckradius(rastermaß / 3)
 
 	// Farben
-	hintergrund.SetzeFarben(views_controls.F(225, 232, 236), views_controls.F(1, 88, 122))
-	spieltisch.SetzeFarben(views_controls.F(92, 179, 193), views_controls.F(180, 230, 255))
-	bande.SetzeFarben(views_controls.F(1, 88, 122), views_controls.Schwarz())
-	punktezaehler.SetzeFarben(views_controls.Weiß(), views_controls.F(1, 88, 122))
+	//views_controls.EnglishKugelPalette()
+	//	views_controls.DarkFarbSchema()
+	hintergrund.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
+	spieltisch.SetzeFarben(views_controls.Fbillardtuch(), views_controls.Fdiamanten())
+	bande.SetzeFarben(views_controls.Ftext(), views_controls.Fanzeige())
+	punktezaehler.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
 	punktezaehler.SetzeTransparenz(255)
-	restzeit.SetzeFarben(views_controls.Weiß(), views_controls.F(1, 88, 122))
-	quizfenster.SetzeFarben(views_controls.Weiß(), views_controls.F(1, 88, 122))
-	neuesSpielButton.SetzeFarben(views_controls.Weiß(), views_controls.F(1, 88, 122))
+	restzeit.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
+	quizfenster.SetzeFarben(views_controls.Weiß(), views_controls.Ftext())
+	neuesSpielButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
 
 	// ######## Starte alles #########################################
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
@@ -155,7 +157,7 @@ func main() {
 				// ######## Stoppe alles #########################################
 				geräusche.Stoppe()
 				musik.Stoppe()
-				renderer.UeberblendeText("Bye!", views_controls.F(225, 255, 255), views_controls.F(249, 73, 68), 30)
+				renderer.UeberblendeText("Bye!", views_controls.Fanzeige(), views_controls.Ftext(), 30)
 				mausSteuerung.Stoppe()
 				billard.Stoppe()
 				renderer.Stoppe()

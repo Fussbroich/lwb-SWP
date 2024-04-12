@@ -41,9 +41,9 @@ func (f *miniBSpielinfo) Zeichne() {
 	schreiber.Schreibe(f.startX+2*ra+d, f.startY+zeilenhöhe+d, "Fouls")
 
 	// zeichne beide Fortschritts-Balken
-	f.Stiftfarbe(F(243, 186, 0)) // Treffer gelb
+	f.Stiftfarbe(FanzTreffer()) // Treffer gelb
 	gfx.Vollrechteck(xSBalken, f.startY+1, bBalken*uint16(tr)/uint16(anzKugeln), zeilenhöhe-2)
-	f.Stiftfarbe(F(219, 80, 0)) // Fouls in Warnrot
+	f.Stiftfarbe(FanzFouls()) // Fouls in Warnrot
 	gfx.Vollrechteck(xSBalken, f.startY+zeilenhöhe+1, bBalken*uint16(st)/uint16(anzKugeln), zeilenhöhe-2)
 
 	// Kreis links zeigt Treffer an
