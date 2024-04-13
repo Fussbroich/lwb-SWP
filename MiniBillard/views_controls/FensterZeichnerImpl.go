@@ -49,12 +49,11 @@ func (r *fzeichner) Starte() {
 			gfx.Cls()
 			r.hintergrund.Zeichne()
 			for _, f := range r.widgets {
-				if r.layoutModus {
-					f.ZeichneLayout()
-					continue
-				}
 				if f.IstAktiv() {
 					f.Zeichne()
+					if r.layoutModus {
+						f.ZeichneLayout()
+					}
 				}
 			}
 			b, h := r.hintergrund.GibGroesse()
@@ -86,9 +85,9 @@ func (r *fzeichner) Stoppe() {
 	r.updaterLaeuft = false
 	time.Sleep(100 * time.Millisecond)
 	if gfx.FensterOffen() {
+		println("Schließe Gfx-Fenster")
 		gfx.FensterAus()
 	}
-	println("BrainPool wird beendet!")
 }
 
 // ######## die übrigen Methoden ####################################################

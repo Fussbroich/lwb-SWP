@@ -9,11 +9,17 @@ import (
 	"./views_controls"
 )
 
-var (
-	rastermaß    uint16 = 35
-	breite, höhe uint16 = 32 * rastermaß, 22 * rastermaß // Größe des gesamten App-Fensters
+type BPApp interface {
+	Run()
+	Quit()
+}
+
+type bpapp struct {
+	läuft        bool
+	rastermaß    uint16
+	breite, höhe uint16 // Größe des gesamten App-Fensters
 	// Klänge
-	musik, geräusche klaenge.Klang = klaenge.CoolJazz2641SOUND(), klaenge.BillardPubAmbienceSOUND()
+	musik, geräusche klaenge.Klang
 	// Modelle
 	billard modelle.MiniBillardSpiel
 	quiz    modelle.Quiz
@@ -24,190 +30,201 @@ var (
 	renderer                                    views_controls.FensterZeichner
 	// Controls
 	mausSteuerung views_controls.EingabeProzess
-)
+}
 
-func mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16) {
-	if quitButton != nil && quitButton.IstAktiv() &&
-		quitButton.ImFenster(mausX, mausY) && taste == 1 && status == -1 {
-		quitButton.MausklickBei(mausX, mausY)
+// ####### baue die App zusammen ##################################################
+func NewBPApp(g uint16) *bpapp {
+	app := bpapp{rastermaß: g, breite: 32 * g, höhe: 22 * g}
+	app.renderer = views_controls.NewFensterZeichner("BrainPool - Das MiniBillard für Schlaue.")
+
+	app.musik = klaenge.CoolJazz2641SOUND()
+	app.geräusche = klaenge.BillardPubAmbienceSOUND()
+
+	// ######## Modelle und Views zusammenstellen #################################
+	// realer Tisch: 2540 mm x 1270 mm, Kugelradius: 57.2 mm
+	// Breite, Höhe des Spielfelds
+	var bS uint16 = 3 * app.breite / 4
+	var hS uint16 = bS / 2
+	// Radius der Kugeln
+	var ra uint16 = uint16(0.5 + float64(bS)*57.2/2540)
+
+	// Modelle erzeugen
+	app.billard = modelle.NewMini9BallSpiel(bS, hS, ra)
+	app.quiz = modelle.NewQuizCSV("BeispielQuiz.csv")
+
+	// Views und Zeichner erzeugen
+	app.hintergrund = views_controls.NewFenster()
+	app.renderer.SetzeFensterHintergrund(app.hintergrund)
+	app.punktezaehler = views_controls.NewMBPunkteAnzeiger(app.billard)
+	app.restzeit = views_controls.NewMBRestzeitAnzeiger(app.billard)
+	app.bande = views_controls.NewFenster()
+	app.spieltisch = views_controls.NewMBSpieltisch(app.billard)
+	app.quizfenster = views_controls.NewQuizFenster(app.quiz)
+	app.neuesSpielButton = views_controls.NewButton("neues Spiel",
+		func() {
+			app.billard.Reset()
+			app.quizfenster.SetzeInAktiv()
+			app.hilfebox.SetzeInAktiv()
+			app.spieltisch.SetzeAktiv()
+		})
+	app.quitButton = views_controls.NewButton("Quit",
+		func() {
+			app.Quit()
+		})
+	app.hilfebox = views_controls.NewTextBox("Hilfe")
+	app.hilfebox.SetzeInAktiv()
+	app.hilfeButton = views_controls.NewButton("?",
+		func() {
+			app.hilfebox.AktivAnAus()
+		})
+
+	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
+	app.renderer.SetzeWidgets(app.bande, app.spieltisch, app.quizfenster, app.hilfebox, app.punktezaehler, app.restzeit,
+		app.neuesSpielButton, app.quitButton, app.hilfeButton)
+
+	//setze Layout
+	app.hintergrund.SetzeKoordinaten(0, 0, app.breite, app.höhe)
+	var xs, ys, xe, ye uint16 = 4 * app.rastermaß, 6 * app.rastermaß, 28 * app.rastermaß, 18 * app.rastermaß
+	var g3 uint16 = app.rastermaß + app.rastermaß/3
+	app.punktezaehler.SetzeKoordinaten(xs-g3, 1*app.rastermaß, 18*app.rastermaß, 3*app.rastermaß)
+	app.restzeit.SetzeKoordinaten(20*app.rastermaß+g3, app.rastermaß, xe+g3, 3*app.rastermaß)
+	app.bande.SetzeKoordinaten(xs-g3, ys-g3, xe+g3, ye+g3)
+	app.bande.SetzeEckradius(g3)
+	app.spieltisch.SetzeKoordinaten(xs, ys, xe, ye)
+	app.quizfenster.SetzeKoordinaten(xs-g3, ys-g3, xe+g3, ye+g3)
+	app.quizfenster.SetzeEckradius(g3)
+	app.neuesSpielButton.SetzeKoordinaten(app.breite/2-2*app.rastermaß, ye+g3+app.rastermaß/2, app.breite/2+2*app.rastermaß, ye+g3+g3)
+	app.neuesSpielButton.SetzeEckradius(app.rastermaß / 3)
+	app.hilfeButton.SetzeKoordinaten(2*app.rastermaß, ye+g3+app.rastermaß/2, 4*app.rastermaß, ye+g3+g3)
+	app.hilfeButton.SetzeEckradius(app.rastermaß / 3)
+	app.hilfebox.SetzeKoordinaten(app.breite/4, app.höhe/4, app.breite/2, app.höhe/2)
+	app.quitButton.SetzeKoordinaten(app.breite-4*app.rastermaß, ye+g3+app.rastermaß/2, app.breite-2*app.rastermaß, ye+g3+g3)
+	app.quitButton.SetzeEckradius(app.rastermaß / 3)
+
+	//setzeFarben
+	app.hintergrund.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
+	app.spieltisch.SetzeFarben(views_controls.Fbillardtuch(), views_controls.Fdiamanten())
+	app.bande.SetzeFarben(views_controls.Ftext(), views_controls.Fanzeige())
+	app.punktezaehler.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
+	app.punktezaehler.SetzeTransparenz(255)
+	app.restzeit.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
+	app.quizfenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
+	app.neuesSpielButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
+	app.hilfeButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
+	app.hilfebox.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
+	app.quitButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
+
+	return &app
+}
+
+// ############### die ganze App wird mit der Maus gesteuert ########################
+func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16) {
+	if a.quitButton != nil && a.quitButton.IstAktiv() &&
+		a.quitButton.ImFenster(mausX, mausY) && taste == 1 && status == -1 {
+		a.quitButton.MausklickBei(mausX, mausY)
 		return
-	} else if hilfeButton != nil && hilfeButton.IstAktiv() &&
-		hilfeButton.ImFenster(mausX, mausY) && taste == 1 && status == -1 {
-		hilfeButton.MausklickBei(mausX, mausY)
-	} else if neuesSpielButton != nil && neuesSpielButton.IstAktiv() &&
-		neuesSpielButton.ImFenster(mausX, mausY) && taste == 1 && status == -1 {
-		neuesSpielButton.MausklickBei(mausX, mausY)
-	} else if quizfenster != nil && quizfenster.IstAktiv() &&
-		quizfenster.ImFenster(mausX, mausY) && taste == 1 && status == -1 {
-		quizfenster.MausklickBei(mausX, mausY)
-		if quiz.GibAktuelleFrage().RichtigBeantwortet() {
-			billard.ReduziereStrafpunkte()
-			if billard.GibStrafpunkte() <= billard.GibTreffer() {
-				quizfenster.SetzeInAktiv()
-				spieltisch.SetzeAktiv() // zurück zum Spielmodus
+	} else if a.hilfeButton != nil && a.hilfeButton.IstAktiv() &&
+		a.hilfeButton.ImFenster(mausX, mausY) && taste == 1 && status == -1 {
+		a.hilfeButton.MausklickBei(mausX, mausY)
+	} else if a.neuesSpielButton != nil && a.neuesSpielButton.IstAktiv() &&
+		a.neuesSpielButton.ImFenster(mausX, mausY) && taste == 1 && status == -1 {
+		a.neuesSpielButton.MausklickBei(mausX, mausY)
+	} else if a.quizfenster != nil && a.quizfenster.IstAktiv() &&
+		a.quizfenster.ImFenster(mausX, mausY) && taste == 1 && status == -1 {
+		a.quizfenster.MausklickBei(mausX, mausY)
+		if a.quiz.GibAktuelleFrage().RichtigBeantwortet() {
+			a.billard.ReduziereStrafpunkte()
+			if a.billard.GibStrafpunkte() <= a.billard.GibTreffer() {
+				a.quizfenster.SetzeInAktiv()
+				a.spieltisch.SetzeAktiv() // zurück zum Spielmodus
 			}
 		} else {
-			quiz.NaechsteFrage()
+			a.quiz.NaechsteFrage()
 		}
-	} else if spieltisch != nil && spieltisch.IstAktiv() &&
-		!hilfebox.IstAktiv() && billard.Laeuft() {
-		if billard.GibStrafpunkte() > billard.GibTreffer() {
-			quiz.NaechsteFrage()
-			spieltisch.SetzeInAktiv()
-			quizfenster.SetzeAktiv() // zum Quizmodus
-		} else if billard.IstStillstand() {
+	} else if a.spieltisch != nil && a.spieltisch.IstAktiv() &&
+		!a.hilfebox.IstAktiv() && a.billard.Laeuft() {
+		if a.billard.GibStrafpunkte() > a.billard.GibTreffer() {
+			a.quiz.NaechsteFrage()
+			a.spieltisch.SetzeInAktiv()
+			a.quizfenster.SetzeAktiv() // zum Quizmodus
+		} else if a.billard.IstStillstand() {
 			// zielen und stoßen
 			switch taste {
 			case 1: // stoßen
 				if status == -1 {
-					billard.Stosse()
+					a.billard.Stosse()
 				}
 			case 4: // Stoßkraft erhöhen
-				billard.SetzeStosskraft(billard.GibVStoss().Betrag() + 1)
+				a.billard.SetzeStosskraft(a.billard.GibVStoss().Betrag() + 1)
 			case 5: // Stoßkraft verringern
-				billard.SetzeStosskraft(billard.GibVStoss().Betrag() - 1)
+				a.billard.SetzeStosskraft(a.billard.GibVStoss().Betrag() - 1)
 			default: // zielen
-				xs, ys := spieltisch.GibStartkoordinaten()
-				billard.SetzeStossRichtung((hilf.V2(float64(mausX), float64(mausY))).
-					Minus(billard.GibSpielkugel().GibPos()).
+				xs, ys := a.spieltisch.GibStartkoordinaten()
+				a.billard.SetzeStossRichtung((hilf.V2(float64(mausX), float64(mausY))).
+					Minus(a.billard.GibSpielkugel().GibPos()).
 					Minus(hilf.V2(float64(xs), float64(ys))))
 			}
 		}
 	}
 }
 
-func Run() {
-	billard.Starte()
-	spieltisch.SetzeAktiv()
-	quizfenster.SetzeInAktiv()
-	hilfebox.SetzeInAktiv()
-	renderer.Starte()
-	mausSteuerung = views_controls.NewMausProzess(mausSteuerFunktion)
-	mausSteuerung.Starte()
-	geräusche.StarteLoop()
-	musik.StarteLoop()
-}
-
-func Quit() {
-	geräusche.Stoppe()
-	musik.Stoppe()
-	renderer.UeberblendeText("Bye!", views_controls.Fanzeige(), views_controls.Ftext(), 30)
-	mausSteuerung.Stoppe()
-	billard.Stoppe()
-	renderer.Stoppe()
-}
-
-func initMV() {
-	// ######## Modelle und Views zusammenstellen #################################
-	// realer Tisch: 2540 mm x 1270 mm, Kugelradius: 57.2 mm
-	// Breite, Höhe des Spielfelds
-	var bS uint16 = 3 * breite / 4
-	var hS uint16 = bS / 2
-	// Radius der Kugeln
-	var ra uint16 = uint16(0.5 + float64(bS)*57.2/2540)
-
-	// Modelle erzeugen
-	billard = modelle.NewMini9BallSpiel(bS, hS, ra)
-	quiz = modelle.NewQuizCSV("BeispielQuiz.csv")
-
-	// Views und Zeichner erzeugen
-	renderer = views_controls.NewFensterZeichner("BrainPool - Das MiniBillard für Schlaue.")
-	hintergrund = views_controls.NewFenster()
-	renderer.SetzeFensterHintergrund(hintergrund)
-	punktezaehler = views_controls.NewMBPunkteAnzeiger(billard)
-	restzeit = views_controls.NewMBRestzeitAnzeiger(billard)
-	bande = views_controls.NewFenster()
-	spieltisch = views_controls.NewMBSpieltisch(billard)
-	quizfenster = views_controls.NewQuizFenster(quiz)
-	neuesSpielButton = views_controls.NewButton("neues Spiel",
-		func() {
-			billard.Reset()
-			quizfenster.SetzeInAktiv()
-			hilfebox.SetzeInAktiv()
-			spieltisch.SetzeAktiv()
-		})
-	quitButton = views_controls.NewButton("quit",
-		func() {
-			Quit()
-		})
-	hilfebox = views_controls.NewTextBox("Hilfe")
-	hilfebox.SetzeInAktiv()
-	hilfeButton = views_controls.NewButton("?",
-		func() {
-			hilfebox.AktivAnAus()
-		})
-	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
-	renderer.SetzeWidgets(bande, spieltisch, quizfenster, hilfebox, punktezaehler, restzeit,
-		neuesSpielButton, quitButton, hilfeButton)
-}
-
-func setzeLayout() {
-	hintergrund.SetzeKoordinaten(0, 0, breite, höhe)
-	var xs, ys, xe, ye uint16 = 4 * rastermaß, 6 * rastermaß, 28 * rastermaß, 18 * rastermaß
-	var g3 uint16 = rastermaß + rastermaß/3
-	punktezaehler.SetzeKoordinaten(xs-g3, 1*rastermaß, 18*rastermaß, 3*rastermaß)
-	restzeit.SetzeKoordinaten(20*rastermaß+g3, rastermaß, xe+g3, 3*rastermaß)
-	bande.SetzeKoordinaten(xs-g3, ys-g3, xe+g3, ye+g3)
-	bande.SetzeEckradius(g3)
-	spieltisch.SetzeKoordinaten(xs, ys, xe, ye)
-	quizfenster.SetzeKoordinaten(xs-g3, ys-g3, xe+g3, ye+g3)
-	quizfenster.SetzeEckradius(g3)
-	neuesSpielButton.SetzeKoordinaten(breite/2-2*rastermaß, ye+g3+rastermaß/2, breite/2+2*rastermaß, ye+g3+g3)
-	neuesSpielButton.SetzeEckradius(rastermaß / 3)
-	hilfeButton.SetzeKoordinaten(2*rastermaß, ye+g3+rastermaß/2, 4*rastermaß, ye+g3+g3)
-	hilfeButton.SetzeEckradius(rastermaß / 3)
-	hilfebox.SetzeKoordinaten(breite/4, höhe/4, breite/2, höhe/2)
-	quitButton.SetzeKoordinaten(breite-4*rastermaß, ye+g3+rastermaß/2, breite-2*rastermaß, ye+g3+g3)
-	quitButton.SetzeEckradius(rastermaß / 3)
-}
-
-func setzeFarben() {
-	hintergrund.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
-	spieltisch.SetzeFarben(views_controls.Fbillardtuch(), views_controls.Fdiamanten())
-	bande.SetzeFarben(views_controls.Ftext(), views_controls.Fanzeige())
-	punktezaehler.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
-	punktezaehler.SetzeTransparenz(255)
-	restzeit.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
-	quizfenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
-	neuesSpielButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
-	hilfeButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
-	hilfebox.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
-	quitButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
-}
-
-func main() {
+// ####### starte alles ##################################################
+func (a *bpapp) Run() {
+	if a.läuft {
+		return
+	}
 	println("Willkommen bei BrainPool")
-	// Modelle und Views zusammenstellen
-	initMV()
-	// Abmessungen und Layout
-	setzeLayout()
-	// Farben
-	setzeFarben()
-	// Starte
-	Run()
-	// Tastatur-Loop
+	a.billard.Starte()
+	a.spieltisch.SetzeAktiv()
+	a.quizfenster.SetzeInAktiv()
+	a.hilfebox.SetzeInAktiv()
+	a.renderer.Starte()
+	a.mausSteuerung = views_controls.NewMausProzess(a.mausSteuerFunktion)
+	a.mausSteuerung.Starte()
+	a.geräusche.StarteLoop()
+	a.musik.StarteLoop()
+	a.läuft = true
 	for {
 		taste, gedrückt, _ := gfx.TastaturLesen1()
 		if gedrückt == 1 {
 			switch taste {
-			case 'p': // Pause
-				billard.PauseAnAus()
-			case 'c': // dark mode
-				renderer.DarkmodeAnAus()
-			case 'h': // Hilfe anzeigen
-				hilfebox.AktivAnAus()
-			case 'd': // Zeitlupe (Testzwecke - zeigt Richtung und Geschwindigkeit der Kugeln)
-				billard.ZeitlupeAnAus()
-			case 'l': // Layout (Testzwecke zeigt nur Widget-Ränder und Farbschema - Spiel und Steuerung laufen weiter)
-				renderer.LayoutAnAus()
-			case 'f': // Quizmodus erzwingen (Testzwecke)
-				spieltisch.SetzeInAktiv()
-				quizfenster.SetzeAktiv()
-			case 'q': // quit
-				// ######## Stoppe alles #########################################
-				Quit()
+			case 'p':
+				a.billard.PauseAnAus()
+			case 'c':
+				a.renderer.DarkmodeAnAus()
+			case 'h':
+				a.hilfebox.AktivAnAus()
+			case 'd':
+				a.billard.ZeitlupeAnAus()
+			case 'l':
+				a.renderer.LayoutAnAus()
+			case 'f':
+				a.spieltisch.SetzeInAktiv()
+				a.quizfenster.SetzeAktiv()
+			case 'q':
+				a.Quit()
 				return
 			}
 		}
 	}
+}
+
+// ####### stoppe alles ##################################################
+func (a *bpapp) Quit() {
+	if !a.läuft {
+		return
+	}
+	a.geräusche.Stoppe()
+	a.musik.Stoppe()
+	a.renderer.UeberblendeText("Bye!", views_controls.Fanzeige(), views_controls.Ftext(), 30)
+	a.mausSteuerung.Stoppe()
+	a.billard.Stoppe()
+	a.renderer.Stoppe()
+	println("BrainPool wird beendet")
+}
+
+// ####### der Startpunkt ##################################################
+func main() {
+	// das Rastermaß bestimmt die Größe der App
+	NewBPApp(35).Run()
 }

@@ -11,8 +11,8 @@ func NewMausProzess(f func(t uint8, s int8, x uint16, y uint16)) *bpMausProzess 
 }
 
 type bpMausProzess struct {
-	steuerProzess  hilf.Prozess
 	steuerFunktion func(uint8, int8, uint16, uint16)
+	bpEingabeProzess
 }
 
 func (ctl *bpMausProzess) mausSteuerung() {
@@ -36,10 +36,4 @@ func (ctl *bpMausProzess) Starte() {
 			ctl.mausSteuerung)
 	}
 	ctl.steuerProzess.Starte()
-}
-
-func (ctl *bpMausProzess) Stoppe() {
-	if ctl.steuerProzess != nil {
-		ctl.steuerProzess.Stoppe()
-	}
 }

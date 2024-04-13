@@ -72,19 +72,7 @@ func (f *widget) ZeichneLayout() {
 	if !f.IstAktiv() {
 		return
 	}
-	f.Stiftfarbe(f.hg)
-	f.Transparenz(f.transparenz)
 	br, ho := f.GibGroesse()
-	if f.eckradius > 0 {
-		f.VollRechteckGFX(f.eckradius, 0, br-2*f.eckradius, ho)
-		f.VollRechteckGFX(0, f.eckradius, br, ho-2*f.eckradius)
-		f.VollKreisGFX(f.eckradius, f.eckradius, f.eckradius)
-		f.VollKreisGFX(f.eckradius, ho-f.eckradius, f.eckradius)
-		f.VollKreisGFX(br-f.eckradius, ho-f.eckradius, f.eckradius)
-		f.VollKreisGFX(br-f.eckradius, f.eckradius, f.eckradius)
-	} else {
-		f.VollRechteckGFX(0, 0, br, ho)
-	}
 	f.Stiftfarbe(Rot())
 	f.Transparenz(0)
 	f.RechteckGFX(0, 0, br, ho)
