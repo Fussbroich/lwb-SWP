@@ -16,6 +16,9 @@ func (w *kugelZeichner) SetzeKugel(k modelle.MBKugel) {
 }
 
 func (w *kugelZeichner) Zeichne() {
+	if !w.IstAktiv() {
+		return
+	}
 	k := w.kugel
 	schreiber := w.LiberationMonoBoldSchreiber()
 	schreiber.SetzeSchriftgroesse(int(k.GibRadius()) - 3)

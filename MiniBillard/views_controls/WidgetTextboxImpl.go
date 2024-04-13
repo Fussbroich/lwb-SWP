@@ -12,7 +12,7 @@ type textbox struct {
 	widget
 }
 
-func NewTextBox(t string) *textbox { return &textbox{text: t, widget: widget{}} }
+func NewTextBox(t string) *textbox { return &textbox{text: t, widget: *NewFenster()} }
 
 func worteInZeilen(worte []string, lMax int) (zeilen []string) {
 	var zeile string
@@ -58,6 +58,9 @@ func textInWorte(text string) (worte []string) {
 }
 
 func (f *textbox) Zeichne() {
+	if !f.IstAktiv() {
+		return
+	}
 	f.widget.Zeichne()
 	B, H := f.GibGroesse()
 	f.Stiftfarbe(f.vg)

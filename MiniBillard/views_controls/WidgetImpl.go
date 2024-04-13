@@ -8,21 +8,36 @@ import (
 )
 
 type widget struct {
+	aktiv          bool
+	hg, vg         Farbe
+	hgName, vgName string
 	startX, startY uint16
 	stopX, stopY   uint16
-	hg, vg         Farbe
 	transparenz    uint8
 	eckradius      uint16
 }
 
-func NewFenster() *widget { return &widget{} }
+func NewFenster() *widget { return &widget{hg: Weiss(), vg: Schwarz(), aktiv: true} }
+
+func (f *widget) IstAktiv() bool { return f.aktiv }
+
+func (f *widget) AktivAnAus() { f.aktiv = !f.aktiv }
+
+func (f *widget) SetzeAktiv() { f.aktiv = true }
+
+func (f *widget) SetzeInAktiv() { f.aktiv = false }
 
 func (f *widget) SetzeKoordinaten(startx, starty, stopx, stopy uint16) {
 	f.startX, f.startY, f.stopX, f.stopY = startx, starty, stopx, stopy
 }
 
-func (f *widget) SetzeFarben(hg, vg Farbe) {
-	f.hg, f.vg = hg, vg
+func (f *widget) SetzeFarben(hg, vg string) {
+	f.hgName, f.vgName = hg, vg
+	f.hg, f.vg = getFarbe(f.hgName), getFarbe(f.vgName)
+}
+
+func (f *widget) LadeFarben() {
+	f.hg, f.vg = getFarbe(f.hgName), getFarbe(f.vgName)
 }
 
 func (f *widget) SetzeTransparenz(tr uint8) {
@@ -38,16 +53,25 @@ func (f *widget) GibStartkoordinaten() (uint16, uint16) { return f.startX, f.sta
 func (f *widget) GibGroesse() (uint16, uint16) { return f.stopX - f.startX, f.stopY - f.startY }
 
 func (f *widget) ImFenster(x, y uint16) bool {
+	if !f.IstAktiv() {
+		return false
+	}
 	xs, ys := f.startX+f.eckradius*3/10, f.startY+f.eckradius*3/10
 	b, h := f.stopX-f.startX-f.eckradius*6/10, f.stopY-f.startY-f.eckradius*6/10
 	return x > xs && x < xs+b && y > ys && y < ys+h
 }
 
 func (f *widget) MausklickBei(x, y uint16) {
+	if !f.IstAktiv() {
+		return
+	}
 	fmt.Println("Unbeachteter Mausklick bei", x, y)
 }
 
 func (f *widget) ZeichneLayout() {
+	if !f.IstAktiv() {
+		return
+	}
 	f.Stiftfarbe(f.hg)
 	f.Transparenz(f.transparenz)
 	br, ho := f.GibGroesse()
@@ -61,11 +85,17 @@ func (f *widget) ZeichneLayout() {
 	} else {
 		f.VollRechteckGFX(0, 0, br, ho)
 	}
+	f.Stiftfarbe(Rot())
+	f.Transparenz(0)
+	f.RechteckGFX(0, 0, br, ho)
 	f.Stiftfarbe(f.vg)
 	f.Transparenz(0)
 }
 
 func (f *widget) Zeichne() {
+	if !f.IstAktiv() {
+		return
+	}
 	f.Stiftfarbe(f.hg)
 	f.Transparenz(f.transparenz)
 	br, ho := f.GibGroesse()
@@ -84,6 +114,9 @@ func (f *widget) Zeichne() {
 }
 
 func (f *widget) ZeichneRand() {
+	if !f.IstAktiv() {
+		return
+	}
 	f.Stiftfarbe(f.vg)
 	f.Transparenz(0)
 	br, ho := f.GibGroesse()
@@ -125,6 +158,10 @@ func (f *widget) LinieGFX(xV, yV, xN, yN uint16) {
 
 func (f *widget) VollRechteckGFX(xV, yV, b, h uint16) {
 	gfx.Vollrechteck(f.startX+xV, f.startY+yV, b, h)
+}
+
+func (f *widget) RechteckGFX(xV, yV, b, h uint16) {
+	gfx.Rechteck(f.startX+xV, f.startY+yV, b, h)
 }
 
 func (f *widget) VollKreis(pos hilf.Vec2, radius float64, c Farbe) {

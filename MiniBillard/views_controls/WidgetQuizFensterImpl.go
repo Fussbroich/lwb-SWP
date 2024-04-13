@@ -13,10 +13,13 @@ type quizfenster struct {
 
 // TextOverlay zeigt den Hintergrund
 func NewQuizFenster(quiz modelle.Quiz) *quizfenster {
-	return &quizfenster{quiz: quiz, widget: widget{}}
+	return &quizfenster{quiz: quiz, widget: *NewFenster()}
 }
 
 func (f *quizfenster) MausklickBei(mausX, mausY uint16) {
+	if !f.IstAktiv() {
+		return
+	}
 	for i, a := range f.antworten {
 		if a.ImFenster(mausX, mausY) {
 			f.quiz.GibAktuelleFrage().Gewaehlt(i)
@@ -25,6 +28,9 @@ func (f *quizfenster) MausklickBei(mausX, mausY uint16) {
 }
 
 func (f *quizfenster) Zeichne() {
+	if !f.IstAktiv() {
+		return
+	}
 	f.ZeichneRand()
 	f.widget.Zeichne()
 	f.Stiftfarbe(f.vg)
@@ -45,11 +51,11 @@ func (f *quizfenster) Zeichne() {
 	a3 := NewTextBox(f.quiz.GibAktuelleFrage().GibAntworten()[3])
 	a3.SetzeKoordinaten(sx+breite/2+d, sy+höhe*5/7+d, sx+breite, sy+höhe)
 
-	f.frage.SetzeFarben(f.hg, f.vg)
-	a0.SetzeFarben(F(155, 155, 0), f.vg)
-	a1.SetzeFarben(F(255, 255, 0), f.vg)
-	a2.SetzeFarben(F(0, 255, 255), f.vg)
-	a3.SetzeFarben(F(255, 0, 255), f.vg)
+	f.frage.SetzeFarben(Fquiz(), Ftext())
+	a0.SetzeFarben(FquizA0(), Ftext())
+	a1.SetzeFarben(FquizA1(), Ftext())
+	a2.SetzeFarben(FquizA2(), Ftext())
+	a3.SetzeFarben(FquizA3(), Ftext())
 
 	a0.SetzeTransparenz(f.transparenz)
 	a1.SetzeTransparenz(f.transparenz)

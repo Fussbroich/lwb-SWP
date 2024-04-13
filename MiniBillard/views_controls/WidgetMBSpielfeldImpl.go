@@ -19,7 +19,7 @@ type miniBSpielfeld struct {
 }
 
 func NewMBSpieltisch(billard modelle.MiniBillardSpiel) *miniBSpielfeld {
-	return &miniBSpielfeld{billard: billard, widget: widget{}}
+	return &miniBSpielfeld{billard: billard, widget: *NewFenster()}
 }
 
 func (f *miniBSpielfeld) MakeKugelZeichner() *kugelZeichner {
@@ -32,6 +32,9 @@ func (f *miniBSpielfeld) zeichneDiamant(x, y, d uint16) {
 }
 
 func (f *miniBSpielfeld) Zeichne() {
+	if !f.IstAktiv() {
+		return
+	}
 	if f.kugelZeichner == nil {
 		f.kugelZeichner = f.MakeKugelZeichner()
 	}

@@ -8,7 +8,7 @@ type button struct {
 
 // Buttons haben einen Text in der Mitte
 func NewButton(t string, action func()) *button {
-	return &button{text: t, action: action, widget: widget{}}
+	return &button{text: t, action: action, widget: *NewFenster()}
 }
 
 func (f *button) MausklickBei(mausX, mausY uint16) {

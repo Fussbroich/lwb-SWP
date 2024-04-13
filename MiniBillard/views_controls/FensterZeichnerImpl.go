@@ -3,22 +3,33 @@ package views_controls
 import (
 	"fmt"
 	"gfx"
+	"time"
 
 	"../hilf"
 )
 
 type fzeichner struct {
-	breite, hoehe uint16
+	titel         string
+	hintergrund   Widget
 	widgets       []Widget
 	overlay       Widget
 	updater       hilf.Prozess
 	updaterLaeuft bool
+	layoutModus   bool
+	darkmode      bool
 	rate          uint64
 }
 
-func NewFensterZeichner(w ...Widget) *fzeichner {
-	bMax, hMax := w[0].GibGroesse()
-	return &fzeichner{widgets: w, breite: bMax, hoehe: hMax, rate: 80}
+func NewFensterZeichner(titel string) *fzeichner {
+	return &fzeichner{rate: 80, titel: titel, hintergrund: NewFenster()}
+}
+
+func (r *fzeichner) SetzeFensterHintergrund(w Widget) {
+	r.hintergrund = w
+}
+
+func (r *fzeichner) SetzeWidgets(w ...Widget) {
+	r.widgets = w
 }
 
 // ######## die Start- und Stop-Methode ###########################################################
@@ -27,22 +38,34 @@ func (r *fzeichner) Starte() {
 	if r.updaterLaeuft {
 		return
 	}
+	println("Öffne Gfx-Fenster")
+	b, h := r.hintergrund.GibGroesse()
+	gfx.Fenster(b, h) //Fenstergröße
+	gfx.Fenstertitel(r.titel)
 
 	r.updater = hilf.NewProzess("Zeichner",
 		func() {
 			gfx.UpdateAus()
 			gfx.Cls()
+			r.hintergrund.Zeichne()
 			for _, f := range r.widgets {
-				f.Zeichne()
+				if r.layoutModus {
+					f.ZeichneLayout()
+					continue
+				}
+				if f.IstAktiv() {
+					f.Zeichne()
+				}
 			}
+			b, h := r.hintergrund.GibGroesse()
 			// zeige die frame rate
 			fps := NewInfoText(fmt.Sprintf("%04d fps", r.updater.GibRate()/10*10))
-			fps.SetzeKoordinaten(0, 0, r.breite/2, r.hoehe/30)
+			fps.SetzeKoordinaten(0, 0, b/2, h/30)
 			fps.SetzeFarben(Fanzeige(), Finfos())
 			fps.Zeichne()
 			// zeige das copyright an
 			copy := NewInfoText("(c)2024 Bettina Chang, Thomas Schrader")
-			copy.SetzeKoordinaten(2*r.breite/3, 0, r.breite, r.hoehe/30)
+			copy.SetzeKoordinaten(2*b/3, 0, b, h/30)
 			copy.SetzeFarben(Fanzeige(), Finfos())
 			copy.Zeichne()
 			if r.overlay != nil {
@@ -61,30 +84,40 @@ func (r *fzeichner) Stoppe() {
 	}
 	r.updater.Stoppe()
 	r.updaterLaeuft = false
+	time.Sleep(100 * time.Millisecond)
+	if gfx.FensterOffen() {
+		gfx.FensterAus()
+	}
+	println("BrainPool wird beendet!")
 }
 
 // ######## die übrigen Methoden ####################################################
+func (r *fzeichner) LayoutAnAus() { r.layoutModus = !r.layoutModus }
 
-func (r *fzeichner) ZeigeLayout() {
-	for _, f := range r.widgets {
-		f.ZeichneLayout()
+func (r *fzeichner) DarkmodeAnAus() {
+	if !r.darkmode {
+		DarkFarbSchema()
+	} else {
+		StandardFarbSchema()
 	}
+	r.hintergrund.LadeFarben()
 	if r.overlay != nil {
-		r.overlay.Zeichne()
+		r.overlay.LadeFarben()
 	}
-	info := NewInfoText("Layout-Ansicht")
-	info.SetzeKoordinaten(r.breite/2, 0, r.breite/2, r.hoehe/10)
-	info.SetzeFarben(Fanzeige(), Finfos())
-	info.Zeichne()
+	for _, w := range r.widgets {
+		w.LadeFarben()
+	}
+	r.darkmode = !r.darkmode
 }
 
 func (r *fzeichner) Ueberblende(f Widget) {
 	r.overlay = f
 }
 
-func (r *fzeichner) UeberblendeText(t string, hg, vg Farbe, tr uint8) {
+func (r *fzeichner) UeberblendeText(t string, hg, vg string, tr uint8) {
+	b, h := r.hintergrund.GibGroesse()
 	r.overlay = NewTextOverlay(t)
-	r.overlay.SetzeKoordinaten(0, 0, r.breite, r.hoehe)
+	r.overlay.SetzeKoordinaten(0, 0, b, h)
 	r.overlay.SetzeFarben(hg, vg)
 	r.overlay.SetzeTransparenz(tr)
 }

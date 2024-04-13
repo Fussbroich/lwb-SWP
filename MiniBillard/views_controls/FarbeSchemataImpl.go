@@ -6,12 +6,17 @@ var (
 	standardfarbschema map[string]Farbe = map[string]Farbe{
 		"hintergrund": F(225, 232, 236),
 		"text":        F(1, 88, 122),
-		"anzeige":     F(255, 255, 255),
+		"anzeige":     Weiss(),
 		"infos":       F(240, 255, 255),
 		"billardtuch": F(92, 179, 193),
 		"diamanten":   F(180, 230, 255),
 		"anz_treffer": F(243, 186, 0),
-		"anz_fouls":   F(219, 80, 0)}
+		"anz_fouls":   F(219, 80, 0),
+		"quiz":        Weiss(),
+		"quiz_a0":     F(155, 155, 0),
+		"quiz_a1":     F(255, 255, 0),
+		"quiz_a2":     F(0, 255, 255),
+		"quiz_a3":     F(255, 0, 255)}
 	darkfarbschema map[string]Farbe = map[string]Farbe{
 		"hintergrund": F(25, 32, 36),
 		"text":        F(1, 88, 122),
@@ -20,8 +25,46 @@ var (
 		"billardtuch": F(92, 179, 193),
 		"diamanten":   F(180, 230, 255),
 		"anz_treffer": F(143, 86, 0),
-		"anz_fouls":   F(119, 40, 0)}
+		"anz_fouls":   F(119, 40, 0),
+		"quiz":        Weiss(),
+		"quiz_a0":     F(155, 155, 0),
+		"quiz_a1":     F(255, 255, 0),
+		"quiz_a2":     F(0, 255, 255),
+		"quiz_a3":     F(255, 0, 255)}
+)
 
+func StandardFarbSchema() { farbschema = &standardfarbschema }
+
+func DarkFarbSchema() { farbschema = &darkfarbschema }
+
+func getFarbe(name string) Farbe {
+	if farbschema == nil {
+		farbschema = &standardfarbschema
+	}
+	c, ok := (*farbschema)[name]
+	if !ok {
+		return Weiss()
+	}
+	return c
+}
+
+func Fhintergrund() string { return "hintergrund" }
+func Ftext() string        { return "text" }
+func Fanzeige() string     { return "anzeige" }
+func Fbillardtuch() string { return "billardtuch" }
+func Finfos() string       { return "infos" }
+func Fdiamanten() string   { return "diamanten" }
+func FanzTreffer() string  { return "anz_treffer" }
+func FanzFouls() string    { return "anz_fouls" }
+func Fquiz() string        { return "quiz" }
+func FquizA0() string      { return "quiz_a0" }
+func FquizA1() string      { return "quiz_a1" }
+func FquizA2() string      { return "quiz_a2" }
+func FquizA3() string      { return "quiz_a3" }
+
+// Farben der Kugeln
+
+var (
 	standardPoolPalette [16]Farbe = [16]Farbe{
 		F(252, 253, 242), // weiß
 		F(255, 201, 78),  // gelb
@@ -57,19 +100,7 @@ var (
 		F(255, 201, 78),  // gelb
 		F(255, 201, 78),  // gelb
 		F(255, 201, 78)}  // gelb
-
 )
-
-func StandardFarbSchema() { farbschema = &standardfarbschema }
-
-func DarkFarbSchema() { farbschema = &darkfarbschema }
-
-func getFarbe(name string) Farbe {
-	if farbschema == nil {
-		farbschema = &standardfarbschema
-	}
-	return (*farbschema)[name]
-}
 
 func StandardKugelPalette() { kugelpalette = &standardPoolPalette }
 
@@ -85,28 +116,15 @@ func KugelFarbe(wert uint8) Farbe {
 	return (*kugelpalette)[wert]
 }
 
-func Fhintergrund() Farbe { return getFarbe("hintergrund") }
-
-func Ftext() Farbe { return getFarbe("text") }
-
-func Fanzeige() Farbe { return getFarbe("anzeige") }
-
-func Fbillardtuch() Farbe { return getFarbe("billardtuch") }
-
-func Fdiamanten() Farbe { return getFarbe("diamanten") }
-
-func FanzTreffer() Farbe { return getFarbe("anz_treffer") }
-
-func FanzFouls() Farbe { return getFarbe("anz_fouls") }
-
-func Finfos() Farbe {
-	return &rgb{r: 240, g: 255, b: 255}
-}
-
-func Weiß() Farbe {
+// Zusätzliche praktische Farben
+func Weiss() Farbe {
 	return &rgb{r: 255, g: 255, b: 255}
 }
 
 func Schwarz() Farbe {
 	return &rgb{}
+}
+
+func Rot() Farbe {
+	return &rgb{r: 255}
 }

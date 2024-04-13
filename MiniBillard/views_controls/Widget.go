@@ -5,7 +5,12 @@ type Widget interface {
 	ZeichneRand()
 	ZeichneLayout()
 	SetzeKoordinaten(uint16, uint16, uint16, uint16)
-	SetzeFarben(Farbe, Farbe)
+	SetzeFarben(string, string)
+	LadeFarben()
+	IstAktiv() bool
+	AktivAnAus()
+	SetzeAktiv()
+	SetzeInAktiv()
 	SetzeTransparenz(uint8)
 	SetzeEckradius(uint16)
 	GibStartkoordinaten() (uint16, uint16)

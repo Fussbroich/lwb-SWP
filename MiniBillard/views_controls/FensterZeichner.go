@@ -3,8 +3,11 @@ package views_controls
 type FensterZeichner interface {
 	Starte()
 	Stoppe()
-	ZeigeLayout()
+	SetzeFensterHintergrund(Widget)
+	SetzeWidgets(...Widget)
+	LayoutAnAus()
+	DarkmodeAnAus()
 	Ueberblende(Widget)
-	UeberblendeText(string, Farbe, Farbe, uint8)
+	UeberblendeText(string, string, string, uint8)
 	UeberblendeAus()
 }

@@ -12,10 +12,13 @@ type infotext struct {
 
 // TextOverlay zeigt den Hintergrund
 func NewTextOverlay(t string) *text_overlay {
-	return &text_overlay{text: t, widget: widget{}}
+	return &text_overlay{text: t, widget: *NewFenster()}
 }
 
 func (f *text_overlay) Zeichne() {
+	if !f.IstAktiv() {
+		return
+	}
 	f.widget.Zeichne()
 	f.Stiftfarbe(f.vg)
 	schreiber := f.LiberationMonoBoldItalicSchreiber()
@@ -25,7 +28,7 @@ func (f *text_overlay) Zeichne() {
 
 // InfoText ist immer Transparent
 func NewInfoText(t string) *infotext {
-	return &infotext{text: t, widget: widget{hg: Weiß(), transparenz: 255}}
+	return &infotext{text: t, widget: widget{hg: Weiss(), transparenz: 255}}
 }
 
 func (f *infotext) Zeichne() {

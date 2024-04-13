@@ -13,7 +13,7 @@ type miniBRestzeit struct {
 }
 
 func NewMBRestzeitAnzeiger(billard modelle.MiniBillardSpiel) *miniBRestzeit {
-	return &miniBRestzeit{billard: billard, widget: widget{}}
+	return &miniBRestzeit{billard: billard, widget: *NewFenster()}
 }
 
 func fmtRestzeit(d time.Duration) string {
@@ -25,6 +25,9 @@ func fmtRestzeit(d time.Duration) string {
 }
 
 func (f *miniBRestzeit) Zeichne() {
+	if !f.IstAktiv() {
+		return
+	}
 	f.widget.Zeichne()
 	breite, höhe := f.GibGroesse()
 	schreiber := f.LiberationMonoBoldSchreiber()

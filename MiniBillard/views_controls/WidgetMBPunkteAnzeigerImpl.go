@@ -14,10 +14,13 @@ type miniBSpielinfo struct {
 }
 
 func NewMBPunkteAnzeiger(billard modelle.MiniBillardSpiel) *miniBSpielinfo {
-	return &miniBSpielinfo{billard: billard, widget: widget{}}
+	return &miniBSpielinfo{billard: billard, widget: *NewFenster()}
 }
 
 func (f *miniBSpielinfo) Zeichne() {
+	if !f.IstAktiv() {
+		return
+	}
 	f.widget.Zeichne()
 	schreiber := f.LiberationMonoBoldSchreiber()
 	breite, höhe := f.GibGroesse()
@@ -41,9 +44,9 @@ func (f *miniBSpielinfo) Zeichne() {
 	schreiber.Schreibe(f.startX+2*ra+d, f.startY+zeilenhöhe+d, "Fouls")
 
 	// zeichne beide Fortschritts-Balken
-	f.Stiftfarbe(FanzTreffer()) // Treffer gelb
+	f.Stiftfarbe(getFarbe(FanzTreffer())) // Treffer gelb
 	gfx.Vollrechteck(xSBalken, f.startY+1, bBalken*uint16(tr)/uint16(anzKugeln), zeilenhöhe-2)
-	f.Stiftfarbe(FanzFouls()) // Fouls in Warnrot
+	f.Stiftfarbe(getFarbe(FanzFouls())) // Fouls in Warnrot
 	gfx.Vollrechteck(xSBalken, f.startY+zeilenhöhe+1, bBalken*uint16(st)/uint16(anzKugeln), zeilenhöhe-2)
 
 	// Kreis links zeigt Treffer an
