@@ -1,5 +1,5 @@
-goplantuml.exe -show-connection-labels -show-compositions hilf > uml\hilf.puml;
-goplantuml.exe -show-connection-labels -show-compositions klaenge > uml\klaenge.puml;
-goplantuml.exe -show-connection-labels -show-compositions modelle > uml\modelle.puml;
-goplantuml.exe -show-connection-labels -show-compositions views_controls > uml\views_controls.puml;
-goplantuml.exe -recursive -show-connection-labels -show-compositions . > uml\main.puml;
+goplantuml.exe -show-connection-labels -show-compositions hilf > ..\uml\hilf.puml;
+goplantuml.exe -show-connection-labels -show-compositions klaenge > ..\uml\klaenge.puml;
+goplantuml.exe -show-connection-labels -show-compositions modelle > ..\uml\modelle.puml;
+goplantuml.exe -show-connection-labels -show-compositions views_controls > ..\uml\views_controls.puml;
+goplantuml.exe -recursive -show-connection-labels -show-compositions . > ..\uml\main.puml;
