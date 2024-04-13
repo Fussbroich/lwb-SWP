@@ -22,7 +22,7 @@ func (f *miniBSpielinfo) Zeichne() {
 		return
 	}
 	f.widget.Zeichne()
-	schreiber := f.LiberationMonoBoldSchreiber()
+	schreiber := f.liberationMonoBoldSchreiber()
 	breite, höhe := f.GibGroesse()
 	ra := höhe / 2
 
@@ -35,24 +35,24 @@ func (f *miniBSpielinfo) Zeichne() {
 	d := (zeilenhöhe - uint16(schreiber.GibSchriftgroesse())) / 2
 	var bBalken, xSBalken uint16 = breite - 2*ra - 5*uint16(schreiber.GibSchriftgroesse()), f.startX + 2*ra + 5*uint16(schreiber.GibSchriftgroesse())
 
-	f.Stiftfarbe(f.hg)
-	f.VollKreisGFX(ra, ra, ra)
-	f.VollRechteckGFX(ra, 0, xSBalken-f.startX-ra, höhe)
-	f.Stiftfarbe(f.vg)
+	f.stiftfarbe(f.hg)
+	f.vollKreisGFX(ra, ra, ra)
+	f.vollRechteckGFX(ra, 0, xSBalken-f.startX-ra, höhe)
+	f.stiftfarbe(f.vg)
 
 	schreiber.Schreibe(f.startX+2*ra+d, f.startY+d, "Treffer")
 	schreiber.Schreibe(f.startX+2*ra+d, f.startY+zeilenhöhe+d, "Fouls")
 
 	// zeichne beide Fortschritts-Balken
-	f.Stiftfarbe(getFarbe(FanzTreffer())) // Treffer gelb
+	f.stiftfarbe(gibFarbe(FanzTreffer())) // Treffer gelb
 	gfx.Vollrechteck(xSBalken, f.startY+1, bBalken*uint16(tr)/uint16(anzKugeln), zeilenhöhe-2)
-	f.Stiftfarbe(getFarbe(FanzFouls())) // Fouls in Warnrot
+	f.stiftfarbe(gibFarbe(FanzFouls())) // Fouls in Warnrot
 	gfx.Vollrechteck(xSBalken, f.startY+zeilenhöhe+1, bBalken*uint16(st)/uint16(anzKugeln), zeilenhöhe-2)
 
 	// Kreis links zeigt Treffer an
 	schreiber.SetzeSchriftgroesse(int(ra * 4 / 3))
-	f.Stiftfarbe(f.vg)
-	f.KreisGFX(ra, ra, ra)
+	f.stiftfarbe(f.vg)
+	f.kreisGFX(ra, ra, ra)
 	var x, y uint16
 	if tr > 9 {
 		x = ra + f.startX - uint16(schreiber.GibSchriftgroesse())*2/5

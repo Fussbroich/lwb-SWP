@@ -33,10 +33,10 @@ func (f *quizfenster) Zeichne() {
 	}
 	f.ZeichneRand()
 	f.widget.Zeichne()
-	f.Stiftfarbe(f.vg)
+	f.stiftfarbe(f.vg)
 
 	breite, höhe := f.GibGroesse()
-	ra := f.eckradius
+	ra := f.eckra
 	breite, höhe = breite-2*ra, höhe-2*ra
 	sx, sy := f.startX+ra, f.startY+ra
 	var d uint16 = 3
@@ -57,10 +57,10 @@ func (f *quizfenster) Zeichne() {
 	a2.SetzeFarben(FquizA2(), Ftext())
 	a3.SetzeFarben(FquizA3(), Ftext())
 
-	a0.SetzeTransparenz(f.transparenz)
-	a1.SetzeTransparenz(f.transparenz)
-	a2.SetzeTransparenz(f.transparenz)
-	a3.SetzeTransparenz(f.transparenz)
+	a0.SetzeTransparenz(f.trans)
+	a1.SetzeTransparenz(f.trans)
+	a2.SetzeTransparenz(f.trans)
+	a3.SetzeTransparenz(f.trans)
 
 	f.antworten = [4]Widget{a0, a1, a2, a3}
 	f.frage.Zeichne()

@@ -20,23 +20,23 @@ func (f *text_overlay) Zeichne() {
 		return
 	}
 	f.widget.Zeichne()
-	f.Stiftfarbe(f.vg)
-	schreiber := f.LiberationMonoBoldItalicSchreiber()
+	f.stiftfarbe(f.vg)
+	schreiber := f.liberationMonoBoldItalicSchreiber()
 	schreiber.SetzeSchriftgroesse(int(f.stopY-f.startY) / 5)
 	schreiber.Schreibe((f.stopX-f.startX)/3, (f.stopY-f.startY)/4, f.text)
 }
 
 // InfoText ist immer Transparent
 func NewInfoText(t string) *infotext {
-	return &infotext{text: t, widget: widget{hg: Weiss(), transparenz: 255}}
+	return &infotext{text: t, widget: widget{hg: Weiss(), trans: 255}}
 }
 
 func (f *infotext) Zeichne() {
 	f.widget.Zeichne()
-	f.Stiftfarbe(f.vg)
+	f.stiftfarbe(f.vg)
 
 	_, höhe := f.GibGroesse()
-	schreiber := f.LiberationMonoBoldItalicSchreiber()
+	schreiber := f.liberationMonoBoldItalicSchreiber()
 	schreiber.SetzeSchriftgroesse(int(höhe) * 3 / 5)
 	d := (höhe - uint16(schreiber.GibSchriftgroesse())) / 2
 	schreiber.Schreibe(f.startX+d, f.startY+d, f.text)

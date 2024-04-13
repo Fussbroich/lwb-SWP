@@ -22,9 +22,9 @@ func (f *button) Zeichne() {
 	f.widget.Zeichne()
 	breite, höhe := f.GibGroesse()
 
-	schreiber := f.LiberationMonoRegularSchreiber()
+	schreiber := f.liberationMonoRegularSchreiber()
 	schreiber.SetzeSchriftgroesse(int(höhe) * 3 / 5)
-	f.Stiftfarbe(f.vg)
+	f.stiftfarbe(f.vg)
 
 	d := (höhe - uint16(schreiber.GibSchriftgroesse())) / 2
 

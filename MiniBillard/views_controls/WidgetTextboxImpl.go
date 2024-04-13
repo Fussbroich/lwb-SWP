@@ -63,9 +63,9 @@ func (f *textbox) Zeichne() {
 	}
 	f.widget.Zeichne()
 	B, H := f.GibGroesse()
-	f.Stiftfarbe(f.vg)
+	f.stiftfarbe(f.vg)
 	// Schriftgroesse automatisch anpasssen bzgl. Gesamtfläche der Box
-	schreiber := f.LiberationMonoRegularSchreiber()
+	schreiber := f.liberationMonoRegularSchreiber()
 	schreiber.SetzeSchriftgroesse(
 		int(math.Min(
 			24,
@@ -76,6 +76,6 @@ func (f *textbox) Zeichne() {
 		if z > zMax {
 			break
 		}
-		schreiber.Schreibe(f.startX+f.eckradius, f.startY+f.eckradius+uint16(z*(schreiber.GibSchriftgroesse()*6/5)), zeile)
+		schreiber.Schreibe(f.startX+f.eckra, f.startY+f.eckra+uint16(z*(schreiber.GibSchriftgroesse()*6/5)), zeile)
 	}
 }

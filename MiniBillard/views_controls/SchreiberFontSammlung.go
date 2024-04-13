@@ -27,19 +27,19 @@ var (
 	liberationMonoBoldItalicFont = fontDateipfad("LiberationMono-BoldItalic.ttf")
 )
 
-func (f *widget) LiberationMonoBoldSchreiber() *schreiber {
+func (f *widget) liberationMonoBoldSchreiber() *schreiber {
 	return &schreiber{
 		fontdatei:      liberationMonoBoldFont,
 		schriftgroesse: 24}
 }
 
-func (f *widget) LiberationMonoRegularSchreiber() *schreiber {
+func (f *widget) liberationMonoRegularSchreiber() *schreiber {
 	return &schreiber{
 		fontdatei:      liberationMonoRegularFont,
 		schriftgroesse: 24}
 }
 
-func (f *widget) LiberationMonoBoldItalicSchreiber() *schreiber {
+func (f *widget) liberationMonoBoldItalicSchreiber() *schreiber {
 	return &schreiber{
 		fontdatei:      liberationMonoBoldItalicFont,
 		schriftgroesse: 24}

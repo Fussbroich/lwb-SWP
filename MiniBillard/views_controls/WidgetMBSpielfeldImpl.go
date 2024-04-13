@@ -22,7 +22,7 @@ func NewMBSpieltisch(billard modelle.MiniBillardSpiel) *miniBSpielfeld {
 	return &miniBSpielfeld{billard: billard, widget: *NewFenster()}
 }
 
-func (f *miniBSpielfeld) MakeKugelZeichner() *kugelZeichner {
+func (f *miniBSpielfeld) makeKugelZeichner() *kugelZeichner {
 	return &kugelZeichner{widget: f.widget}
 }
 
@@ -36,17 +36,17 @@ func (f *miniBSpielfeld) Zeichne() {
 		return
 	}
 	if f.kugelZeichner == nil {
-		f.kugelZeichner = f.MakeKugelZeichner()
+		f.kugelZeichner = f.makeKugelZeichner()
 	}
 	breite, höhe := f.GibGroesse()
 	kS := f.billard.GibSpielkugel()
 	ra := kS.GibRadius()
-	schreiber := f.LiberationMonoRegularSchreiber()
+	schreiber := f.liberationMonoRegularSchreiber()
 	// zeichne das Tuch
 	f.widget.Zeichne()
 
 	// zeichne Diamanten
-	f.Stiftfarbe(f.vg)
+	f.stiftfarbe(f.vg)
 	for _, i := range []uint16{1, 2, 3, 5, 6, 7} {
 		f.zeichneDiamant(f.startX+i*breite/8, f.startY-uint16(ra+0.5), uint16(ra/3+0.5))
 		f.zeichneDiamant(f.startX+i*breite/8, f.startY+höhe+uint16(ra+0.5), uint16(ra/3+0.5))
@@ -57,7 +57,7 @@ func (f *miniBSpielfeld) Zeichne() {
 	}
 	// zeichne die Taschen
 	for _, t := range f.billard.GibTaschen() {
-		f.VollKreis(t.GibPos(), ra*1.3, Schwarz())
+		f.vollKreis(t.GibPos(), ra*1.3, Schwarz())
 	}
 	// zeichne die Kugeln
 	for _, k := range f.billard.GibAktiveKugeln() {
@@ -76,9 +76,9 @@ func (f *miniBSpielfeld) Zeichne() {
 		} else {
 			farbe = F(250, 175, 50)
 		}
-		f.BreiteLinie(pK, pK.Plus(f.billard.GibVStoss().Mal(ra)), 4, farbe)
+		f.breiteLinie(pK, pK.Plus(f.billard.GibVStoss().Mal(ra)), 4, farbe)
 		// Schreibe den Wert der Stärke daneben
-		f.Stiftfarbe(F(100, 100, 100))
+		f.stiftfarbe(F(100, 100, 100))
 		schreiber.SetzeSchriftgroesse(int(ra*0.67 + 0.5))
 		pStärke := pK.Plus(f.billard.GibVStoss().Mal(ra * 3 / 4))
 		schreiber.Schreibe(f.startX+uint16(pStärke.X()), f.startY+uint16(pStärke.Y()-2*ra), fmt.Sprintf("Stärke: %d", uint16(stärke+0.5)))
@@ -86,17 +86,17 @@ func (f *miniBSpielfeld) Zeichne() {
 	// debugging
 	if !f.billard.Laeuft() {
 		// Pause
-		f.Stiftfarbe(F(100, 100, 100))
+		f.stiftfarbe(F(100, 100, 100))
 		schreiber.SetzeSchriftgroesse(int(f.billard.GibSpielkugel().GibRadius() + 0.5))
 		schreiber.Schreibe(4*breite/5, f.startY+5, "Pause")
 	} else if f.billard.IstZeitlupe() {
 		// zeichne Geschwindigkeiten
 		for _, k := range f.billard.GibAktiveKugeln() {
 			if !k.GibV().IstNull() {
-				f.BreiteLinie(k.GibPos(), k.GibPos().Plus(k.GibV().Mal(k.GibRadius())), 2, F(250, 175, 50))
+				f.breiteLinie(k.GibPos(), k.GibPos().Plus(k.GibV().Mal(k.GibRadius())), 2, F(250, 175, 50))
 			}
 		}
-		f.Stiftfarbe(F(100, 100, 100))
+		f.stiftfarbe(F(100, 100, 100))
 		schreiber.SetzeSchriftgroesse(int(f.billard.GibSpielkugel().GibRadius() + 0.5))
 		schreiber.Schreibe(4*breite/5, f.startY+5, "Zeitlupe")
 	}
