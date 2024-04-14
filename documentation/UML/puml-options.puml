@@ -1,3 +1,5 @@
+' https://crashedmind.github.io/PlantUMLHitchhikersGuide/about/AboutPlantUML.html
+
 @startuml Parameter
 skinparam Style strictuml
 skinparam classAttributeIconSize 0
