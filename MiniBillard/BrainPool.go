@@ -38,7 +38,7 @@ type bpapp struct {
 	bande            views_controls.Widget
 	renderer         views_controls.FensterZeichner
 	// Controls
-	mausSteuerung views_controls.EingabeProzess
+	mausSteuerung views_controls.EingabeRoutine
 }
 
 // ####### baue die App zusammen ##################################################
@@ -188,7 +188,7 @@ func (a *bpapp) Run() {
 	a.quizfenster.Ausblenden()
 	a.hilfebox.Ausblenden()
 	a.renderer.Starte()
-	a.mausSteuerung = views_controls.NewMausProzess(a.mausSteuerFunktion)
+	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
 	a.mausSteuerung.Starte()
 	a.geraeusche.StarteLoop()
 	a.musik.StarteLoop()

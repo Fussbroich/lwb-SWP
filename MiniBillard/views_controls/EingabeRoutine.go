@@ -1,6 +1,6 @@
 package views_controls
 
-type EingabeProzess interface {
+type EingabeRoutine interface {
 	StarteRate(uint64)
 	Starte()
 	Stoppe()

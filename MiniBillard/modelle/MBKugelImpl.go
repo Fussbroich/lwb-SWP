@@ -15,7 +15,7 @@ type mbkugel struct {
 
 func NewKugel(pos hilf.Vec2, r float64, wert uint8) *mbkugel {
 	return &mbkugel{
-		pos:  pos,
+		pos: pos, v: hilf.V2null(),
 		r:    r,
 		wert: wert}
 }

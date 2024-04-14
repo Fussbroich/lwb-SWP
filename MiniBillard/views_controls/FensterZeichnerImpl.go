@@ -13,7 +13,7 @@ type fzeichner struct {
 	hintergrund   Widget
 	widgets       []Widget
 	overlay       Widget
-	updater       hilf.Prozess
+	updater       hilf.Routine
 	updaterLaeuft bool
 	layoutModus   bool
 	darkmode      bool
@@ -43,7 +43,7 @@ func (r *fzeichner) Starte() {
 	gfx.Fenster(b, h) //Fenstergröße
 	gfx.Fenstertitel(r.titel)
 
-	r.updater = hilf.NewProzess("Zeichner",
+	r.updater = hilf.NewRoutine("Zeichner",
 		func() {
 			gfx.UpdateAus()
 			gfx.Cls()

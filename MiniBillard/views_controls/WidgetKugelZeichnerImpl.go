@@ -11,6 +11,11 @@ type kugelZeichner struct {
 	widget
 }
 
+// Kugelzeichner übernimmt die Koordinaten eines anderen Widgets
+func newKugelZeichnerIn(f *widget) *kugelZeichner {
+	return &kugelZeichner{widget: *f}
+}
+
 func (w *kugelZeichner) SetzeKugel(k modelle.MBKugel) {
 	w.kugel = k
 }

@@ -22,7 +22,7 @@ type mbspiel struct {
 	eingelochte         []MBKugel
 	strafPunkte         uint8
 	stillstand          bool
-	updater             hilf.Prozess
+	updater             hilf.Routine
 	startzeit           time.Time
 	spielzeit, restzeit time.Duration
 	zeitlupe            uint64
@@ -32,15 +32,16 @@ func NewMini9BallSpiel(br, hö, ra uint16) *mbspiel {
 	// Pool-Tisch:  2540 mm × 1270 mm (2:1)
 	// Pool-Kugeln: 57,2 mm
 	var breite, höhe, rK float64 = float64(br), float64(hö), float64(ra)
-	sp := &mbspiel{breite: breite, hoehe: höhe, rk: rK}
+	sp := &mbspiel{breite: breite, hoehe: höhe, rk: rK, stossricht: hilf.V2null()}
+
 	rt, rtm := 1.9*sp.rk, 1.5*sp.rk // Radien der Taschen
 	sp.setzeTaschen(
-		NewTasche(pos(0, 0), rt),
-		NewTasche(pos(0, höhe), rt),
-		NewTasche(pos(breite/2, höhe), rtm),
-		NewTasche(pos(breite, höhe), rt),
-		NewTasche(pos(breite, 0), rt),
-		NewTasche(pos(breite/2, 0), rtm))
+		NewTasche(hilf.V2(0, 0), rt),
+		NewTasche(hilf.V2(0, höhe), rt),
+		NewTasche(hilf.V2(breite/2, höhe), rtm),
+		NewTasche(hilf.V2(breite, höhe), rt),
+		NewTasche(hilf.V2(breite, 0), rt),
+		NewTasche(hilf.V2(breite/2, 0), rtm))
 	sp.setzeKugeln(sp.kugelSatz9Ball()...)
 	sp.spielzeit = 4 * time.Minute
 	sp.restzeit = sp.spielzeit
@@ -48,10 +49,6 @@ func NewMini9BallSpiel(br, hö, ra uint16) *mbspiel {
 }
 
 // ######## ein paar Hilfsfunktionen #########################################
-func pos(x, y float64) hilf.Vec2 {
-	return hilf.V2(x, y)
-}
-
 func (s *mbspiel) setzeTaschen(t ...MBTasche) {
 	s.taschen = []MBTasche{}
 	s.taschen = append(s.taschen, t...)
@@ -78,11 +75,11 @@ func (sp *mbspiel) SetzeKugeln9Ball() {
 
 func (s *mbspiel) kugelSatz3er() []MBKugel {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	pStoß := pos(s.breite-r.Float64()*(s.breite/4), r.Float64()*s.hoehe)
+	pStoß := hilf.V2(s.breite-r.Float64()*(s.breite/4), r.Float64()*s.hoehe)
 	dx, dy := 0.866*(2*s.rk+1), 0.5*(2*s.rk+1)
-	p1 := pos(s.breite/4, s.hoehe/2)
-	p2 := p1.Plus(pos(-dx, -dy))
-	p3 := p1.Plus(pos(-dx, dy))
+	p1 := hilf.V2(s.breite/4, s.hoehe/2)
+	p2 := p1.Plus(hilf.V2(-dx, -dy))
+	p3 := p1.Plus(hilf.V2(-dx, dy))
 	return []MBKugel{NewKugel(pStoß, s.rk, 0),
 		NewKugel(p1, s.rk, 1),
 		NewKugel(p2, s.rk, 2),
@@ -91,22 +88,22 @@ func (s *mbspiel) kugelSatz3er() []MBKugel {
 
 func (s *mbspiel) kugelSatz9Ball() []MBKugel {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	pStoß := pos(s.breite-s.rk-r.Float64()*(s.breite/4-2*s.rk),
+	pStoß := hilf.V2(s.breite-s.rk-r.Float64()*(s.breite/4-2*s.rk),
 		r.Float64()*(s.hoehe-2*s.rk)+s.rk)
 	dx, dy := 0.866*(2*s.rk+1), 0.5*(2*s.rk+1)
-	p1 := pos(s.breite/4, s.hoehe/2)
+	p1 := hilf.V2(s.breite/4, s.hoehe/2)
 	//
-	p2 := p1.Plus(pos(-dx, -dy))
-	p3 := p1.Plus(pos(-dx, dy))
+	p2 := p1.Plus(hilf.V2(-dx, -dy))
+	p3 := p1.Plus(hilf.V2(-dx, dy))
 	//
-	p4 := p1.Plus(pos(-2*dx, -2*dy))
-	p9 := p1.Plus(pos(-2*dx, 0))
-	p5 := p1.Plus(pos(-2*dx, 2*dy))
+	p4 := p1.Plus(hilf.V2(-2*dx, -2*dy))
+	p9 := p1.Plus(hilf.V2(-2*dx, 0))
+	p5 := p1.Plus(hilf.V2(-2*dx, 2*dy))
 	//
-	p6 := p1.Plus(pos(-3*dx, -dy))
-	p7 := p1.Plus(pos(-3*dx, dy))
+	p6 := p1.Plus(hilf.V2(-3*dx, -dy))
+	p7 := p1.Plus(hilf.V2(-3*dx, dy))
 	//
-	p8 := p1.Plus(pos(-4*dx, 0))
+	p8 := p1.Plus(hilf.V2(-4*dx, 0))
 	return []MBKugel{NewKugel(pStoß, s.rk, 0),
 		NewKugel(p1, s.rk, 1),
 		NewKugel(p2, s.rk, 2),
@@ -126,7 +123,7 @@ func (s *mbspiel) Starte() {
 	s.startzeit = time.Now()
 	s.stosskraft = 5
 	if s.updater == nil {
-		s.updater = hilf.NewProzess("Spiel-Logik",
+		s.updater = hilf.NewRoutine("Spiel-Logik",
 			func() {
 				// zähle Zeit herunter
 				vergangen := time.Since(s.startzeit)
@@ -204,7 +201,12 @@ func (s *mbspiel) IstZeitlupe() bool { return s.zeitlupe > 1 }
 
 // ######## die Methoden zum Stoßen #################################################
 
-func (s *mbspiel) GibVStoss() hilf.Vec2 { return s.stossricht.Mal(s.stosskraft) }
+func (s *mbspiel) GibVStoss() hilf.Vec2 {
+	if s.stossricht == nil {
+		s.stossricht = hilf.V2null()
+	}
+	return s.stossricht.Mal(s.stosskraft)
+}
 
 func (s *mbspiel) SetzeStossRichtung(v hilf.Vec2) { s.stossricht = v.Normiert() }
 
@@ -222,6 +224,9 @@ func (s *mbspiel) Stosse() {
 	if !s.stillstand {
 		println("Fehler: Stoßen während laufender Bewegungen ist verboten!")
 		return
+	}
+	if s.stossricht == nil {
+		s.stossricht = hilf.V2null()
 	}
 	// sichere den Zustand vor dem Stoß
 	s.vorigeKugeln = []MBKugel{}

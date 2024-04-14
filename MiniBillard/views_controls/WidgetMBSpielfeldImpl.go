@@ -8,7 +8,6 @@ import (
 )
 
 type MBSpielView interface {
-	MakeKugelZeichner()
 	Widget
 }
 
@@ -22,10 +21,6 @@ func NewMBSpieltisch(billard modelle.MiniBillardSpiel) *miniBSpielfeld {
 	return &miniBSpielfeld{billard: billard, widget: *NewFenster()}
 }
 
-func (f *miniBSpielfeld) makeKugelZeichner() *kugelZeichner {
-	return &kugelZeichner{widget: f.widget}
-}
-
 func (f *miniBSpielfeld) zeichneDiamant(x, y, d uint16) {
 	gfx.Volldreieck(x-d/2, y, x+d/2, y, x, y-d/2)
 	gfx.Volldreieck(x-d/2, y, x+d/2, y, x, y+d/2)
@@ -36,7 +31,7 @@ func (f *miniBSpielfeld) Zeichne() {
 		return
 	}
 	if f.kugelZeichner == nil {
-		f.kugelZeichner = f.makeKugelZeichner()
+		f.kugelZeichner = newKugelZeichnerIn(&f.widget)
 	}
 	breite, höhe := f.GibGroesse()
 	kS := f.billard.GibSpielkugel()

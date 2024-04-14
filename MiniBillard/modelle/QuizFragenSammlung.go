@@ -22,7 +22,7 @@ func assetDateipfad(filename string) (fp string) {
 	return
 }
 
-func QuizFragenCSV(fn string) (fragen []QuizFrage) {
+func quizFragenCSV(fn string) (fragen []QuizFrage) {
 	file, err := os.Open(assetDateipfad(fn))
 	if err != nil {
 		panic(err)
@@ -52,5 +52,5 @@ func QuizFragenCSV(fn string) (fragen []QuizFrage) {
 }
 
 func NewQuizCSV(fn string) *quiz {
-	return &quiz{fragen: QuizFragenCSV(fn)}
+	return &quiz{fragen: quizFragenCSV(fn)}
 }

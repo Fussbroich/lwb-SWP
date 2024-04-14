@@ -10,7 +10,7 @@ type klang struct {
 	titel  string
 	dauer  time.Duration
 	autor  string
-	player hilf.Prozess
+	player hilf.Routine
 	play   func()
 }
 
@@ -24,7 +24,7 @@ func (s *klang) Play() {
 func (s *klang) StarteLoop() {
 	// Spielt den Klang in Dauerschleife.
 	if s.player == nil {
-		s.player = hilf.NewProzess(s.titel, s.play)
+		s.player = hilf.NewRoutine(s.titel, s.play)
 	}
 	s.player.StarteLoop(s.dauer)
 }
