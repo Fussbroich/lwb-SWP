@@ -3,7 +3,6 @@ package views_controls
 import (
 	"fmt"
 	"gfx"
-	"time"
 
 	"../hilf"
 )
@@ -83,11 +82,6 @@ func (r *fzeichner) Stoppe() {
 	}
 	r.updater.Stoppe()
 	r.updaterLaeuft = false
-	time.Sleep(100 * time.Millisecond)
-	if gfx.FensterOffen() {
-		println("Schließe Gfx-Fenster")
-		gfx.FensterAus()
-	}
 }
 
 // ######## die übrigen Methoden ####################################################

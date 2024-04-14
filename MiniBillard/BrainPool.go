@@ -2,6 +2,7 @@ package main
 
 import (
 	"gfx"
+	"time"
 
 	"./hilf"
 	"./klaenge"
@@ -224,13 +225,20 @@ func (a *bpapp) Quit() {
 	if !a.laeuft {
 		return
 	}
-	a.geraeusche.Stoppe()
-	a.musik.Stoppe()
-	a.renderer.UeberblendeText("Bye!", views_controls.Fanzeige(), views_controls.Ftext(), 30)
-	a.mausSteuerung.Stoppe()
-	a.billard.Stoppe()
-	a.renderer.Stoppe()
+	go func() {
+		a.geraeusche.Stoppe()
+		a.musik.Stoppe()
+		a.renderer.UeberblendeText("Bye!", views_controls.Fanzeige(), views_controls.Ftext(), 30)
+		a.mausSteuerung.Stoppe() // Todo: stoppt nicht, während die Maus wartet
+		a.billard.Stoppe()
+		a.renderer.Stoppe()
+	}()
+	time.Sleep(500 * time.Millisecond)
 	println("BrainPool wird beendet")
+	if gfx.FensterOffen() {
+		println("Schließe Gfx-Fenster")
+		gfx.FensterAus()
+	}
 }
 
 // ####### der Startpunkt ##################################################
