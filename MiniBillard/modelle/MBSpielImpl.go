@@ -9,23 +9,25 @@ import (
 )
 
 type mbspiel struct {
-	breite              float64
-	hoehe               float64
-	rk                  float64
-	kugeln              []MBKugel
-	origKugeln          []MBKugel
-	vorigeKugeln        []MBKugel
-	spielkugel          MBKugel
-	stossricht          hilf.Vec2
-	stosskraft          float64
-	taschen             []MBTasche
-	eingelochte         []MBKugel
-	strafPunkte         uint8
-	stillstand          bool
-	updater             hilf.Routine
-	startzeit           time.Time
-	spielzeit, restzeit time.Duration
-	zeitlupe            uint64
+	breite       float64
+	hoehe        float64
+	rk           float64
+	kugeln       []MBKugel
+	origKugeln   []MBKugel
+	vorigeKugeln []MBKugel
+	spielkugel   MBKugel
+	stossricht   hilf.Vec2
+	stosskraft   float64
+	taschen      []MBTasche
+	eingelochte  []MBKugel
+	strafPunkte  uint8
+	stillstand   bool
+	updater      hilf.Routine
+	startzeit    time.Time
+	spielzeit    time.Duration
+	countdown    Countdown
+	zeitlupe     uint64
+	regelPruefer func()
 }
 
 func NewMini9BallSpiel(br, hö, ra uint16) *mbspiel {
@@ -42,9 +44,10 @@ func NewMini9BallSpiel(br, hö, ra uint16) *mbspiel {
 		NewTasche(hilf.V2(breite, höhe), rt),
 		NewTasche(hilf.V2(breite, 0), rt),
 		NewTasche(hilf.V2(breite/2, 0), rtm))
-	sp.setzeKugeln(sp.kugelSatz9Ball()...)
+	sp.SetzeKugeln(sp.KugelSatz9Ball()...)
 	sp.spielzeit = 4 * time.Minute
-	sp.restzeit = sp.spielzeit
+	sp.regelPruefer = func() {}
+	sp.countdown = NewCountdown(sp.spielzeit)
 	return sp
 }
 
@@ -54,7 +57,7 @@ func (s *mbspiel) setzeTaschen(t ...MBTasche) {
 	s.taschen = append(s.taschen, t...)
 }
 
-func (s *mbspiel) setzeKugeln(k ...MBKugel) {
+func (s *mbspiel) SetzeKugeln(k ...MBKugel) {
 	s.kugeln = []MBKugel{}
 	for _, k := range k {
 		k.Stop()
@@ -69,9 +72,15 @@ func (s *mbspiel) setzeKugeln(k ...MBKugel) {
 	}
 }
 
-func (sp *mbspiel) SetzeKugeln9Ball() {
-	sp.setzeKugeln(sp.kugelSatz9Ball()...)
+func (s *mbspiel) SetzeKugelnTest() {
+	pStoß := hilf.V2(s.breite-5*s.rk, s.hoehe-5*s.rk)
+	p1 := hilf.V2(s.breite-2*s.rk, s.hoehe-2*s.rk)
+	s.SetzeKugeln(
+		NewKugel(pStoß, s.rk, 0),
+		NewKugel(p1, s.rk, 1))
 }
+
+func (sp *mbspiel) SetzeKugeln3er() { sp.SetzeKugeln(sp.kugelSatz3er()...) }
 
 func (s *mbspiel) kugelSatz3er() []MBKugel {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -86,7 +95,9 @@ func (s *mbspiel) kugelSatz3er() []MBKugel {
 		NewKugel(p3, s.rk, 3)}
 }
 
-func (s *mbspiel) kugelSatz9Ball() []MBKugel {
+func (sp *mbspiel) SetzeKugeln9Ball() { sp.SetzeKugeln(sp.KugelSatz9Ball()...) }
+
+func (s *mbspiel) KugelSatz9Ball() []MBKugel {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	pStoß := hilf.V2(s.breite-s.rk-r.Float64()*(s.breite/4-2*s.rk),
 		r.Float64()*(s.hoehe-2*s.rk)+s.rk)
@@ -118,6 +129,10 @@ func (s *mbspiel) kugelSatz9Ball() []MBKugel {
 }
 
 // ######## die Lebens- und Pause-Methode ###########################################################
+func (s *mbspiel) SetzeRegeln(f func()) {
+	s.regelPruefer = f
+}
+
 func (s *mbspiel) Starte() {
 	// Kann zwischendrin gestoppt (Pause) und wieder gestartet werden ...
 	s.startzeit = time.Now()
@@ -130,11 +145,7 @@ func (s *mbspiel) Starte() {
 				if s.zeitlupe > 0 {
 					vergangen = vergangen / time.Duration(s.zeitlupe)
 				}
-				if s.restzeit <= vergangen {
-					s.restzeit = 0
-				} else {
-					s.restzeit -= vergangen
-				}
+				s.countdown.ZieheAb(vergangen)
 				// bewege jede Kugel
 				s.startzeit = time.Now()
 				for _, k := range s.kugeln {
@@ -150,12 +161,13 @@ func (s *mbspiel) Starte() {
 				}
 				s.stillstand = still
 				// prüfe Regeln
-				if s.spielkugel.IstEingelocht() {
-					s.strafPunkte++
-					s.StossWiederholen()
+				if s.regelPruefer != nil {
+					s.regelPruefer()
 				}
 			})
 	}
+	// Starte den updater.
+	s.countdown.Weiter()
 	// ein konstanter Takt regelt die "Geschwindigkeit"
 	if s.zeitlupe > 1 {
 		s.updater.StarteRate(83 / uint64(s.zeitlupe))
@@ -244,17 +256,23 @@ func (s *mbspiel) Stosse() {
 
 // ######## die übrigen Methoden ####################################################
 
-func (s *mbspiel) SetzeRestzeit(t time.Duration) { s.restzeit = t }
+func (s *mbspiel) SetzeSpielzeit(t time.Duration) { s.spielzeit = t }
 
-func (s *mbspiel) GibRestzeit() time.Duration { return s.restzeit }
+func (s *mbspiel) SetzeRestzeit(t time.Duration) { s.countdown.Setze(t) }
+
+func (s *mbspiel) StoppeCountdown() { s.countdown.Halt() }
+
+func (s *mbspiel) StarteCountdown() { s.countdown.Weiter() }
+
+func (s *mbspiel) GibRestzeit() time.Duration { return s.countdown.GibRestzeit() }
 
 func (s *mbspiel) Reset() {
-	s.kugeln = s.kugelSatz9Ball() // neue Kugeln, die alle still stehen
+	s.kugeln = s.KugelSatz9Ball() // neue Kugeln, die alle still stehen
 	s.spielkugel = s.kugeln[0]
 	s.eingelochte = []MBKugel{}
 	s.strafPunkte = 0
 	s.stillstand = true
-	s.restzeit = s.spielzeit
+	s.countdown.Setze(s.spielzeit)
 }
 
 func (s *mbspiel) StossWiederholen() {
@@ -296,6 +314,9 @@ func (s *mbspiel) Einlochen(k MBKugel) {
 		}
 	}
 	s.eingelochte = append(s.eingelochte, k)
+	if s.regelPruefer != nil {
+		s.regelPruefer()
+	}
 }
 
 func (s *mbspiel) GibEingelochteKugeln() []MBKugel { return s.eingelochte }
@@ -314,4 +335,8 @@ func (s *mbspiel) ReduziereStrafpunkte() {
 	if s.strafPunkte > 0 {
 		s.strafPunkte--
 	}
+}
+
+func (s *mbspiel) ErhoeheStrafpunkte() {
+	s.strafPunkte++
 }

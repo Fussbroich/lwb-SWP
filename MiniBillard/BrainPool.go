@@ -95,7 +95,14 @@ func NewBPApp(b uint16) *bpapp {
 
 	// Modelle erzeugen
 	a.billard = modelle.NewMini9BallSpiel(bS, hS, ra)
-	a.billard.SetzeRestzeit(3 * time.Second)
+	a.billard.SetzeRegeln(func() {
+		if a.billard.GibSpielkugel().IstEingelocht() {
+			a.billard.ErhoeheStrafpunkte()
+			a.billard.StossWiederholen()
+			return
+		}
+	})
+
 	//a.quiz = modelle.NewQuizInformatiksysteme()
 	a.quiz = modelle.NewBeispielQuiz()
 
@@ -205,7 +212,7 @@ Eff.:
 	Falls Anzahl Fouls > Anzahl Treffer: Quiz ist aktiviert.
 	Falls Anzahl Fouls <= Anzahl Treffer: Spiel ist aktiviert
 */
-func (a *bpapp) regelWaechterFunktion() {
+func (a *bpapp) quizUmschalterFunktion() {
 	if a.spieltisch.IstAktiv() && a.billard.GibRestzeit() == 0 {
 		a.billard.Stoppe()
 		a.spieltisch.Ausblenden()
@@ -305,11 +312,11 @@ func (a *bpapp) Run() {
 	a.hilfeFenster.Ausblenden()
 	a.renderer.Starte() // go-Routine
 	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
-	a.mausSteuerung.StarteRate(20) // go-Routine
-	a.regelWaechter = hilf.NewRoutine("Regelwächter", a.regelWaechterFunktion)
-	a.regelWaechter.StarteRate(5) // go-Routine
-	a.geraeusche.StarteLoop()     // go-Routine
-	a.musik.StarteLoop()          // go-Routine
+	a.mausSteuerung.StarteRate(20)                                            // go-Routine
+	a.regelWaechter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion) // go-Routine
+	a.regelWaechter.StarteRate(5)                                             // go-Routine
+	a.geraeusche.StarteLoop()                                                 // go-Routine
+	a.musik.StarteLoop()                                                      // go-Routine
 	a.laeuft = true
 
 	// ####### der Tastatur-Loop darf hier existieren ####################
@@ -332,6 +339,11 @@ func (a *bpapp) Run() {
 				a.billard.ZeitlupeAnAus()
 			case 'l': // Fenster-Layout anzeigen (Testzwecke)
 				a.renderer.LayoutAnAus()
+			case 't': // Spiel testen
+				a.billard.Stoppe()
+				a.billard.SetzeRestzeit(10 * time.Second)
+				a.billard.SetzeKugelnTest()
+				a.billard.Starte()
 			case 'q':
 				a.Quit()
 				return

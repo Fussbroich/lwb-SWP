@@ -7,6 +7,7 @@ import (
 )
 
 type MiniBillardSpiel interface {
+	SetzeRegeln(func())
 	Starte()
 	Stoppe()
 	Laeuft() bool
@@ -23,6 +24,10 @@ type MiniBillardSpiel interface {
 	Einlochen(MBKugel)
 	GibEingelochteKugeln() []MBKugel
 	GibSpielkugel() MBKugel
+	SetzeKugeln(k ...MBKugel)
+	SetzeKugelnTest()
+	SetzeKugeln3er()
+	SetzeKugeln9Ball()
 	GibVStoss() hilf.Vec2
 	SetzeStossRichtung(hilf.Vec2)
 	SetzeStosskraft(float64)
@@ -30,6 +35,7 @@ type MiniBillardSpiel interface {
 	GibRestzeit() time.Duration
 	GibTreffer() uint8
 	GibStrafpunkte() uint8
+	ErhoeheStrafpunkte()
 	ReduziereStrafpunkte()
 	GibGroesse() (float64, float64)
 }
