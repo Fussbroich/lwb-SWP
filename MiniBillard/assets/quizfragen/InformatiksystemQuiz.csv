@@ -1,7 +1,10 @@
-Welches der Begriffe ist keine Hardware?;A.;Bildschirm;B.;Akku;C.;Festplatte;D.;Betriebssystem;3
-Welches der Begriffe ist keine Software?;A.;Festplatte;B.;Betriebssystem;C.;Textverarbeitungsprogramm;D.;Bildbearbeitungsprogramm;0
-Hardware: Wähle die falsche Aussage aus.;A.;Hardware kannst du nicht in die Hand nehmen;B.;Hardware umfasst alle physischen Geräte eines Computers;C.;Hardware ist ein englischer Fachbegriff.;D.;Der Begriff Hardware setzt sich zusammen aus "hard" (hart) und "ware" (Ware).;0
-Software: Wähle die falsche Aussage aus.;A.;Menschen entwickeln Software, um bestimmte Probleme zu lösen.;B.Software ist ein englischer Fachbegriff.;C.;Software kannst du anfassen.;D.;Der Begriff Software setzt sich zusammen aus "soft" (weich) und "ware" (Ware).;2
-Welches der Begriffe ist keine Software?;A.;Festplatte;B.;Betriebssystem;C.;Textverarbeitungsprogramm;D.;Bildbearbeitungsprogramm;0
-Welches der aufgelisteten Geräte sind keine Eingabegeräte?;A.;Maus;B.;Prozessor;C.;Scanner;D.;Tastatur;1
-Welches der aufgelisteten Geräte sind keine Geräte zur Datenverarbeitung?;A.;Prozessor;B.;Festplatte;C.;Beamer;D.;ROM;2
+Welches der Begriffe ist keine Hardware?;Bildschirm;Akku;Festplatte;Betriebssystem;3
+Welches der Begriffe ist keine Software?;Festplatte;Betriebssystem;Textverarbeitungsprogramm;Bildbearbeitungsprogramm;0
+Hardware: Wähle die falsche Aussage aus.;Hardware kannst du nicht in die Hand nehmen;Hardware umfasst alle physischen Geräte eines Computers;Hardware ist ein englischer Fachbegriff.;Der Begriff Hardware setzt sich zusammen aus hard (hart) und ware (Ware).;0
+Software: Wähle die falsche Aussage aus.;Menschen entwickeln Software, um bestimmte Probleme zu lösen.;Software ist ein englischer Fachbegriff.;Software kannst du anfassen.;Der Begriff Software setzt sich zusammen aus soft (weich) und ware (Ware).;2
+Welches der Begriffe ist keine Software?;Festplatte;Betriebssystem;Textverarbeitungsprogramm;Bildbearbeitungsprogramm;0
+Welches der aufgelisteten Geräte sind keine Eingabegeräte?;Maus;Prozessor;Scanner;Tastatur;1
+Welches der aufgelisteten Geräte sind keine Geräte zur Datenverarbeitung?;Prozessor;Festplatte;Beamer;ROM;2
+Welches der aufgelisteten Geräte sind keine Ausgabegeräte?;Bildschirm;RAM;Drucker;Lautsprecher;1
+Wofür steht die Abkürzung EVA?;Einheit – Verein – Automatik;Eingabe – Verarbeitung – Ausgabe;Einstellung – Verschlüsselung – Automat;Ein – V-Modus – Aus;
+Arbeitsspeicher: Wähle die falsche Aussage aus.;Hier werden Daten zwischengespeichert.;Es ist das Kurzzeitgedächtnis des Computers.; Bei Stromausfall sind alle zwischengespeicherten Daten verloren.; Hier sind alle Daten gespeichert, die langfristig gebraucht werden.;3
