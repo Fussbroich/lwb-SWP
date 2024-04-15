@@ -60,7 +60,7 @@ func NewBPApp(g uint16) *bpapp {
 
 	// Modelle erzeugen
 	app.billard = modelle.NewMini9BallSpiel(bS, hS, ra)
-	app.quiz = modelle.NewQuizCSV("BeispielQuiz.csv")
+	app.quiz = modelle.NewQuizInformatiksysteme()
 
 	// Views und Zeichner erzeugen
 	app.hintergrund = views_controls.NewFenster()

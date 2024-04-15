@@ -51,6 +51,14 @@ func quizFragenCSV(fn string) (fragen []QuizFrage) {
 	return
 }
 
-func NewQuizCSV(fn string) *quiz {
+func newQuizCSV(fn string) *quiz {
 	return &quiz{fragen: quizFragenCSV(fn)}
+}
+
+func NewBeispielQuiz() *quiz {
+	return newQuizCSV("BeispielQuiz.csv")
+}
+
+func NewQuizInformatiksysteme() *quiz {
+	return newQuizCSV("InformatiksystemQuiz.csv")
 }
