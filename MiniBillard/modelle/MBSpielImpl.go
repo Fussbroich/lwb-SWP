@@ -249,7 +249,7 @@ func (s *mbspiel) SetzeRestzeit(t time.Duration) { s.restzeit = t }
 func (s *mbspiel) GibRestzeit() time.Duration { return s.restzeit }
 
 func (s *mbspiel) Reset() {
-	s.kugeln = s.kugelSatz9Ball()
+	s.kugeln = s.kugelSatz9Ball() // neue Kugeln, die alle still stehen
 	s.spielkugel = s.kugeln[0]
 	s.eingelochte = []MBKugel{}
 	s.strafPunkte = 0

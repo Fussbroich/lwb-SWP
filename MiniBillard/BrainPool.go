@@ -44,87 +44,95 @@ type bpapp struct {
 
 // ####### baue die App zusammen ##################################################
 func NewBPApp(g uint16) *bpapp {
-	app := bpapp{rastermass: g, breite: 32 * g, hoehe: 22 * g}
-	app.renderer = views_controls.NewFensterZeichner("BrainPool - Das MiniBillard für Schlaue.")
+	a := bpapp{rastermass: g, breite: 32 * g, hoehe: 22 * g}
+	a.renderer = views_controls.NewFensterZeichner("BrainPool - Das MiniBillard für Schlaue.")
 
-	app.musik = klaenge.CoolJazz2641SOUND()
-	app.geraeusche = klaenge.BillardPubAmbienceSOUND()
+	a.musik = klaenge.CoolJazz2641SOUND()
+	a.geraeusche = klaenge.BillardPubAmbienceSOUND()
 
 	// ######## Modelle und Views zusammenstellen #################################
 	// realer Tisch: 2540 mm x 1270 mm, Kugelradius: 57.2 mm
 	// Breite, Höhe des Spielfelds
-	var bS uint16 = 3 * app.breite / 4
+	var bS uint16 = 3 * a.breite / 4
 	var hS uint16 = bS / 2
 	// Radius der Kugeln
 	var ra uint16 = uint16(0.5 + float64(bS)*57.2/2540)
 
 	// Modelle erzeugen
-	app.billard = modelle.NewMini9BallSpiel(bS, hS, ra)
-	app.quiz = modelle.NewQuizInformatiksysteme()
+	a.billard = modelle.NewMini9BallSpiel(bS, hS, ra)
+	a.billard.SetzeRestzeit(3 * time.Second)
+	//a.quiz = modelle.NewQuizInformatiksysteme()
+	a.quiz = modelle.NewBeispielQuiz()
 
 	// Views und Zeichner erzeugen
-	app.hintergrund = views_controls.NewFenster()
-	app.renderer.SetzeFensterHintergrund(app.hintergrund)
-	app.punktezaehler = views_controls.NewMBPunkteAnzeiger(app.billard)
-	app.restzeit = views_controls.NewMBRestzeitAnzeiger(app.billard)
-	app.bande = views_controls.NewFenster()
-	app.spieltisch = views_controls.NewMBSpieltisch(app.billard)
-	app.quizfenster = views_controls.NewQuizFenster(app.quiz)
-	app.neuesSpielButton = views_controls.NewButton("neues Spiel",
+	a.hintergrund = views_controls.NewFenster()
+	a.renderer.SetzeFensterHintergrund(a.hintergrund)
+	a.punktezaehler = views_controls.NewMBPunkteAnzeiger(a.billard)
+	a.restzeit = views_controls.NewMBRestzeitAnzeiger(a.billard)
+	a.bande = views_controls.NewFenster()
+	a.spieltisch = views_controls.NewMBSpieltisch(a.billard)
+	a.quizfenster = views_controls.NewQuizFenster(a.quiz)
+	a.neuesSpielButton = views_controls.NewButton("neues Spiel",
 		func() {
-			app.billard.Reset()
-			app.quizfenster.Ausblenden()
-			app.hilfebox.Ausblenden()
-			app.spieltisch.Einblenden()
+			// neues Spiel starten - alles andere aus
+			a.renderer.UeberblendeAus()
+			a.quizfenster.Ausblenden()
+			a.hilfebox.Ausblenden()
+			a.billard.Reset()
+			a.spieltisch.Einblenden()
+			if !a.billard.Laeuft() {
+				a.billard.Starte()
+			}
 		})
-	app.quitButton = views_controls.NewButton("Quit",
+	a.quitButton = views_controls.NewButton("Quit",
 		func() {
-			app.Quit()
+			a.Quit()
 		})
-	app.hilfebox = views_controls.NewTextBox("Hilfe")
-	app.hilfebox.Ausblenden()
-	app.hilfeButton = views_controls.NewButton("?",
+	a.hilfebox = views_controls.NewTextBox("Hilfe")
+	a.hilfebox.Ausblenden()
+	a.hilfeButton = views_controls.NewButton("?",
 		func() {
-			app.hilfebox.DarstellenAnAus()
+			a.renderer.UeberblendeAus()
+			a.hilfebox.DarstellenAnAus()
 		})
 
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
-	app.renderer.SetzeWidgets(app.bande, app.spieltisch, app.quizfenster, app.hilfebox, app.punktezaehler, app.restzeit,
-		app.neuesSpielButton, app.quitButton, app.hilfeButton)
+	a.renderer.SetzeWidgets(a.bande, a.spieltisch, a.quizfenster, a.hilfebox, a.punktezaehler, a.restzeit,
+		a.neuesSpielButton, a.quitButton, a.hilfeButton)
 
 	//setze Layout
-	app.hintergrund.SetzeKoordinaten(0, 0, app.breite, app.hoehe)
-	var xs, ys, xe, ye uint16 = 4 * app.rastermass, 6 * app.rastermass, 28 * app.rastermass, 18 * app.rastermass
-	var g3 uint16 = app.rastermass + app.rastermass/3
-	app.punktezaehler.SetzeKoordinaten(xs-g3, 1*app.rastermass, 18*app.rastermass, 3*app.rastermass)
-	app.restzeit.SetzeKoordinaten(20*app.rastermass+g3, app.rastermass, xe+g3, 3*app.rastermass)
-	app.bande.SetzeKoordinaten(xs-g3, ys-g3, xe+g3, ye+g3)
-	app.bande.SetzeEckradius(g3)
-	app.spieltisch.SetzeKoordinaten(xs, ys, xe, ye)
-	app.quizfenster.SetzeKoordinaten(xs-g3, ys-g3, xe+g3, ye+g3)
-	app.quizfenster.SetzeEckradius(g3)
-	app.neuesSpielButton.SetzeKoordinaten(app.breite/2-2*app.rastermass, ye+g3+app.rastermass/2, app.breite/2+2*app.rastermass, ye+g3+g3)
-	app.neuesSpielButton.SetzeEckradius(app.rastermass / 3)
-	app.hilfeButton.SetzeKoordinaten(2*app.rastermass, ye+g3+app.rastermass/2, 4*app.rastermass, ye+g3+g3)
-	app.hilfeButton.SetzeEckradius(app.rastermass / 3)
-	app.hilfebox.SetzeKoordinaten(app.breite/4, app.hoehe/4, app.breite/2, app.hoehe/2)
-	app.quitButton.SetzeKoordinaten(app.breite-4*app.rastermass, ye+g3+app.rastermass/2, app.breite-2*app.rastermass, ye+g3+g3)
-	app.quitButton.SetzeEckradius(app.rastermass / 3)
+	a.hintergrund.SetzeKoordinaten(0, 0, a.breite, a.hoehe)
+	var xs, ys, xe, ye uint16 = 4 * a.rastermass, 6 * a.rastermass, 28 * a.rastermass, 18 * a.rastermass
+	var g3 uint16 = a.rastermass + a.rastermass/3
+	a.punktezaehler.SetzeKoordinaten(xs-g3, 1*a.rastermass, 18*a.rastermass, 3*a.rastermass)
+	a.restzeit.SetzeKoordinaten(20*a.rastermass+g3, a.rastermass, xe+g3, 3*a.rastermass)
+	a.bande.SetzeKoordinaten(xs-g3, ys-g3, xe+g3, ye+g3)
+	a.bande.SetzeEckradius(g3)
+	a.spieltisch.SetzeKoordinaten(xs, ys, xe, ye)
+	a.quizfenster.SetzeKoordinaten(xs-g3, ys-g3, xe+g3, ye+g3)
+	a.quizfenster.SetzeEckradius(g3)
+	a.neuesSpielButton.SetzeKoordinaten(a.breite/2-2*a.rastermass, ye+g3+a.rastermass/2, a.breite/2+2*a.rastermass, ye+g3+g3)
+	a.neuesSpielButton.SetzeEckradius(a.rastermass / 3)
+	a.hilfeButton.SetzeKoordinaten(2*a.rastermass, ye+g3+a.rastermass/2, 4*a.rastermass, ye+g3+g3)
+	a.hilfeButton.SetzeEckradius(a.rastermass / 3)
+	a.hilfebox.SetzeKoordinaten(a.breite/4, a.hoehe/4, a.breite/2, a.hoehe/2)
+	a.quitButton.SetzeKoordinaten(a.breite-4*a.rastermass, ye+g3+a.rastermass/2, a.breite-2*a.rastermass, ye+g3+g3)
+	a.quitButton.SetzeEckradius(a.rastermass / 3)
 
 	//setzeFarben
-	app.hintergrund.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
-	app.spieltisch.SetzeFarben(views_controls.Fbillardtuch(), views_controls.Fdiamanten())
-	app.bande.SetzeFarben(views_controls.Ftext(), views_controls.Fanzeige())
-	app.punktezaehler.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
-	app.punktezaehler.SetzeTransparenz(255)
-	app.restzeit.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
-	app.quizfenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
-	app.neuesSpielButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
-	app.hilfeButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
-	app.hilfebox.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
-	app.quitButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
+	a.hintergrund.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
+	a.spieltisch.SetzeFarben(views_controls.Fbillardtuch(), views_controls.Fdiamanten())
+	a.bande.SetzeFarben(views_controls.Ftext(), views_controls.Fanzeige())
+	a.punktezaehler.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
+	a.punktezaehler.SetzeTransparenz(255)
+	a.restzeit.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
+	a.quizfenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
+	a.neuesSpielButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
+	a.hilfeButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
+	a.hilfebox.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
+	a.quitButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
 
-	return &app
+	return &a
 }
 
 // ############### die ganze App wird mit der Maus gesteuert ########################
@@ -153,8 +161,9 @@ func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16
 		} else {
 			a.quiz.NaechsteFrage()
 		}
-	} else if a.spieltisch != nil && a.spieltisch.IstAktiv() &&
-		!a.hilfebox.IstAktiv() && a.billard.Laeuft() {
+	} else if a.billard.Laeuft() && a.billard.GibRestzeit() == 0 {
+		a.renderer.UeberblendeText("GAME OVER!", views_controls.Fanzeige(), views_controls.Ftext(), 30)
+	} else if a.spieltisch != nil && a.spieltisch.IstAktiv() && a.billard.Laeuft() {
 		if a.billard.GibStrafpunkte() > a.billard.GibTreffer() {
 			// stoppe die Zeit und gehe zum Quizmodus
 			a.billard.Stoppe()
@@ -211,6 +220,7 @@ func (a *bpapp) Run() {
 			case 'c': // Dunkle Umgebung
 				a.renderer.DarkmodeAnAus()
 			case 'h': // Hilfe anzeigen
+				a.renderer.UeberblendeAus()
 				a.hilfebox.DarstellenAnAus()
 			case 'd': // Zeitlupe (Testzwecke)
 				a.billard.ZeitlupeAnAus()
