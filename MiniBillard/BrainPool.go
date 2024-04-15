@@ -30,6 +30,7 @@ type bpapp struct {
 	spieltisch       views_controls.Widget
 	quizfenster      views_controls.Widget
 	hilfebox         views_controls.Widget
+	gameOverScreen   views_controls.Widget
 	neuesSpielButton views_controls.Widget
 	hilfeButton      views_controls.Widget
 	quitButton       views_controls.Widget
@@ -40,6 +41,7 @@ type bpapp struct {
 	renderer         views_controls.FensterZeichner
 	// Controls
 	mausSteuerung views_controls.EingabeRoutine
+	regelWaechter hilf.Routine
 }
 
 // ####### baue die App zusammen ##################################################
@@ -72,33 +74,17 @@ func NewBPApp(g uint16) *bpapp {
 	a.bande = views_controls.NewFenster()
 	a.spieltisch = views_controls.NewMBSpieltisch(a.billard)
 	a.quizfenster = views_controls.NewQuizFenster(a.quiz)
-	a.neuesSpielButton = views_controls.NewButton("neues Spiel",
-		func() {
-			// neues Spiel starten - alles andere aus
-			a.renderer.UeberblendeAus()
-			a.quizfenster.Ausblenden()
-			a.hilfebox.Ausblenden()
-			a.billard.Reset()
-			a.spieltisch.Einblenden()
-			if !a.billard.Laeuft() {
-				a.billard.Starte()
-			}
-		})
-	a.quitButton = views_controls.NewButton("Quit",
-		func() {
-			a.Quit()
-		})
+	a.neuesSpielButton = views_controls.NewButton("neues Spiel", a.neuesSpielStarten)
+	a.quitButton = views_controls.NewButton("Quit", a.Quit)
 	a.hilfebox = views_controls.NewTextBox("Hilfe")
 	a.hilfebox.Ausblenden()
-	a.hilfeButton = views_controls.NewButton("?",
-		func() {
-			a.renderer.UeberblendeAus()
-			a.hilfebox.DarstellenAnAus()
-		})
+	a.hilfeButton = views_controls.NewButton("?", a.hilfeAnAus)
+	a.gameOverScreen = views_controls.NewTextBox("GAME OVER!")
+	a.gameOverScreen.Ausblenden()
 
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
-	a.renderer.SetzeWidgets(a.bande, a.spieltisch, a.quizfenster, a.hilfebox, a.punktezaehler, a.restzeit,
-		a.neuesSpielButton, a.quitButton, a.hilfeButton)
+	a.renderer.SetzeWidgets(a.bande, a.spieltisch, a.quizfenster, a.punktezaehler, a.restzeit,
+		a.neuesSpielButton, a.quitButton, a.hilfeButton, a.gameOverScreen, a.hilfebox)
 
 	//setze Layout
 	a.hintergrund.SetzeKoordinaten(0, 0, a.breite, a.hoehe)
@@ -109,8 +95,8 @@ func NewBPApp(g uint16) *bpapp {
 	a.bande.SetzeKoordinaten(xs-g3, ys-g3, xe+g3, ye+g3)
 	a.bande.SetzeEckradius(g3)
 	a.spieltisch.SetzeKoordinaten(xs, ys, xe, ye)
-	a.quizfenster.SetzeKoordinaten(xs-g3, ys-g3, xe+g3, ye+g3)
-	a.quizfenster.SetzeEckradius(g3)
+	a.quizfenster.SetzeKoordinaten(xs-g3+2, ys-g3+2, xe+g3-2, ye+g3-2)
+	a.quizfenster.SetzeEckradius(g3 - 2)
 	a.neuesSpielButton.SetzeKoordinaten(a.breite/2-2*a.rastermass, ye+g3+a.rastermass/2, a.breite/2+2*a.rastermass, ye+g3+g3)
 	a.neuesSpielButton.SetzeEckradius(a.rastermass / 3)
 	a.hilfeButton.SetzeKoordinaten(2*a.rastermass, ye+g3+a.rastermass/2, 4*a.rastermass, ye+g3+g3)
@@ -118,6 +104,8 @@ func NewBPApp(g uint16) *bpapp {
 	a.hilfebox.SetzeKoordinaten(a.breite/4, a.hoehe/4, a.breite/2, a.hoehe/2)
 	a.quitButton.SetzeKoordinaten(a.breite-4*a.rastermass, ye+g3+a.rastermass/2, a.breite-2*a.rastermass, ye+g3+g3)
 	a.quitButton.SetzeEckradius(a.rastermass / 3)
+	a.gameOverScreen.SetzeKoordinaten(xs-g3+2, ys-g3+2, xe+g3-2, ye+g3-2)
+	a.gameOverScreen.SetzeEckradius(g3 - 2)
 
 	//setzeFarben
 	a.hintergrund.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
@@ -131,46 +119,83 @@ func NewBPApp(g uint16) *bpapp {
 	a.hilfeButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
 	a.hilfebox.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
 	a.quitButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
+	a.gameOverScreen.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
 
 	return &a
 }
 
-// ############### die ganze App wird mit der Maus gesteuert ########################
+// ############### Regele die Umschaltung zwischen den App-Modi #######################
+func (a *bpapp) hilfeAnAus() {
+	if a.hilfebox.IstAktiv() {
+		a.hilfebox.Ausblenden()
+		if a.spieltisch.IstAktiv() {
+			a.billard.Starte()
+		}
+	} else {
+		a.renderer.UeberblendeAus()
+		a.hilfebox.Einblenden()
+		if a.spieltisch.IstAktiv() {
+			a.billard.Stoppe()
+		}
+	}
+}
+
+// neues Spiel starten - alles andere aus
+func (a *bpapp) neuesSpielStarten() {
+	a.renderer.UeberblendeAus()
+	a.quizfenster.Ausblenden()
+	a.hilfebox.Ausblenden()
+	a.gameOverScreen.Ausblenden()
+	a.billard.Reset()
+	a.spieltisch.Einblenden()
+	if !a.billard.Laeuft() {
+		a.billard.Starte()
+	}
+}
+
+// Die restliche Umschaltung wird als go-Routine ausgelagert.
+func (a *bpapp) regelWaechterFunktion() {
+	if a.spieltisch.IstAktiv() && a.billard.GibRestzeit() == 0 {
+		a.billard.Stoppe()
+		a.spieltisch.Ausblenden()
+		a.gameOverScreen.Einblenden() // Hier ist Ende; man muss ein neues Spiel starten ...
+	} else if a.spieltisch.IstAktiv() && a.billard.GibStrafpunkte() > a.billard.GibTreffer() {
+		// stoppe die Zeit und gehe zum Quizmodus
+		a.billard.Stoppe()
+		a.spieltisch.Ausblenden()
+		a.quiz.NaechsteFrage()
+		a.quizfenster.Einblenden()
+	} else if a.quizfenster.IstAktiv() && a.billard.GibStrafpunkte() <= a.billard.GibTreffer() {
+		// zurück zum Spielmodus
+		a.quizfenster.Ausblenden()
+		a.billard.Starte()
+		a.spieltisch.Einblenden()
+	}
+}
+
+// ############### Die ganze App wird mit der Maus gesteuert. ########################
+// Die Maussteuerung wird als go-Routine ausgelagert.
 func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16) {
 	if a.quitButton != nil && a.quitButton.IstAktiv() &&
 		a.quitButton.ImFenster(mausX, mausY) && taste == 1 && status == -1 {
 		a.quitButton.MausklickBei(mausX, mausY)
-		return
 	} else if a.hilfeButton != nil && a.hilfeButton.IstAktiv() &&
 		a.hilfeButton.ImFenster(mausX, mausY) && taste == 1 && status == -1 {
 		a.hilfeButton.MausklickBei(mausX, mausY)
 	} else if a.neuesSpielButton != nil && a.neuesSpielButton.IstAktiv() &&
 		a.neuesSpielButton.ImFenster(mausX, mausY) && taste == 1 && status == -1 {
 		a.neuesSpielButton.MausklickBei(mausX, mausY)
-	} else if a.quizfenster != nil && a.quizfenster.IstAktiv() &&
+	} else if a.quizfenster.IstAktiv() &&
 		a.quizfenster.ImFenster(mausX, mausY) && taste == 1 && status == -1 {
 		a.quizfenster.MausklickBei(mausX, mausY)
+		// Todo: Hier werden Regeln und Maussteuerung vermischt ...
 		if a.quiz.GibAktuelleFrage().RichtigBeantwortet() {
 			a.billard.ReduziereStrafpunkte()
-			if a.billard.GibStrafpunkte() <= a.billard.GibTreffer() {
-				// zurück zum Spielmodus
-				a.quizfenster.Ausblenden()
-				a.billard.Starte()
-				a.spieltisch.Einblenden()
-			}
 		} else {
 			a.quiz.NaechsteFrage()
 		}
-	} else if a.billard.Laeuft() && a.billard.GibRestzeit() == 0 {
-		a.renderer.UeberblendeText("GAME OVER!", views_controls.Fanzeige(), views_controls.Ftext(), 30)
-	} else if a.spieltisch != nil && a.spieltisch.IstAktiv() && a.billard.Laeuft() {
-		if a.billard.GibStrafpunkte() > a.billard.GibTreffer() {
-			// stoppe die Zeit und gehe zum Quizmodus
-			a.billard.Stoppe()
-			a.spieltisch.Ausblenden()
-			a.quiz.NaechsteFrage()
-			a.quizfenster.Einblenden()
-		} else if a.billard.IstStillstand() {
+	} else if a.spieltisch.IstAktiv() && a.billard.Laeuft() {
+		if a.billard.IstStillstand() {
 			// zielen und stoßen
 			switch taste {
 			case 1: // stoßen
@@ -203,11 +228,14 @@ func (a *bpapp) Run() {
 	a.hilfebox.Ausblenden()
 	a.renderer.Starte()
 	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
-	a.mausSteuerung.Starte()
+	a.mausSteuerung.StarteRate(20)
+	a.regelWaechter = hilf.NewRoutine("Regelwächter", a.regelWaechterFunktion)
+	a.regelWaechter.StarteRate(5)
 	a.geraeusche.StarteLoop()
 	a.musik.StarteLoop()
 	a.laeuft = true
-	// ####### der Tastatur-Loop bestimmt das Laufende ##################################################
+
+	// ####### der Tastatur-Loop darf hier existieren ####################
 	for {
 		if !gfx.FensterOffen() {
 			break
@@ -226,16 +254,6 @@ func (a *bpapp) Run() {
 				a.billard.ZeitlupeAnAus()
 			case 'l': // Fenster-Layout anzeigen (Testzwecke)
 				a.renderer.LayoutAnAus()
-			case 'f': // Quizmodus händisch an-/ausschalten (Testzwecke)
-				if a.quizfenster.IstAktiv() {
-					a.quizfenster.Ausblenden()
-					a.billard.Starte()
-					a.spieltisch.Einblenden()
-				} else {
-					a.billard.Stoppe()
-					a.spieltisch.Ausblenden()
-					a.quizfenster.Einblenden()
-				}
 			case 'q':
 				a.Quit()
 				return
@@ -253,6 +271,7 @@ func (a *bpapp) Quit() {
 	a.musik.Stoppe()
 	a.renderer.UeberblendeText("Bye!", views_controls.Fanzeige(), views_controls.Ftext(), 30)
 	go a.mausSteuerung.Stoppe()
+	a.regelWaechter.Stoppe()
 	a.billard.Stoppe()
 	a.renderer.Stoppe()
 	time.Sleep(500 * time.Millisecond)
