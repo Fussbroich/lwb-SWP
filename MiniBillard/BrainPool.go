@@ -1,3 +1,15 @@
+/*
+Autoren:
+
+	Thomas Schrader
+	Bettina Chang
+
+Zweck:
+
+	Softwareprojekt im Rahmen der Lehrerweiterbildung Berlin
+
+Datum: 15.04.2024
+*/
 package main
 
 import (
@@ -10,8 +22,17 @@ import (
 	"./views_controls"
 )
 
+// Ein Objekt, das die ganze App initialisiert und steuert
 type BPApp interface {
+	/*
+	   Vor.: Keine
+	   Eff.: Die App wurde gestartet und ein gfx-Fenster geöffnet.
+	*/
 	Run()
+	/*
+	   Vor.: Keine
+	   Eff.: Die App wurde beendet und das gfx-Fenster geschlossen.
+	*/
 	Quit()
 }
 
@@ -28,9 +49,9 @@ type bpapp struct {
 	quiz    modelle.Quiz
 	// Views
 	spieltisch       views_controls.Widget
-	quizfenster      views_controls.Widget
-	hilfebox         views_controls.Widget
-	gameOverScreen   views_controls.Widget
+	quizFenster      views_controls.Widget
+	hilfeFenster     views_controls.Widget
+	gameOverFenster  views_controls.Widget
 	neuesSpielButton views_controls.Widget
 	hilfeButton      views_controls.Widget
 	quitButton       views_controls.Widget
@@ -44,8 +65,20 @@ type bpapp struct {
 	regelWaechter hilf.Routine
 }
 
-// ####### baue die App zusammen ##################################################
-func NewBPApp(g uint16) *bpapp {
+/*
+Zweck: baut die App zusammen
+Vor.:  keine
+Eff.:  Die App wurde beendet und das gfx-Fenster geschlossen.
+*/
+func NewBPApp(b uint16) *bpapp {
+	if b > 1920 {
+		b = 1920 // größtmögliches gfx-Fenster ist 1920 Pixel breit
+	}
+	if b < 640 {
+		b = 640 // kleinere Bildschirme sind zum Spielen ungeeignet
+	}
+	var g uint16 = b / 32 // Rastermass für dieses App-Design
+
 	a := bpapp{rastermass: g, breite: 32 * g, hoehe: 22 * g}
 	a.renderer = views_controls.NewFensterZeichner("BrainPool - Das MiniBillard für Schlaue.")
 
@@ -73,18 +106,18 @@ func NewBPApp(g uint16) *bpapp {
 	a.restzeit = views_controls.NewMBRestzeitAnzeiger(a.billard)
 	a.bande = views_controls.NewFenster()
 	a.spieltisch = views_controls.NewMBSpieltisch(a.billard)
-	a.quizfenster = views_controls.NewQuizFenster(a.quiz)
+	a.quizFenster = views_controls.NewQuizFenster(a.quiz)
 	a.neuesSpielButton = views_controls.NewButton("neues Spiel", a.neuesSpielStarten)
 	a.quitButton = views_controls.NewButton("Quit", a.Quit)
-	a.hilfebox = views_controls.NewTextBox("Hilfe")
-	a.hilfebox.Ausblenden()
+	a.hilfeFenster = views_controls.NewTextBox("Hilfe")
+	a.hilfeFenster.Ausblenden() // wäre standardmäßig eingeblendet
 	a.hilfeButton = views_controls.NewButton("?", a.hilfeAnAus)
-	a.gameOverScreen = views_controls.NewTextBox("GAME OVER!")
-	a.gameOverScreen.Ausblenden()
+	a.gameOverFenster = views_controls.NewTextBox("GAME OVER!")
+	a.gameOverFenster.Ausblenden() // wäre standardmäßig eingeblendet
 
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
-	a.renderer.SetzeWidgets(a.bande, a.spieltisch, a.quizfenster, a.punktezaehler, a.restzeit,
-		a.neuesSpielButton, a.quitButton, a.hilfeButton, a.gameOverScreen, a.hilfebox)
+	a.renderer.SetzeWidgets(a.bande, a.spieltisch, a.quizFenster, a.punktezaehler, a.restzeit,
+		a.neuesSpielButton, a.quitButton, a.hilfeButton, a.gameOverFenster, a.hilfeFenster)
 
 	//setze Layout
 	a.hintergrund.SetzeKoordinaten(0, 0, a.breite, a.hoehe)
@@ -95,17 +128,18 @@ func NewBPApp(g uint16) *bpapp {
 	a.bande.SetzeKoordinaten(xs-g3, ys-g3, xe+g3, ye+g3)
 	a.bande.SetzeEckradius(g3)
 	a.spieltisch.SetzeKoordinaten(xs, ys, xe, ye)
-	a.quizfenster.SetzeKoordinaten(xs-g3+2, ys-g3+2, xe+g3-2, ye+g3-2)
-	a.quizfenster.SetzeEckradius(g3 - 2)
+	a.quizFenster.SetzeKoordinaten(xs-g3+2, ys-g3+2, xe+g3-2, ye+g3-2)
+	a.quizFenster.SetzeEckradius(g3 - 2)
 	a.neuesSpielButton.SetzeKoordinaten(a.breite/2-2*a.rastermass, ye+g3+a.rastermass/2, a.breite/2+2*a.rastermass, ye+g3+g3)
 	a.neuesSpielButton.SetzeEckradius(a.rastermass / 3)
 	a.hilfeButton.SetzeKoordinaten(2*a.rastermass, ye+g3+a.rastermass/2, 4*a.rastermass, ye+g3+g3)
 	a.hilfeButton.SetzeEckradius(a.rastermass / 3)
-	a.hilfebox.SetzeKoordinaten(a.breite/4, a.hoehe/4, a.breite/2, a.hoehe/2)
+	a.hilfeFenster.SetzeKoordinaten(xs-g3+2, ys-g3+2, xe+g3-2, ye+g3-2)
+	a.hilfeFenster.SetzeEckradius(g3 - 2)
 	a.quitButton.SetzeKoordinaten(a.breite-4*a.rastermass, ye+g3+a.rastermass/2, a.breite-2*a.rastermass, ye+g3+g3)
 	a.quitButton.SetzeEckradius(a.rastermass / 3)
-	a.gameOverScreen.SetzeKoordinaten(xs-g3+2, ys-g3+2, xe+g3-2, ye+g3-2)
-	a.gameOverScreen.SetzeEckradius(g3 - 2)
+	a.gameOverFenster.SetzeKoordinaten(xs-g3+2, ys-g3+2, xe+g3-2, ye+g3-2)
+	a.gameOverFenster.SetzeEckradius(g3 - 2)
 
 	//setzeFarben
 	a.hintergrund.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
@@ -114,38 +148,47 @@ func NewBPApp(g uint16) *bpapp {
 	a.punktezaehler.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
 	a.punktezaehler.SetzeTransparenz(255)
 	a.restzeit.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
-	a.quizfenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
+	a.quizFenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
 	a.neuesSpielButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
 	a.hilfeButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
-	a.hilfebox.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
+	a.hilfeFenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
 	a.quitButton.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
-	a.gameOverScreen.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
+	a.gameOverFenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
 
 	return &a
 }
 
 // ############### Regele die Umschaltung zwischen den App-Modi #######################
+// Todo: Bündele Steuerung in einem Zustandsautomaten
+
+/*
+Vor.: das Hilfefenster liegt zuoberst im Renderer
+Eff.: zeigt das Hilfefenster an oder blendet es wieder aus
+*/
 func (a *bpapp) hilfeAnAus() {
-	if a.hilfebox.IstAktiv() {
-		a.hilfebox.Ausblenden()
+	if a.hilfeFenster.IstAktiv() {
+		a.hilfeFenster.Ausblenden()
 		if a.spieltisch.IstAktiv() {
 			a.billard.Starte()
 		}
 	} else {
 		a.renderer.UeberblendeAus()
-		a.hilfebox.Einblenden()
+		a.hilfeFenster.Einblenden()
 		if a.spieltisch.IstAktiv() {
 			a.billard.Stoppe()
 		}
 	}
 }
 
-// neues Spiel starten - alles andere aus
+/*
+Vor.: keine
+Eff.: neues Spiel ist gestartet - Quiz ist ausgeblendet
+*/
 func (a *bpapp) neuesSpielStarten() {
 	a.renderer.UeberblendeAus()
-	a.quizfenster.Ausblenden()
-	a.hilfebox.Ausblenden()
-	a.gameOverScreen.Ausblenden()
+	a.quizFenster.Ausblenden()
+	a.hilfeFenster.Ausblenden()
+	a.gameOverFenster.Ausblenden()
 	a.billard.Reset()
 	a.spieltisch.Einblenden()
 	if !a.billard.Laeuft() {
@@ -153,28 +196,45 @@ func (a *bpapp) neuesSpielStarten() {
 	}
 }
 
-// Die restliche Umschaltung wird als go-Routine ausgelagert.
+/*
+Zweck: die restliche Zustands-Umschaltung (wird als go-Routine ausgelagert)
+Vor.: keine
+Eff.:
+
+	Falls Spielzeit abgelaufen war: Spiel ist beendet.
+	Falls Anzahl Fouls > Anzahl Treffer: Quiz ist aktiviert.
+	Falls Anzahl Fouls <= Anzahl Treffer: Spiel ist aktiviert
+*/
 func (a *bpapp) regelWaechterFunktion() {
 	if a.spieltisch.IstAktiv() && a.billard.GibRestzeit() == 0 {
 		a.billard.Stoppe()
 		a.spieltisch.Ausblenden()
-		a.gameOverScreen.Einblenden() // Hier ist Ende; man muss ein neues Spiel starten ...
+		a.gameOverFenster.Einblenden() // Hier ist Ende; man muss ein neues Spiel starten ...
 	} else if a.spieltisch.IstAktiv() && a.billard.GibStrafpunkte() > a.billard.GibTreffer() {
 		// stoppe die Zeit und gehe zum Quizmodus
 		a.billard.Stoppe()
 		a.spieltisch.Ausblenden()
 		a.quiz.NaechsteFrage()
-		a.quizfenster.Einblenden()
-	} else if a.quizfenster.IstAktiv() && a.billard.GibStrafpunkte() <= a.billard.GibTreffer() {
+		a.quizFenster.Einblenden()
+	} else if a.quizFenster.IstAktiv() && a.billard.GibStrafpunkte() <= a.billard.GibTreffer() {
 		// zurück zum Spielmodus
-		a.quizfenster.Ausblenden()
+		a.quizFenster.Ausblenden()
 		a.billard.Starte()
 		a.spieltisch.Einblenden()
 	}
 }
 
-// ############### Die ganze App wird mit der Maus gesteuert. ########################
-// Die Maussteuerung wird als go-Routine ausgelagert.
+/*
+Zweck: Die App wird mit der Maus bedient. Die Maussteuerung wird als go-Routine ausgelagert.
+Vor.: keine
+Eff.:
+
+	Falls Quit, Hilfe oder Neues Spiel angeklickt wurde, ist die enstprechende Aktion ausgeführt.
+	Falls Quiz aktiv ist und Quizfenster angeklickt wurde, wird Antwort ausgewertet.
+	  -- Falls dadurch genügend Strafpunkte abgebaut wurden, wird Spiel aktiviert.
+	Falls Spiel läuft und alle Kugeln still stehen: Es ist gezielt bzw. gestoßen.
+	Sonst: keiner
+*/
 func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16) {
 	if a.quitButton != nil && a.quitButton.IstAktiv() &&
 		a.quitButton.ImFenster(mausX, mausY) && taste == 1 && status == -1 {
@@ -185,9 +245,9 @@ func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16
 	} else if a.neuesSpielButton != nil && a.neuesSpielButton.IstAktiv() &&
 		a.neuesSpielButton.ImFenster(mausX, mausY) && taste == 1 && status == -1 {
 		a.neuesSpielButton.MausklickBei(mausX, mausY)
-	} else if a.quizfenster.IstAktiv() &&
-		a.quizfenster.ImFenster(mausX, mausY) && taste == 1 && status == -1 {
-		a.quizfenster.MausklickBei(mausX, mausY)
+	} else if a.quizFenster.IstAktiv() &&
+		a.quizFenster.ImFenster(mausX, mausY) && taste == 1 && status == -1 {
+		a.quizFenster.MausklickBei(mausX, mausY)
 		// Todo: Hier werden Regeln und Maussteuerung vermischt ...
 		if a.quiz.GibAktuelleFrage().RichtigBeantwortet() {
 			a.billard.ReduziereStrafpunkte()
@@ -216,7 +276,24 @@ func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16
 	}
 }
 
-// ####### starte alles ##################################################
+/*
+Zweck: starte die Laufzeit-Elemente der App
+Vor.: die App läuft nicht
+Eff.: die App läuft
+
+Ferner:
+Zweck: Einige Aspekte der App können mit der Tastatur bedient werden.
+Eff.:
+
+	Taste 'p' gedrückt: Spiel pausiert
+	Taste 'c' gedrückt: Umgebung abgedunkelt/aufgehellt
+	Taste 'h' gedrückt: Hilfe angezeigt/ausgeblendet
+	Taste 'r' gedrückt: neues Spiel begonnen
+	Taste 'd' gedrückt: Bewegungen erfolgen in Zeitlupe (Testzwecke)
+	Taste 'l' gedrückt: Layout der App ist angezeigt (Testzwecke)
+	Taste 'q' gedrückt: App ist beendet.
+	Sonst: keiner
+*/
 func (a *bpapp) Run() {
 	if a.laeuft {
 		return
@@ -224,15 +301,15 @@ func (a *bpapp) Run() {
 	println("Willkommen bei BrainPool")
 	a.billard.Starte()
 	a.spieltisch.Einblenden()
-	a.quizfenster.Ausblenden()
-	a.hilfebox.Ausblenden()
-	a.renderer.Starte()
+	a.quizFenster.Ausblenden()
+	a.hilfeFenster.Ausblenden()
+	a.renderer.Starte() // go-Routine
 	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
-	a.mausSteuerung.StarteRate(20)
+	a.mausSteuerung.StarteRate(20) // go-Routine
 	a.regelWaechter = hilf.NewRoutine("Regelwächter", a.regelWaechterFunktion)
-	a.regelWaechter.StarteRate(5)
-	a.geraeusche.StarteLoop()
-	a.musik.StarteLoop()
+	a.regelWaechter.StarteRate(5) // go-Routine
+	a.geraeusche.StarteLoop()     // go-Routine
+	a.musik.StarteLoop()          // go-Routine
 	a.laeuft = true
 
 	// ####### der Tastatur-Loop darf hier existieren ####################
@@ -247,9 +324,10 @@ func (a *bpapp) Run() {
 				a.billard.PauseAnAus()
 			case 'c': // Dunkle Umgebung
 				a.renderer.DarkmodeAnAus()
-			case 'h': // Hilfe anzeigen
-				a.renderer.UeberblendeAus()
-				a.hilfebox.DarstellenAnAus()
+			case 'h': // Hilfe an-aus
+				a.hilfeAnAus()
+			case 'r': // neues Spiel
+				a.neuesSpielStarten()
 			case 'd': // Zeitlupe (Testzwecke)
 				a.billard.ZeitlupeAnAus()
 			case 'l': // Fenster-Layout anzeigen (Testzwecke)
@@ -262,7 +340,11 @@ func (a *bpapp) Run() {
 	}
 }
 
-// ####### stoppe alles ##################################################
+/*
+Zweck: stoppt die Laufzeit-Elemente der App
+Vor.: die App läuft
+Eff.: die App läuft nicht
+*/
 func (a *bpapp) Quit() {
 	if !a.laeuft {
 		return
@@ -284,6 +366,6 @@ func (a *bpapp) Quit() {
 
 // ####### der Startpunkt ##################################################
 func main() {
-	// das Rastermaß bestimmt die Größe der App
-	NewBPApp(35).Run()
+	// Die gewünschte Bildbreite in Pixeln wird übergeben
+	NewBPApp(1440).Run() // läuft bis Spiel beendet wird
 }
