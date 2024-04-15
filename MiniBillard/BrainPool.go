@@ -95,13 +95,6 @@ func NewBPApp(b uint16) *bpapp {
 
 	// Modelle erzeugen
 	a.billard = modelle.NewMini9BallSpiel(bS, hS, ra)
-	a.billard.SetzeRegeln(func() {
-		if a.billard.GibSpielkugel().IstEingelocht() {
-			a.billard.ErhoeheStrafpunkte()
-			a.billard.StossWiederholen()
-			return
-		}
-	})
 
 	//a.quiz = modelle.NewQuizInformatiksysteme()
 	a.quiz = modelle.NewBeispielQuiz()

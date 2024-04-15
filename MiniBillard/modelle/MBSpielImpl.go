@@ -23,11 +23,11 @@ type mbspiel struct {
 	strafPunkte  uint8
 	stillstand   bool
 	updater      hilf.Routine
+	regelPruefer func()
 	startzeit    time.Time
 	spielzeit    time.Duration
 	countdown    Countdown
 	zeitlupe     uint64
-	regelPruefer func()
 }
 
 func NewMini9BallSpiel(br, hö, ra uint16) *mbspiel {
@@ -44,11 +44,20 @@ func NewMini9BallSpiel(br, hö, ra uint16) *mbspiel {
 		NewTasche(hilf.V2(breite, höhe), rt),
 		NewTasche(hilf.V2(breite, 0), rt),
 		NewTasche(hilf.V2(breite/2, 0), rtm))
-	sp.SetzeKugeln(sp.KugelSatz9Ball()...)
+	sp.setzeKugeln(sp.KugelSatz9Ball()...)
 	sp.spielzeit = 4 * time.Minute
-	sp.regelPruefer = func() {}
+	sp.regelPruefer = sp.regeln9Ball
 	sp.countdown = NewCountdown(sp.spielzeit)
 	return sp
+}
+
+func (sp *mbspiel) regeln9Ball() {
+	if sp.spielkugel.IstEingelocht() {
+		sp.strafPunkte++
+		sp.StossWiederholen()
+		return
+	}
+	//wertZuletzt := sp.eingelochte[len(sp.eingelochte)]
 }
 
 // ######## ein paar Hilfsfunktionen #########################################
@@ -57,7 +66,7 @@ func (s *mbspiel) setzeTaschen(t ...MBTasche) {
 	s.taschen = append(s.taschen, t...)
 }
 
-func (s *mbspiel) SetzeKugeln(k ...MBKugel) {
+func (s *mbspiel) setzeKugeln(k ...MBKugel) {
 	s.kugeln = []MBKugel{}
 	for _, k := range k {
 		k.Stop()
@@ -75,12 +84,12 @@ func (s *mbspiel) SetzeKugeln(k ...MBKugel) {
 func (s *mbspiel) SetzeKugelnTest() {
 	pStoß := hilf.V2(s.breite-5*s.rk, s.hoehe-5*s.rk)
 	p1 := hilf.V2(s.breite-2*s.rk, s.hoehe-2*s.rk)
-	s.SetzeKugeln(
+	s.setzeKugeln(
 		NewKugel(pStoß, s.rk, 0),
 		NewKugel(p1, s.rk, 1))
 }
 
-func (sp *mbspiel) SetzeKugeln3er() { sp.SetzeKugeln(sp.kugelSatz3er()...) }
+func (sp *mbspiel) SetzeKugeln3er() { sp.setzeKugeln(sp.kugelSatz3er()...) }
 
 func (s *mbspiel) kugelSatz3er() []MBKugel {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -95,7 +104,7 @@ func (s *mbspiel) kugelSatz3er() []MBKugel {
 		NewKugel(p3, s.rk, 3)}
 }
 
-func (sp *mbspiel) SetzeKugeln9Ball() { sp.SetzeKugeln(sp.KugelSatz9Ball()...) }
+func (sp *mbspiel) SetzeKugeln9Ball() { sp.setzeKugeln(sp.KugelSatz9Ball()...) }
 
 func (s *mbspiel) KugelSatz9Ball() []MBKugel {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -335,8 +344,4 @@ func (s *mbspiel) ReduziereStrafpunkte() {
 	if s.strafPunkte > 0 {
 		s.strafPunkte--
 	}
-}
-
-func (s *mbspiel) ErhoeheStrafpunkte() {
-	s.strafPunkte++
 }
