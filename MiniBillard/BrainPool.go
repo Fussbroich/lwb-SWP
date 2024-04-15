@@ -145,8 +145,10 @@ func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16
 		if a.quiz.GibAktuelleFrage().RichtigBeantwortet() {
 			a.billard.ReduziereStrafpunkte()
 			if a.billard.GibStrafpunkte() <= a.billard.GibTreffer() {
+				// zurück zum Spielmodus
 				a.quizfenster.Ausblenden()
-				a.spieltisch.Einblenden() // zurück zum Spielmodus
+				a.billard.Starte()
+				a.spieltisch.Einblenden()
 			}
 		} else {
 			a.quiz.NaechsteFrage()
@@ -154,9 +156,11 @@ func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16
 	} else if a.spieltisch != nil && a.spieltisch.IstAktiv() &&
 		!a.hilfebox.IstAktiv() && a.billard.Laeuft() {
 		if a.billard.GibStrafpunkte() > a.billard.GibTreffer() {
-			a.quiz.NaechsteFrage()
+			// stoppe die Zeit und gehe zum Quizmodus
+			a.billard.Stoppe()
 			a.spieltisch.Ausblenden()
-			a.quizfenster.Einblenden() // zum Quizmodus
+			a.quiz.NaechsteFrage()
+			a.quizfenster.Einblenden()
 		} else if a.billard.IstStillstand() {
 			// zielen und stoßen
 			switch taste {
@@ -196,22 +200,32 @@ func (a *bpapp) Run() {
 	a.laeuft = true
 	// ####### der Tastatur-Loop bestimmt das Laufende ##################################################
 	for {
+		if !gfx.FensterOffen() {
+			break
+		}
 		taste, gedrückt, _ := gfx.TastaturLesen1()
 		if gedrückt == 1 {
 			switch taste {
-			case 'p':
+			case 'p': // Spiel pausieren
 				a.billard.PauseAnAus()
-			case 'c':
+			case 'c': // Dunkle Umgebung
 				a.renderer.DarkmodeAnAus()
-			case 'h':
+			case 'h': // Hilfe anzeigen
 				a.hilfebox.DarstellenAnAus()
-			case 'd':
+			case 'd': // Zeitlupe (Testzwecke)
 				a.billard.ZeitlupeAnAus()
-			case 'l':
+			case 'l': // Fenster-Layout anzeigen (Testzwecke)
 				a.renderer.LayoutAnAus()
-			case 'f':
-				a.spieltisch.Ausblenden()
-				a.quizfenster.Einblenden()
+			case 'f': // Quizmodus händisch an-/ausschalten (Testzwecke)
+				if a.quizfenster.IstAktiv() {
+					a.quizfenster.Ausblenden()
+					a.billard.Starte()
+					a.spieltisch.Einblenden()
+				} else {
+					a.billard.Stoppe()
+					a.spieltisch.Ausblenden()
+					a.quizfenster.Einblenden()
+				}
 			case 'q':
 				a.Quit()
 				return
@@ -225,14 +239,12 @@ func (a *bpapp) Quit() {
 	if !a.laeuft {
 		return
 	}
-	go func() {
-		a.geraeusche.Stoppe()
-		a.musik.Stoppe()
-		a.renderer.UeberblendeText("Bye!", views_controls.Fanzeige(), views_controls.Ftext(), 30)
-		a.mausSteuerung.Stoppe() // Todo: stoppt nicht, während die Maus wartet
-		a.billard.Stoppe()
-		a.renderer.Stoppe()
-	}()
+	a.geraeusche.Stoppe()
+	a.musik.Stoppe()
+	a.renderer.UeberblendeText("Bye!", views_controls.Fanzeige(), views_controls.Ftext(), 30)
+	go a.mausSteuerung.Stoppe()
+	a.billard.Stoppe()
+	a.renderer.Stoppe()
 	time.Sleep(500 * time.Millisecond)
 	println("BrainPool wird beendet")
 	if gfx.FensterOffen() {
