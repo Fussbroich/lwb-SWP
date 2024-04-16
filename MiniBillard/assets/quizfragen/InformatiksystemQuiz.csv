@@ -1,10 +1,30 @@
-Welches der Begriffe ist keine Hardware?;Bildschirm;Akku;Festplatte;Betriebssystem;3
-Welches der Begriffe ist keine Software?;Festplatte;Betriebssystem;Textverarbeitungsprogramm;Bildbearbeitungsprogramm;0
+Welcher der Begriffe ist keine Hardware?;Bildschirm;Akku;Festplatte;Betriebssystem;3
+Welcher der Begriffe ist keine Software?;Festplatte;Betriebssystem;Textverarbeitungsprogramm;Bildbearbeitungsprogramm;0
 Hardware: Wähle die falsche Aussage aus.;Hardware kannst du nicht in die Hand nehmen;Hardware umfasst alle physischen Geräte eines Computers;Hardware ist ein englischer Fachbegriff.;Der Begriff Hardware setzt sich zusammen aus hard (hart) und ware (Ware).;0
 Software: Wähle die falsche Aussage aus.;Menschen entwickeln Software, um bestimmte Probleme zu lösen.;Software ist ein englischer Fachbegriff.;Software kannst du anfassen.;Der Begriff Software setzt sich zusammen aus soft (weich) und ware (Ware).;2
-Welches der Begriffe ist keine Software?;Festplatte;Betriebssystem;Textverarbeitungsprogramm;Bildbearbeitungsprogramm;0
-Welches der aufgelisteten Geräte sind keine Eingabegeräte?;Maus;Prozessor;Scanner;Tastatur;1
-Welches der aufgelisteten Geräte sind keine Geräte zur Datenverarbeitung?;Prozessor;Festplatte;Beamer;ROM;2
-Welches der aufgelisteten Geräte sind keine Ausgabegeräte?;Bildschirm;RAM;Drucker;Lautsprecher;1
-Wofür steht die Abkürzung EVA?;Einheit – Verein – Automatik;Eingabe – Verarbeitung – Ausgabe;Einstellung – Verschlüsselung – Automat;Ein – V-Modus – Aus;
+Welches Gerät ist kein Eingabegerät?;Maus;Prozessor;Scanner;Tastatur;1
+Welches Gerät ist kein Gerät zur Datenverarbeitung?;Prozessor;Festplatte;Beamer;ROM;2
+Welches Gerät ist kein Ausgabegerät?;Bildschirm;RAM;Drucker;Lautsprecher;1
+Wofür steht die Abkürzung EVA?;Einheit, Verein und Automatik;Eingabe, Verarbeitung und Ausgabe;Einstellung, Verschlüsselung und Automat;Ein, V-Modus und Aus;1
 Arbeitsspeicher: Wähle die falsche Aussage aus.;Hier werden Daten zwischengespeichert.;Es ist das Kurzzeitgedächtnis des Computers.; Bei Stromausfall sind alle zwischengespeicherten Daten verloren.; Hier sind alle Daten gespeichert, die langfristig gebraucht werden.;3
+Prozessor: Wähle die falsche Aussage aus.;Der Prozessor ist das Kernstück des Computers.;Der Prozessor erledigt sämtliche Rechenarbeit.;Die Leistungsfähigkeit bestimmt die Geschwindigkeit des Computers.;Der Prozessor wird nie heiß und muss nicht gekühlt werden.;3
+Netzteil: Wähle die falsche Aussage aus.;Das Netzteil versorgt den Computer mit Strom.;Die Leistung des Netzteils muss zum Energieverbrauch passen.;Das Netzteil verbindet den Computer mit den Internet.;Die Leistung des Netzteils wird durch die Stromstärke in Ampere (A) bestimmt;2
+Festplatte: Wähle die falsche Aussage aus.;Die Festplatte ist sozusagen das Langzeitgedächtnis.;Auf der Festplatte werden Daten gespeichert, die langfristig gebraucht werden.;Das Betriebssystem ist nicht auf der Festplatte gespeichert.;Bilder, Programme und Dokumente sind auf der Festplatte gesichert.;2
+Mainboard: Wähle die falsche Aussage aus.;Das Mainboard hat keine Steckplätze.;Das Mainboard wird auch Motherboard (dt. Hauptplatine) genannt.;Über das Mainboard sind die Komponenten des Computers miteinander verbunden.;Daten werden über kleine Datenleitungen des Mainboards dorthin transportier, wo sie benötigt werden.;0
+Grafikkarte: Wähle die falsche Aussage aus.;Die Grafikkarte verbessert die Grafikleistung des Computersystems.;Die Grafikkarte bestimmt, was der Bildschirm anzeigen soll.;Leistungsstarke Grafikkarten verbrauchen wenig Strom.;Die Grafikkarte ist eine Hardwarekomponente.;2
+Welche Anschlüsse befinden sich nicht auf dem Mainboard?;Anschlüsse für USB-Geräte;Anschluss für den Monitor;Anschluss für das Internet;Es gibt generell keine Anschlüsse auf dem Mainboard.;3
+Wie heißt die zentrale Komponente eines Computers nicht?;Prozessor;CPU;Datei;Central Processing Unit;2
+Wafür steht die Abkürzung RAM?;Random Access Memory;Round All Master;Right After Morning;Random Access Mind;0
+Welche Komponente ist nicht in einem Laptop fest verbaut?;Bildschirm;Grafikkarte;Webcam;Tastatur;1
+Welches Gerät kann kein Peripheriegerät sein?;Maus;Tastatur;Kopfhörer;Prozessor;3
+Peripherie-Geräte: Wähle die richtige Aussage aus.;Peripherie-Geräte sind im Computer fest verbaut.;Peripherie-Geräte sind außen an den Computer angeschlossen.;Der Prozessor ist ein Beispiel für ein Peripherie-Gerät.;Peripherie leitet sich aus dem Wort Prärie ab.;1
+An diesem Anschluss kannst du ein Mikrofon anschließen.;XLR;HDMI;Ethernet;VGA;0
+Welcher Anschluss eignet sich nicht, um einen Laptop mit einem Beamer zu verbinden?;HDMI;Bluetooth;WLAN;XLR;3
+Netzwerkkarte: Wähle die falsche Aussage aus.;Die Netzwerkkarten organisieren das Senden und Empfangen von Daten.;NIC (Network Interface Card) ist der englische Begriff für Netzwerkkarte.;Netzwerkkarten verbinden den Computer mit dem Netzwerk.;Netzwerkkarten sind ausschließlich fest mit der Hauptplatine verbaut.;3
+Betriebssystem: Wähle die falsche Aussage aus.;Das Betriebssystem wird beim Starten des Informatiksystems geladen.;Die meisten Betriebssysteme haben eine grafische Benutzeroberfläche.;Das Betriebssystem stellt Dienste für die Anwendungssoftware zur Verfügung.;0
+Welche Software ist kein Anwendungsprogramm;Bildbearbeitungsprogramm;Betriebssystem;Spiele;Textverarbeitungsprogramm;1
+Was ist das größte zusammengeschlossene Netzwerk?;Internet;LAN-Party;Heimnetzwerk;Intranet;0
+Welches Gerät dient nicht der Eingabe am Smartphone?;Kamera;An-/Ausschalter;Touchscreen;Lautsprecher;3
+Welches Gerät dient nicht der Ausgabe am Smartphone?;Touchscreen;Taschenlampe;Mikrofon;Lautsprecher;2
+Welches Medium ist kein Speichermedium;CD;Laserpointer;Festplatte;Magnetband;1
+Wofür steht die Abkürzung WLAN?;wireless local area network;wim loves alice network;wendy loves anton network;wide long area network;0
