@@ -294,6 +294,10 @@ Eff.:
 	Taste 'q' gedrückt: App ist beendet.
 	Sonst: keiner
 */
+func ausnahmeSituation() {
+	recover()
+}
+
 func (a *bpapp) Run() {
 	if a.laeuft {
 		return

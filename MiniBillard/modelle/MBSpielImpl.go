@@ -28,6 +28,7 @@ type mbspiel struct {
 	spielzeit    time.Duration
 	countdown    Countdown
 	zeitlupe     uint64
+	//schloss      sync.Mutex
 }
 
 func NewMini9BallSpiel(br, hö, ra uint16) *mbspiel {
