@@ -210,13 +210,13 @@ func (a *bpapp) quizUmschalterFunktion() {
 		a.billard.Stoppe()
 		a.spieltisch.Ausblenden()
 		a.gameOverFenster.Einblenden() // Hier ist Ende; man muss ein neues Spiel starten ...
-	} else if a.spieltisch.IstAktiv() && a.billard.GibStrafpunkte() > a.billard.GibTreffer() {
+	} else if a.spieltisch.IstAktiv() && a.billard.GibStrafpunkte() > a.billard.GibTreffer()+3 {
 		// stoppe die Zeit und gehe zum Quizmodus
 		a.billard.Stoppe()
 		a.spieltisch.Ausblenden()
 		a.quiz.NaechsteFrage()
 		a.quizFenster.Einblenden()
-	} else if a.quizFenster.IstAktiv() && a.billard.GibStrafpunkte() <= a.billard.GibTreffer() {
+	} else if a.quizFenster.IstAktiv() && (a.billard.GibStrafpunkte() == 0 || a.billard.GibStrafpunkte() < a.billard.GibTreffer()) {
 		// zurück zum Spielmodus
 		a.quizFenster.Ausblenden()
 		a.billard.Starte()
@@ -251,6 +251,7 @@ func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16
 		// Todo: Hier werden Regeln und Maussteuerung vermischt ...
 		if a.quiz.GibAktuelleFrage().RichtigBeantwortet() {
 			a.billard.ReduziereStrafpunkte()
+			a.quiz.NaechsteFrage()
 		} else {
 			a.quiz.NaechsteFrage()
 		}
@@ -294,10 +295,6 @@ Eff.:
 	Taste 'q' gedrückt: App ist beendet.
 	Sonst: keiner
 */
-func ausnahmeSituation() {
-	recover()
-}
-
 func (a *bpapp) Run() {
 	if a.laeuft {
 		return
@@ -337,10 +334,8 @@ func (a *bpapp) Run() {
 			case 'l': // Fenster-Layout anzeigen (Testzwecke)
 				a.renderer.LayoutAnAus()
 			case 't': // Spiel testen
-				a.billard.Stoppe()
 				a.billard.SetzeRestzeit(10 * time.Second)
 				a.billard.SetzeKugelnTest()
-				a.billard.Starte()
 			case 'q':
 				a.Quit()
 				return
@@ -376,5 +371,5 @@ func (a *bpapp) Quit() {
 // ####### der Startpunkt ##################################################
 func main() {
 	// Die gewünschte Bildbreite in Pixeln wird übergeben
-	NewBPApp(1440).Run() // läuft bis Spiel beendet wird
+	NewBPApp(1024).Run() // läuft bis Spiel beendet wird
 }

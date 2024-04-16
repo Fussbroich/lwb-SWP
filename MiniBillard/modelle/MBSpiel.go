@@ -20,7 +20,8 @@ type MiniBillardSpiel interface {
 	GibTaschen() []MBTasche
 	GibKugeln() []MBKugel
 	GibAktiveKugeln() []MBKugel
-	Einlochen(MBKugel)
+	NotiereBerührt(MBKugel, MBKugel)
+	NotiereEingelocht(MBKugel)
 	GibEingelochteKugeln() []MBKugel
 	GibSpielkugel() MBKugel
 	SetzeKugelnTest()

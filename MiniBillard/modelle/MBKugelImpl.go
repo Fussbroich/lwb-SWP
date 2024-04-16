@@ -34,7 +34,7 @@ func (k *mbkugel) BewegenIn(s MiniBillardSpiel) {
 	// prüfe Kollisionen
 	for _, k2 := range s.GibKugeln() {
 		if (k != k2) && !k2.IstEingelocht() {
-			k.pruefeKugelKollision(k2)
+			k.pruefeKugelKollisionIn(s, k2)
 		}
 	}
 	// setze kollidierte zurück
@@ -55,7 +55,7 @@ func (k *mbkugel) BewegenIn(s MiniBillardSpiel) {
 		if t.GibPos().Minus(k.GibPos()).Betrag() < t.GibRadius() {
 			klaenge.BallInPocketSound().Play()
 			k.eingelocht = true
-			s.Einlochen(k)
+			s.NotiereEingelocht(k)
 			k.SetzeV(hilf.V2(0, 0))
 			break
 		}
@@ -98,11 +98,8 @@ func (k *mbkugel) pruefeBandenKollision(laenge, breite float64) {
 	}
 }
 
-func (k1 *mbkugel) pruefeKugelKollision(k2 MBKugel) {
+func (k1 *mbkugel) pruefeKugelKollisionIn(s MiniBillardSpiel, k2 MBKugel) {
 	if k1.istKollMit == k2 {
-		//if (k1.wert == 7 && k2.GibWert() == 2) || (k1.wert == 2 && k2.GibWert() == 7) {
-		//	fmt.Printf("schon geprüft: %d->%d\n", k1.wert, k2.GibWert())
-		//}
 		return
 	}
 
@@ -117,12 +114,8 @@ func (k1 *mbkugel) pruefeKugelKollision(k2 MBKugel) {
 	}
 
 	// Kugeln überlappen!
-	//	TODO: darf nicht sein - darf zumindest nicht so bleiben
+	// TODO: darf nicht sein
 	überlappen := distAkt.Betrag() < k1.r+k2.GibRadius()
-	//if überlappen {
-	//if (k1.wert == 7 && k2.GibWert() == 2) || (k1.wert == 2 && k2.GibWert() == 7) {
-	//	fmt.Printf("   --> überlappen um %04.1f\n", k1.r+k2.GibRadius()-distAkt.Betrag())
-	//}
 
 	// die Stoßnormale geht durch die Mittelpunkte der Kugeln
 	n12 := distPre.Normiert()
@@ -150,6 +143,7 @@ func (k1 *mbkugel) pruefeKugelKollision(k2 MBKugel) {
 	k1.SetzeV(u1)
 	k2.SetzeV(u2)
 	k1.istKollMit = k2
+	s.NotiereBerührt(k1, k2)
 	k2.SetzeKollidiertMit(k1)
 }
 

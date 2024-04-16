@@ -2,6 +2,7 @@ package modelle
 
 import (
 	"math/rand"
+	"sync"
 	"time"
 
 	"../hilf"
@@ -16,6 +17,8 @@ type mbspiel struct {
 	origKugeln   []MBKugel
 	vorigeKugeln []MBKugel
 	spielkugel   MBKugel
+	angespielte  MBKugel
+	angestossen  bool
 	stossricht   hilf.Vec2
 	stosskraft   float64
 	taschen      []MBTasche
@@ -28,7 +31,7 @@ type mbspiel struct {
 	spielzeit    time.Duration
 	countdown    Countdown
 	zeitlupe     uint64
-	//schloss      sync.Mutex
+	mutex        sync.Mutex
 }
 
 func NewMini9BallSpiel(br, hö, ra uint16) *mbspiel {
@@ -53,12 +56,27 @@ func NewMini9BallSpiel(br, hö, ra uint16) *mbspiel {
 }
 
 func (sp *mbspiel) regeln9Ball() {
+	// Kugeln stehen still nach Anstoss
+	// Spielkugel einlochen ist ein Foul
 	if sp.spielkugel.IstEingelocht() {
 		sp.strafPunkte++
-		sp.StossWiederholen()
 		return
 	}
-	//wertZuletzt := sp.eingelochte[len(sp.eingelochte)]
+	// gar keine Kugel anspielen ist ein Foul
+	if sp.angespielte == nil {
+		sp.strafPunkte++
+		return
+	}
+	// gar keine versenken ist ein Foul
+	var anzVor int
+	for _, k := range sp.vorigeKugeln {
+		if !k.IstEingelocht() {
+			anzVor++
+		}
+	}
+	if anzVor == len(sp.GibAktiveKugeln()) {
+		sp.strafPunkte++
+	}
 }
 
 // ######## ein paar Hilfsfunktionen #########################################
@@ -70,12 +88,11 @@ func (s *mbspiel) setzeTaschen(t ...MBTasche) {
 func (s *mbspiel) setzeKugeln(k ...MBKugel) {
 	s.kugeln = []MBKugel{}
 	for _, k := range k {
-		k.Stop()
 		s.kugeln = append(s.kugeln, k.GibKopie())
 	}
 	s.spielkugel = s.kugeln[0]
 
-	// sichere den Zustand vor dem Anstoß
+	// sichere den Zustand vor dem Break
 	s.origKugeln = []MBKugel{}
 	for _, k := range s.kugeln {
 		s.origKugeln = append(s.origKugeln, k.GibKopie())
@@ -138,14 +155,27 @@ func (s *mbspiel) KugelSatz9Ball() []MBKugel {
 	}
 }
 
-// ######## die Lebens- und Pause-Methode ###########################################################
-func (s *mbspiel) SetzeRegeln(f func()) {
-	s.regelPruefer = f
+func (s *mbspiel) GibGroesse() (float64, float64) { return s.breite, s.hoehe }
+
+func (s *mbspiel) GibTaschen() []MBTasche { return s.taschen }
+
+func (s *mbspiel) GibTreffer() uint8 { return uint8(len(s.eingelochte)) }
+
+func (s *mbspiel) GibStrafpunkte() uint8 { return s.strafPunkte }
+
+func (s *mbspiel) ReduziereStrafpunkte() {
+	s.mutex.Lock()
+	if s.strafPunkte > 0 {
+		s.strafPunkte--
+	}
+	s.mutex.Unlock()
 }
 
+// ######## die Lebens- und Pause-Methode ###########################################################
 func (s *mbspiel) Starte() {
 	// Kann zwischendrin gestoppt (Pause) und wieder gestartet werden ...
 	s.startzeit = time.Now()
+	s.mutex.Lock()
 	s.stosskraft = 5
 	if s.updater == nil {
 		s.updater = hilf.NewRoutine("Spiel-Logik",
@@ -170,12 +200,19 @@ func (s *mbspiel) Starte() {
 					}
 				}
 				s.stillstand = still
-				// prüfe Regeln
-				if s.regelPruefer != nil {
-					s.regelPruefer()
+				// prüfe Regeln, nach Stillstand
+				if s.angestossen && s.stillstand {
+					s.angestossen = false
+					if s.regelPruefer != nil {
+						s.regelPruefer()
+					}
+					if s.spielkugel.IstEingelocht() {
+						s.StossWiederholen()
+					}
 				}
 			})
 	}
+	s.mutex.Unlock()
 	// Starte den updater.
 	s.countdown.Weiter()
 	// ein konstanter Takt regelt die "Geschwindigkeit"
@@ -224,13 +261,19 @@ func (s *mbspiel) IstZeitlupe() bool { return s.zeitlupe > 1 }
 // ######## die Methoden zum Stoßen #################################################
 
 func (s *mbspiel) GibVStoss() hilf.Vec2 {
+	s.mutex.Lock()
 	if s.stossricht == nil {
 		s.stossricht = hilf.V2null()
 	}
+	s.mutex.Unlock()
 	return s.stossricht.Mal(s.stosskraft)
 }
 
-func (s *mbspiel) SetzeStossRichtung(v hilf.Vec2) { s.stossricht = v.Normiert() }
+func (s *mbspiel) SetzeStossRichtung(v hilf.Vec2) {
+	s.mutex.Lock()
+	s.stossricht = v.Normiert()
+	s.mutex.Unlock()
+}
 
 func (s *mbspiel) SetzeStosskraft(v float64) {
 	// Die "Geschwindigkeit/Stärke" ist auf 12 (m/s) begrenzt
@@ -239,7 +282,9 @@ func (s *mbspiel) SetzeStosskraft(v float64) {
 	} else if v < 0 {
 		v = 0
 	}
+	s.mutex.Lock()
 	s.stosskraft = v
+	s.mutex.Unlock()
 }
 
 func (s *mbspiel) Stosse() {
@@ -247,6 +292,7 @@ func (s *mbspiel) Stosse() {
 		println("Fehler: Stoßen während laufender Bewegungen ist verboten!")
 		return
 	}
+	s.mutex.Lock()
 	if s.stossricht == nil {
 		s.stossricht = hilf.V2null()
 	}
@@ -255,13 +301,16 @@ func (s *mbspiel) Stosse() {
 	for _, k := range s.kugeln {
 		s.vorigeKugeln = append(s.vorigeKugeln, k.GibKopie()) // Kopien stehen still
 	}
+	// stoßen
+	s.angestossen = true
+	s.angespielte = nil
 	if !(s.stosskraft == 0) {
-		// stoße
 		s.spielkugel.SetzeV(s.stossricht.Mal(s.stosskraft))
 		s.stosskraft = 5
 		s.stillstand = false
 		klaenge.CueHitsBallSound()
 	}
+	s.mutex.Unlock()
 }
 
 // ######## die übrigen Methoden ####################################################
@@ -277,12 +326,15 @@ func (s *mbspiel) StarteCountdown() { s.countdown.Weiter() }
 func (s *mbspiel) GibRestzeit() time.Duration { return s.countdown.GibRestzeit() }
 
 func (s *mbspiel) Reset() {
+	s.mutex.Lock()
 	s.kugeln = s.KugelSatz9Ball() // neue Kugeln, die alle still stehen
 	s.spielkugel = s.kugeln[0]
 	s.eingelochte = []MBKugel{}
+	s.angestossen = false
 	s.strafPunkte = 0
 	s.stillstand = true
 	s.countdown.Setze(s.spielzeit)
+	s.mutex.Unlock()
 }
 
 func (s *mbspiel) StossWiederholen() {
@@ -295,6 +347,7 @@ func (s *mbspiel) StossWiederholen() {
 		s.kugeln = append(s.kugeln, k.GibKopie()) // Kopien stehen still
 	}
 	s.spielkugel = s.kugeln[0]
+	s.angestossen = false
 	s.stillstand = true
 }
 
@@ -305,44 +358,43 @@ func (s *mbspiel) GibSpielkugel() MBKugel { return s.spielkugel }
 func (s *mbspiel) GibAktiveKugeln() []MBKugel {
 	ks := []MBKugel{}
 	for _, k := range s.kugeln {
-		if k.IstEingelocht() {
-			continue
+		if !k.IstEingelocht() {
+			ks = append(ks, k)
+
 		}
-		ks = append(ks, k)
 	}
 	return ks
 }
 
-func (s *mbspiel) Einlochen(k MBKugel) {
+func (s *mbspiel) IstStillstand() bool { return s.stillstand }
+
+// eine kleine Buchhaltung für Berührungen (z.B. die angespielte Kugel)
+func (s *mbspiel) NotiereBerührt(k1 MBKugel, k2 MBKugel) {
+	s.mutex.Lock()
+	if s.angespielte == nil {
+		if k1 == s.spielkugel {
+			s.angespielte = k2
+		} else if k2 == s.spielkugel {
+			s.angespielte = k1
+		}
+		println(s.angespielte.GibWert(), "wurde angespielt")
+	}
+	s.mutex.Unlock()
+}
+
+// eine kleine Buchhaltung für eingelochte Kugeln
+func (s *mbspiel) NotiereEingelocht(k MBKugel) {
 	if k == s.spielkugel {
 		return
 	}
-	//TODO: Mengen benutzen
+	// eingelochte ein Mal der Reihe nach speichern
+	// Todo: Hier eine Menge nehmen
 	for _, ke := range s.eingelochte {
 		if k.GibWert() == ke.GibWert() {
 			return
 		}
 	}
 	s.eingelochte = append(s.eingelochte, k)
-	if s.regelPruefer != nil {
-		s.regelPruefer()
-	}
 }
 
 func (s *mbspiel) GibEingelochteKugeln() []MBKugel { return s.eingelochte }
-
-func (s *mbspiel) GibGroesse() (float64, float64) { return s.breite, s.hoehe }
-
-func (s *mbspiel) GibTaschen() []MBTasche { return s.taschen }
-
-func (s *mbspiel) IstStillstand() bool { return s.stillstand }
-
-func (s *mbspiel) GibTreffer() uint8 { return uint8(len(s.eingelochte)) }
-
-func (s *mbspiel) GibStrafpunkte() uint8 { return s.strafPunkte }
-
-func (s *mbspiel) ReduziereStrafpunkte() {
-	if s.strafPunkte > 0 {
-		s.strafPunkte--
-	}
-}
