@@ -8,22 +8,33 @@ type quizfenster struct {
 	quiz      modelle.Quiz
 	frage     Widget
 	antworten [4]Widget
+	richtig   func()
+	falsch    func()
 	widget
 }
 
 // TextOverlay zeigt den Hintergrund
-func NewQuizFenster(quiz modelle.Quiz) *quizfenster {
-	return &quizfenster{quiz: quiz, widget: *NewFenster()}
+func NewQuizFenster(quiz modelle.Quiz, richtig func(), falsch func()) *quizfenster {
+	return &quizfenster{quiz: quiz, richtig: richtig, falsch: falsch, widget: *NewFenster()}
 }
 
 func (f *quizfenster) MausklickBei(mausX, mausY uint16) {
 	if !f.IstAktiv() {
 		return
 	}
+	var richtig bool
 	for i, a := range f.antworten {
 		if a.ImFenster(mausX, mausY) {
-			f.quiz.GibAktuelleFrage().Gewaehlt(i)
+			if f.quiz.GibAktuelleFrage().IstRichtig(i) {
+				richtig = true
+				break
+			}
 		}
+	}
+	if richtig {
+		f.richtig()
+	} else {
+		f.falsch()
 	}
 }
 

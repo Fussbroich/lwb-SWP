@@ -26,9 +26,11 @@ func (f *text_overlay) Zeichne() {
 	schreiber.Schreibe((f.stopX-f.startX)/3, (f.stopY-f.startY)/4, f.text)
 }
 
-// InfoText ist immer Transparent
+// InfoText hat immer einen transparenten Hintergrund.
 func NewInfoText(t string) *infotext {
-	return &infotext{text: t, widget: widget{hg: Weiss(), trans: 255}}
+	w := *NewFenster()
+	w.SetzeTransparenz(255)
+	return &infotext{text: t, widget: w}
 }
 
 func (f *infotext) Zeichne() {

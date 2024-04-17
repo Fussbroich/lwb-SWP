@@ -133,6 +133,27 @@ func (f *widget) MausklickBei(x, y uint16) {
 	fmt.Println("Unbeachteter Mausklick bei", x, y)
 }
 
+func (f *widget) MausBei(x, y uint16) {
+	if !f.IstAktiv() {
+		return
+	}
+	fmt.Println("Unbeachtete Mausbewegung bei", x, y)
+}
+
+func (f *widget) MausScrolltHoch() {
+	if !f.IstAktiv() {
+		return
+	}
+	fmt.Println("Unbeachtetes Mausscrollen")
+}
+
+func (f *widget) MausScrolltRunter() {
+	if !f.IstAktiv() {
+		return
+	}
+	fmt.Println("Unbeachtetes Mausscrollen")
+}
+
 // ######## Hilfsmethoden zum Zeichnen ############################################################
 
 func (f *widget) stiftfarbe(c Farbe) {

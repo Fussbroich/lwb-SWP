@@ -34,10 +34,13 @@ type mbspiel struct {
 }
 
 // Ein Pool-Spiel ohne Kugeln
-func newPoolSpiel(br, hö, ra uint16) *mbspiel {
-	// Pool-Tisch:  2540 mm × 1270 mm (2:1)
+func newPoolSpiel(br, hö uint16) *mbspiel {
+	// echter Pool-Tisch:  2540 mm × 1270 mm (2:1)
+	// Der Aufrufer darf sich hier auch ein anderes Seitenverhältnis wünschen.
 	// Pool-Kugeln: 57,2 mm
-	var breite, höhe, rK float64 = float64(br), float64(hö), float64(ra)
+	// Radius der Kugeln
+	var breite, höhe float64 = float64(br), float64(hö)
+	var rK float64 = breite * 57.2 / 2540
 	sp := &mbspiel{breite: breite, hoehe: höhe, rk: rK, stossricht: hilf.V2null()}
 
 	// Radien der Taschen sind groß, damit die Kugeln auch reingehen
@@ -66,8 +69,8 @@ func (s *mbspiel) SetzeKugeln9Ball() {
 	s.setzeKugeln(s.kugelSatz9Ball()...)
 }
 
-func NewMini9BallSpiel(br, hö, ra uint16) *mbspiel {
-	sp := newPoolSpiel(br, hö, ra)
+func NewMini9BallSpiel(br, hö uint16) *mbspiel {
+	sp := newPoolSpiel(br, hö)
 	sp.setzeKugeln(sp.kugelSatz9Ball()...)
 	sp.neusetzenSpielkugel()
 	sp.spielzeit = 4 * time.Minute
@@ -130,8 +133,8 @@ func (sp *mbspiel) isFoul9Ball() bool {
 }
 
 // Ein Spiel mit 3 Kugeln
-func NewMini3BallSpiel(br, hö, ra uint16) *mbspiel {
-	sp := newPoolSpiel(br, hö, ra)
+func NewMini3BallSpiel(br, hö uint16) *mbspiel {
+	sp := newPoolSpiel(br, hö)
 	sp.setzeKugeln(sp.kugelSatz3er()...)
 	sp.neusetzenSpielkugel()
 	sp.spielzeit = 90 * time.Second
@@ -204,7 +207,7 @@ func (s *mbspiel) Starte() {
 	// Kann zwischendrin gestoppt (Pause) und wieder gestartet werden ...
 	if s.sollRate == 0 {
 		// Todo Simulation ist derzeit von der Auflösung und der Rate abhängig
-		s.sollRate = 83
+		s.sollRate = uint64(s.breite/14 + 0.5)
 	}
 	if s.countdown == nil {
 		if s.spielzeit == 0 {
@@ -312,9 +315,9 @@ func (s *mbspiel) SetzeStossRichtung(v hilf.Vec2) {
 }
 
 func (s *mbspiel) SetzeStosskraft(v float64) {
-	// Die "Geschwindigkeit/Stärke" ist auf 12 (m/s) begrenzt
-	if v > 12 {
-		v = 12
+	// Die "Geschwindigkeit/Stärke" ist auf 14 (m/s) begrenzt
+	if v > 14 {
+		v = 14
 	} else if v < 0 {
 		v = 0
 	}

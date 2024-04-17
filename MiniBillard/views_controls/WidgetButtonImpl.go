@@ -12,9 +12,7 @@ func NewButton(t string, action func()) *button {
 }
 
 func (f *button) MausklickBei(mausX, mausY uint16) {
-	if f.ImFenster(mausX, mausY) {
-		f.action()
-	}
+	f.action()
 }
 
 func (f *button) Zeichne() {

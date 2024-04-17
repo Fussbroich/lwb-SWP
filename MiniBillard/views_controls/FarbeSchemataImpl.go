@@ -11,6 +11,9 @@ type schema struct {
 var (
 	standardfarbschema schema = schema{
 		farben: map[string]Farbe{
+			"rot":         Rot(),
+			"weiss":       Weiss(),
+			"schwarz":     Schwarz(),
 			"hintergrund": F(225, 232, 236),
 			"text":        F(1, 88, 122),
 			"anzeige":     Weiss(),
@@ -26,6 +29,9 @@ var (
 			"quiz_a3":     F(255, 0, 255)}}
 	darkfarbschema = schema{
 		farben: map[string]Farbe{
+			"rot":         Rot(),
+			"weiss":       Weiss(),
+			"schwarz":     Schwarz(),
 			"hintergrund": F(25, 32, 36),
 			"text":        F(1, 88, 122),
 			"anzeige":     F(100, 100, 100),
@@ -61,6 +67,9 @@ func gibFarbe(name string) Farbe {
 	return farbschema.GibFarbe(name)
 }
 
+func FRot() string         { return "rot" }
+func FWeiss() string       { return "weiss" }
+func FSchwarz() string     { return "schwarz" }
 func Fhintergrund() string { return "hintergrund" }
 func Ftext() string        { return "text" }
 func Fanzeige() string     { return "anzeige" }

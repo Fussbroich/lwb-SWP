@@ -19,7 +19,3 @@ func (q *quiz) GibAktuelleFrage() QuizFrage {
 	}
 	return q.aktuelle
 }
-
-func (q *quiz) Antwort(i int) {
-	q.aktuelle.Gewaehlt(i)
-}

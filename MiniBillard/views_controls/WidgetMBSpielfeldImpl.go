@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gfx"
 
+	"../hilf"
 	"../modelle"
 )
 
@@ -19,6 +20,53 @@ type miniBSpielfeld struct {
 
 func NewMBSpieltisch(billard modelle.MiniBillardSpiel) *miniBSpielfeld {
 	return &miniBSpielfeld{billard: billard, widget: *NewFenster()}
+}
+
+// stoßen
+func (f *miniBSpielfeld) MausklickBei(mausX, mausY uint16) {
+	if !f.IstAktiv() {
+		return
+	}
+	if !f.billard.Laeuft() || !f.billard.IstStillstand() {
+		return
+	}
+	f.billard.Stosse()
+}
+
+// zielen
+func (f *miniBSpielfeld) MausBei(mausX, mausY uint16) {
+	if !f.IstAktiv() {
+		return
+	}
+	if !f.billard.Laeuft() || !f.billard.IstStillstand() {
+		return
+	}
+	xs, ys := f.GibStartkoordinaten()
+	f.billard.SetzeStossRichtung(hilf.V2(float64(mausX), float64(mausY)).
+		Minus(f.billard.GibSpielkugel().GibPos()).
+		Minus(hilf.V2(float64(xs), float64(ys))))
+}
+
+// stärker
+func (f *miniBSpielfeld) MausScrolltHoch() {
+	if !f.IstAktiv() {
+		return
+	}
+	if !f.billard.Laeuft() || !f.billard.IstStillstand() {
+		return
+	}
+	f.billard.SetzeStosskraft(f.billard.GibVStoss().Betrag() + 1)
+}
+
+// schwächer
+func (f *miniBSpielfeld) MausScrolltRunter() {
+	if !f.IstAktiv() {
+		return
+	}
+	if !f.billard.Laeuft() || !f.billard.IstStillstand() {
+		return
+	}
+	f.billard.SetzeStosskraft(f.billard.GibVStoss().Betrag() - 1)
 }
 
 func (f *miniBSpielfeld) zeichneDiamant(x, y, d uint16) {

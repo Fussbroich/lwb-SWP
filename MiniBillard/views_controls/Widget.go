@@ -19,6 +19,9 @@ type Widget interface {
 	Einblenden()
 	Ausblenden()
 	// Maussteuerung
-	ImFenster(mausX, mausY uint16) bool
-	MausklickBei(mausX, mausY uint16)
+	ImFenster(uint16, uint16) bool
+	MausklickBei(uint16, uint16)
+	MausBei(uint16, uint16)
+	MausScrolltHoch()
+	MausScrolltRunter()
 }
