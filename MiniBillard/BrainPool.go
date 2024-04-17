@@ -197,20 +197,20 @@ func (a *bpapp) neuesSpielStarten() {
 }
 
 /*
-Zweck: die restliche Zustands-Umschaltung (wird als go-Routine ausgelagert)
+Zweck: die Zustands-Umschaltung zwischen Quiz und Spiel(wird als go-Routine ausgelagert)
 Vor.: keine
 Eff.:
 
-	Falls Spielzeit abgelaufen war: Spiel ist beendet.
-	Falls Anzahl Fouls > Anzahl Treffer: Quiz ist aktiviert.
-	Falls Anzahl Fouls <= Anzahl Treffer: Spiel ist aktiviert
+	Falls Spielzeit abgelaufen war: Spiel wird beendet.
+	Falls Anzahl Fouls >> Anzahl Treffer: Quiz ist aktiviert.
+	Falls Anzahl Fouls < Anzahl Treffer oder 0: Spiel ist aktiviert
 */
 func (a *bpapp) quizUmschalterFunktion() {
 	if a.spieltisch.IstAktiv() && a.billard.GibRestzeit() == 0 {
 		a.billard.Stoppe()
 		a.spieltisch.Ausblenden()
 		a.gameOverFenster.Einblenden() // Hier ist Ende; man muss ein neues Spiel starten ...
-	} else if a.spieltisch.IstAktiv() && a.billard.GibStrafpunkte() > a.billard.GibTreffer()+3 {
+	} else if a.spieltisch.IstAktiv() && a.billard.GibStrafpunkte() > a.billard.GibTreffer()+2 {
 		// stoppe die Zeit und gehe zum Quizmodus
 		a.billard.Stoppe()
 		a.spieltisch.Ausblenden()
@@ -310,7 +310,6 @@ func (a *bpapp) Run() {
 	a.regelWaechter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion) // go-Routine
 	a.regelWaechter.StarteRate(5)                                             // go-Routine
 	a.geraeusche.StarteLoop()                                                 // go-Routine
-	a.musik.StarteLoop()                                                      // go-Routine
 	a.laeuft = true
 
 	// ####### der Tastatur-Loop darf hier existieren ####################
@@ -325,6 +324,8 @@ func (a *bpapp) Run() {
 				a.billard.PauseAnAus()
 			case 'c': // Dunkle Umgebung
 				a.renderer.DarkmodeAnAus()
+			case 'm':
+				a.musik.StarteLoop() // go-Routine
 			case 'h': // Hilfe an-aus
 				a.hilfeAnAus()
 			case 'r': // neues Spiel
@@ -333,9 +334,15 @@ func (a *bpapp) Run() {
 				a.billard.ZeitlupeAnAus()
 			case 'l': // Fenster-Layout anzeigen (Testzwecke)
 				a.renderer.LayoutAnAus()
-			case 't': // Spiel testen
+			case '1': // Spiel testen
 				a.billard.SetzeRestzeit(10 * time.Second)
-				a.billard.SetzeKugelnTest()
+				a.billard.SetzeKugeln1BallTest()
+			case '3': // Spiel testen
+				a.billard.SetzeSpielzeit(90 * time.Second)
+				a.billard.SetzeKugeln3Ball()
+			case '9': // Spiel testen
+				a.billard.SetzeSpielzeit(4 * time.Minute)
+				a.billard.SetzeKugeln9Ball()
 			case 'q':
 				a.Quit()
 				return

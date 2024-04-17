@@ -24,16 +24,18 @@ type MiniBillardSpiel interface {
 	NotiereEingelocht(MBKugel)
 	GibEingelochteKugeln() []MBKugel
 	GibSpielkugel() MBKugel
-	SetzeKugelnTest()
-	SetzeKugeln3er()
-	SetzeKugeln9Ball()
+	SetzeKugeln1BallTest() // Testzwecke
+	SetzeKugeln3Ball()     // Testzwecke
+	SetzeKugeln9Ball()     // Testzwecke
 	GibVStoss() hilf.Vec2
 	SetzeStossRichtung(hilf.Vec2)
 	SetzeStosskraft(float64)
-	SetzeRestzeit(time.Duration)
+	SetzeSpielzeit(time.Duration)
+	SetzeRestzeit(time.Duration) // Testzwecke
 	GibRestzeit() time.Duration
 	GibTreffer() uint8
 	GibStrafpunkte() uint8
+	AlleEingelocht() bool
 	ReduziereStrafpunkte()
 	GibGroesse() (float64, float64)
 }

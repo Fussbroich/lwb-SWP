@@ -23,8 +23,9 @@ func NewKugel(pos hilf.Vec2, r float64, wert uint8) *mbkugel {
 func (k *mbkugel) GibKopie() MBKugel {
 	return &mbkugel{
 		pos: k.pos, v: hilf.V2(0, 0),
-		r:    k.r,
-		wert: k.wert}
+		r:          k.r,
+		wert:       k.wert,
+		eingelocht: k.eingelocht}
 }
 
 func (k *mbkugel) BewegenIn(s MiniBillardSpiel) {
