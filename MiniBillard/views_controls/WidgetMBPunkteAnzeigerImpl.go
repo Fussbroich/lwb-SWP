@@ -38,16 +38,20 @@ func (f *miniBSpielinfo) Zeichne() {
 	f.stiftfarbe(f.hg)
 	f.vollKreisGFX(ra, ra, ra)
 	f.vollRechteckGFX(ra, 0, xSBalken-f.startX-ra, höhe)
-	f.stiftfarbe(f.vg)
 
+	f.stiftfarbe(f.vg)
 	schreiber.Schreibe(f.startX+2*ra+d, f.startY+d, "Treffer")
 	schreiber.Schreibe(f.startX+2*ra+d, f.startY+zeilenhöhe+d, "Fouls")
 
 	// zeichne beide Fortschritts-Balken
-	f.stiftfarbe(gibFarbe(FanzTreffer())) // Treffer gelb
+	f.stiftfarbe(gibFarbe(FanzTreffer())) // Treffer
 	gfx.Vollrechteck(xSBalken, f.startY+1, bBalken*uint16(tr)/uint16(anzKugeln), zeilenhöhe-2)
-	f.stiftfarbe(gibFarbe(FanzFouls())) // Fouls in Warnrot
+	f.stiftfarbe(gibFarbe(FanzFouls())) // Fouls
 	gfx.Vollrechteck(xSBalken, f.startY+zeilenhöhe+1, bBalken*uint16(st)/uint16(anzKugeln), zeilenhöhe-2)
+	f.stiftfarbe(gibFarbe(FanzFouls()))
+	schreiber.Schreibe(xSBalken+d, f.startY+d, fmt.Sprint(tr))
+	f.stiftfarbe(gibFarbe(FanzTreffer()))
+	schreiber.Schreibe(xSBalken+d, f.startY+zeilenhöhe+d, fmt.Sprint(st))
 
 	// Kreis links zeigt Treffer an
 	schreiber.SetzeSchriftgroesse(int(ra * 4 / 3))
