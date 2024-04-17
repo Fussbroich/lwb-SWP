@@ -425,7 +425,6 @@ func (s *mbspiel) NotiereBerührt(k1 MBKugel, k2 MBKugel) {
 		} else if k2 == s.spielkugel {
 			s.angespielte = k1
 		}
-		println(s.angespielte.GibWert(), "wurde angespielt")
 	}
 }
 
