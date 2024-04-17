@@ -207,7 +207,7 @@ func (s *mbspiel) Starte() {
 	// Kann zwischendrin gestoppt (Pause) und wieder gestartet werden ...
 	if s.sollRate == 0 {
 		// Todo Simulation ist derzeit von der Auflösung und der Rate abhängig
-		s.sollRate = uint64(s.breite/14 + 0.5)
+		s.sollRate = 83
 	}
 	if s.countdown == nil {
 		if s.spielzeit == 0 {

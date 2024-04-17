@@ -63,8 +63,6 @@ func (k *mbkugel) BewegenIn(s MiniBillardSpiel) {
 	}
 }
 
-func (k *mbkugel) IstEingelocht() bool { return k.eingelocht }
-
 func (k *mbkugel) pruefeBandenKollision(laenge, breite float64) {
 	if k.eingelocht {
 		return
@@ -155,6 +153,8 @@ func (k1 *mbkugel) SetzeKollidiertMit(k2 MBKugel) {
 func (k1 *mbkugel) SetzeKollidiertZurueck() {
 	k1.istKollMit = nil
 }
+
+func (k *mbkugel) IstEingelocht() bool { return k.eingelocht }
 
 func (k *mbkugel) GibV() hilf.Vec2 {
 	return k.v

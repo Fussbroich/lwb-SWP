@@ -22,11 +22,11 @@ var (
 			"diamanten":   F(180, 230, 255),
 			"anz_treffer": F(243, 186, 0),
 			"anz_fouls":   F(219, 80, 0),
-			"quiz":        Weiss(),
-			"quiz_a0":     F(155, 155, 0),
-			"quiz_a1":     F(255, 255, 0),
-			"quiz_a2":     F(0, 255, 255),
-			"quiz_a3":     F(255, 0, 255)}}
+			"quiz":        F(225, 232, 236),
+			"quiz_a0":     F(243, 186, 0),
+			"quiz_a1":     F(92, 179, 193),
+			"quiz_a2":     F(92, 179, 193),
+			"quiz_a3":     F(243, 186, 0)}}
 	darkfarbschema = schema{
 		farben: map[string]Farbe{
 			"rot":         Rot(),
@@ -34,17 +34,17 @@ var (
 			"schwarz":     Schwarz(),
 			"hintergrund": F(25, 32, 36),
 			"text":        F(1, 88, 122),
-			"anzeige":     F(100, 100, 100),
+			"anzeige":     F(25, 32, 36),
 			"infos":       F(140, 155, 155),
 			"billardtuch": F(92, 179, 193),
 			"diamanten":   F(180, 230, 255),
 			"anz_treffer": F(143, 86, 0),
 			"anz_fouls":   F(119, 40, 0),
-			"quiz":        Weiss(),
-			"quiz_a0":     F(155, 155, 0),
-			"quiz_a1":     F(255, 255, 0),
-			"quiz_a2":     F(0, 255, 255),
-			"quiz_a3":     F(255, 0, 255)}}
+			"quiz":        F(25, 32, 36),
+			"quiz_a0":     F(243, 186, 0),
+			"quiz_a1":     F(92, 179, 193),
+			"quiz_a2":     F(92, 179, 193),
+			"quiz_a3":     F(243, 186, 0)}}
 	farbschema *schema = &standardfarbschema
 )
 

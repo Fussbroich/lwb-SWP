@@ -54,13 +54,13 @@ func (f *quizfenster) Zeichne() {
 	f.frage = NewTextBox(f.quiz.GibAktuelleFrage().GibFrage())
 	f.frage.SetzeKoordinaten(sx, sy, sx+breite, sy+höhe*3/7-d)
 	a0 := NewTextBox(f.quiz.GibAktuelleFrage().GibAntworten()[0])
-	a0.SetzeKoordinaten(sx, sy+höhe*3/7, sx+breite/2-d, sy+höhe*5/7-d)
+	a0.SetzeKoordinaten(sx, sy+höhe*3/7, sx+breite/2-d, sy+höhe*5/7-d) // oben links
 	a1 := NewTextBox(f.quiz.GibAktuelleFrage().GibAntworten()[1])
-	a1.SetzeKoordinaten(sx+breite/2+d, sy+höhe*3/7, sx+breite, sy+höhe*5/7-d)
+	a1.SetzeKoordinaten(sx+breite/2+d, sy+höhe*3/7, sx+breite, sy+höhe*5/7-d) // oben rechts
 	a2 := NewTextBox(f.quiz.GibAktuelleFrage().GibAntworten()[2])
-	a2.SetzeKoordinaten(sx, sy+höhe*5/7+d, sx+breite/2-d, sy+höhe)
+	a2.SetzeKoordinaten(sx, sy+höhe*5/7+d, sx+breite/2-d, sy+höhe) // unten links
 	a3 := NewTextBox(f.quiz.GibAktuelleFrage().GibAntworten()[3])
-	a3.SetzeKoordinaten(sx+breite/2+d, sy+höhe*5/7+d, sx+breite, sy+höhe)
+	a3.SetzeKoordinaten(sx+breite/2+d, sy+höhe*5/7+d, sx+breite, sy+höhe) // unten rechts
 
 	f.frage.SetzeFarben(Fquiz(), Ftext())
 	a0.SetzeFarben(FquizA0(), Ftext())
