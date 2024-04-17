@@ -1,4 +1,9 @@
 # lwb-SWP
  Softwarepraktikum der Lehrerweiterbildung 2024
 
-Hier wird BrainPool — das Mini-Billard für Schlaue entwickelt ...
+Hier entwickeln
+
+   Bettina Chang und
+   Thomas Schrader
+
+BrainPool — das Mini-Billard für Schlaue ...
