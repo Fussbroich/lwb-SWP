@@ -25,7 +25,7 @@ func (w *kugelZeichner) Zeichne() {
 		return
 	}
 	k := w.kugel
-	schreiber := w.liberationMonoBoldSchreiber()
+	schreiber := w.monoBoldSchreiber()
 	schreiber.SetzeSchriftgroesse(int(k.GibRadius()) - 3)
 	c := gibKugelFarbe(k.GibWert())
 	if k.GibWert() <= 8 {

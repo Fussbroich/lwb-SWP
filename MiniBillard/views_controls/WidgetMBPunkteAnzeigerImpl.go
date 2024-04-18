@@ -22,7 +22,7 @@ func (f *miniBSpielinfo) Zeichne() {
 		return
 	}
 	f.widget.Zeichne()
-	schreiber := f.liberationMonoBoldSchreiber()
+	schreiber := f.monoBoldSchreiber()
 	breite, höhe := f.GibGroesse()
 	ra := höhe / 2
 

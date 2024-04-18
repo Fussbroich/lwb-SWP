@@ -1,40 +1,13 @@
 package modelle
 
 import (
-	"encoding/csv"
-	"errors"
-	"os"
-	"path/filepath"
 	"strconv"
+
+	"../assets"
 )
 
-func assetDateipfad(filename string) (fp string) {
-	fragenDir := "MiniBillard/assets/quizfragen"
-	wd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	wdir := filepath.Dir(wd)
-	fp = filepath.Join(wdir, fragenDir, filename)
-	if _, err := os.Stat(fp); errors.Is(err, os.ErrNotExist) {
-		panic(err)
-	}
-	return
-}
-
 func quizFragenCSV(fn string) (fragen []QuizFrage) {
-	file, err := os.Open(assetDateipfad(fn))
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-	reader := csv.NewReader(file)
-	reader.Comma = ';'
-
-	rs, err := reader.ReadAll()
-	if err != nil {
-		panic(err)
-	}
+	rs := assets.GibFragenCSV(fn)
 	for _, r := range rs {
 		if len(r) != 6 {
 			panic("Falsches CSV-Format")

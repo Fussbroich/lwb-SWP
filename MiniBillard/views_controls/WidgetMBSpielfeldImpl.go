@@ -8,10 +8,6 @@ import (
 	"../modelle"
 )
 
-type MBSpielView interface {
-	Widget
-}
-
 type miniBSpielfeld struct {
 	billard       modelle.MiniBillardSpiel
 	kugelZeichner *kugelZeichner
@@ -84,7 +80,7 @@ func (f *miniBSpielfeld) Zeichne() {
 	breite, höhe := f.GibGroesse()
 	kS := f.billard.GibSpielkugel()
 	ra := kS.GibRadius()
-	schreiber := f.liberationMonoRegularSchreiber()
+	schreiber := f.monoRegularSchreiber()
 	// zeichne das Tuch
 	f.widget.Zeichne()
 

@@ -21,7 +21,7 @@ func (f *text_overlay) Zeichne() {
 	}
 	f.widget.Zeichne()
 	f.stiftfarbe(f.vg)
-	schreiber := f.liberationMonoBoldItalicSchreiber()
+	schreiber := f.monoBoldItalicSchreiber()
 	schreiber.SetzeSchriftgroesse(int(f.stopY-f.startY) / 5)
 	schreiber.Schreibe((f.stopX-f.startX)/3, (f.stopY-f.startY)/4, f.text)
 }
@@ -38,7 +38,7 @@ func (f *infotext) Zeichne() {
 	f.stiftfarbe(f.vg)
 
 	_, höhe := f.GibGroesse()
-	schreiber := f.liberationMonoBoldItalicSchreiber()
+	schreiber := f.monoBoldItalicSchreiber()
 	schreiber.SetzeSchriftgroesse(int(höhe) * 3 / 5)
 	d := (höhe - uint16(schreiber.GibSchriftgroesse())) / 2
 	schreiber.Schreibe(f.startX+d, f.startY+d, f.text)

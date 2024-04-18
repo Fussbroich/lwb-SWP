@@ -30,7 +30,7 @@ func (f *miniBRestzeit) Zeichne() {
 	}
 	f.widget.Zeichne()
 	breite, höhe := f.GibGroesse()
-	schreiber := f.liberationMonoBoldSchreiber()
+	schreiber := f.monoBoldSchreiber()
 	schreiber.SetzeSchriftgroesse(int(höhe) * 4 / 5)
 	anzeige := fmtRestzeit(f.billard.GibRestzeit())
 	dx := (breite - uint16(len(anzeige)*schreiber.GibSchriftgroesse()*3/5)) / 2

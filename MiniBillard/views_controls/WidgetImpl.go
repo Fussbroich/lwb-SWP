@@ -48,6 +48,7 @@ func (f *widget) GibGroesse() (uint16, uint16) { return f.stopX - f.startX, f.st
 
 // ########## Methoden für die Darstellung ############################################
 
+// Zeichnet einen roten Rand um das Widget herum - zu Testzwecken
 func (f *widget) ZeichneLayout() {
 	if !f.IstAktiv() {
 		return
@@ -60,6 +61,10 @@ func (f *widget) ZeichneLayout() {
 	f.transparenz(0)
 }
 
+// Zeichnet den Hintergrund und danach den Inhalt
+// Aufrufer - die den Inhalt ergänzen wollen, müssen
+// ihren Inhalt erst danach zeichnen, sonst wird
+// dieser ggf. überdeckt. Transparenz wird beachtet.
 func (f *widget) Zeichne() {
 	if !f.IstAktiv() {
 		return
@@ -81,6 +86,34 @@ func (f *widget) Zeichne() {
 	f.transparenz(0)
 }
 
+// Wie Zeichne, jedoch wird der Hintergrund etwas nach innen eingerückt.
+// Kann als Ersatz für Zeichne aufgerufen werden.
+func (f *widget) ZeichneOffset(offset uint16) {
+	if !f.IstAktiv() {
+		return
+	}
+	f.stiftfarbe(f.hg)
+	f.transparenz(f.trans)
+	br, ho := f.GibGroesse()
+	if f.eckra > 0 {
+		f.vollRechteckGFX(f.eckra, offset, br-2*f.eckra, ho-2*offset)
+		f.vollRechteckGFX(offset, f.eckra, br-2*offset, ho-2*f.eckra)
+		f.vollKreisGFX(f.eckra, f.eckra, f.eckra-offset)
+		f.vollKreisGFX(f.eckra, ho-f.eckra, f.eckra-offset)
+		f.vollKreisGFX(br-f.eckra, ho-f.eckra, f.eckra-offset)
+		f.vollKreisGFX(br-f.eckra, f.eckra, f.eckra-offset)
+	} else {
+		f.vollRechteckGFX(offset, offset, br-2*offset, ho-2*offset)
+	}
+	f.stiftfarbe(f.vg)
+	f.transparenz(0)
+}
+
+// Muss nicht aufgerufen werden, falls kein Rand erscheinen soll.
+// Todo: Teilkreise sind als Rand ungeeignet, da die Radien
+// von Gfx mit gezeichnet werden. in dem Fall muss der
+// Rand *zuerst* gezeichnet werden und der Hintergrund ohne
+// Transparenz mit Offset danach.
 func (f *widget) ZeichneRand() {
 	if !f.IstAktiv() {
 		return
@@ -93,10 +126,10 @@ func (f *widget) ZeichneRand() {
 		f.kreissektorGFX(f.eckra, ho-f.eckra, f.eckra, 180, 270)
 		f.kreissektorGFX(br-f.eckra, ho-f.eckra, f.eckra, 270, 0)
 		f.kreissektorGFX(br-f.eckra, f.eckra, f.eckra, 0, 90)
-		f.LinieGFX(f.eckra, 0, br-f.eckra, 0)
-		f.LinieGFX(f.eckra, 0, br-f.eckra, 0)
+		f.LinieGFX(0, f.eckra, 0, ho-f.eckra)
 		f.LinieGFX(f.eckra, ho, br-f.eckra, ho)
-		f.LinieGFX(f.eckra, ho, br-f.eckra, ho)
+		f.LinieGFX(br, ho-f.eckra, br, f.eckra)
+		f.LinieGFX(br-f.eckra, 0, f.eckra, 0)
 	} else {
 		f.LinieGFX(0, 0, br, 0)
 		f.LinieGFX(0, ho, br, ho)

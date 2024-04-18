@@ -11,8 +11,9 @@ type Widget interface {
 	GibGroesse() (uint16, uint16)
 	// darstellen
 	Zeichne()
+	ZeichneOffset(uint16) // für besondere Fälle
 	ZeichneRand()
-	ZeichneLayout()
+	ZeichneLayout() // Testzwecke
 	// aktivieren und deaktivieren
 	IstAktiv() bool
 	DarstellenAnAus()

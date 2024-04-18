@@ -17,10 +17,10 @@ func (f *button) MausklickBei(mausX, mausY uint16) {
 
 func (f *button) Zeichne() {
 	f.ZeichneRand()
-	f.widget.Zeichne()
+	f.widget.ZeichneOffset(2)
 	breite, höhe := f.GibGroesse()
 
-	schreiber := f.liberationMonoRegularSchreiber()
+	schreiber := f.monoRegularSchreiber()
 	schreiber.SetzeSchriftgroesse(int(höhe) * 3 / 5)
 	f.stiftfarbe(f.vg)
 

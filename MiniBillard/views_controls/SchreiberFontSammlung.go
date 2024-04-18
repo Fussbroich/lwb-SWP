@@ -1,46 +1,27 @@
 package views_controls
 
-import (
-	"errors"
-	"os"
-	"path/filepath"
-)
-
-func fontDateipfad(filename string) string {
-	fontsDir := "MiniBillard/assets/fontfiles"
-	wd, err := os.Getwd()
-
-	if err != nil {
-		panic(err)
-	}
-	workDir := filepath.Dir(wd)
-	fp := filepath.Join(workDir, fontsDir, filename)
-	if _, err := os.Stat(fp); errors.Is(err, os.ErrNotExist) {
-		panic(err)
-	}
-	return fp
-}
+import "../assets"
 
 var (
-	liberationMonoBoldFont       = fontDateipfad("LiberationMono-Bold.ttf")
-	liberationMonoRegularFont    = fontDateipfad("LiberationMono-Regular.ttf")
-	liberationMonoBoldItalicFont = fontDateipfad("LiberationMono-BoldItalic.ttf")
+	monoBoldFont       = assets.FontDateipfad("LiberationMono-Bold.ttf")
+	monoRegularFont    = assets.FontDateipfad("LiberationMono-Regular.ttf")
+	monoBoldItalicFont = assets.FontDateipfad("LiberationMono-BoldItalic.ttf")
 )
 
-func (f *widget) liberationMonoBoldSchreiber() *schreiber {
+func (f *widget) monoBoldSchreiber() *schreiber {
 	return &schreiber{
-		fontdatei:      liberationMonoBoldFont,
+		fontdatei:      monoBoldFont,
 		schriftgroesse: 24}
 }
 
-func (f *widget) liberationMonoRegularSchreiber() *schreiber {
+func (f *widget) monoRegularSchreiber() *schreiber {
 	return &schreiber{
-		fontdatei:      liberationMonoRegularFont,
+		fontdatei:      monoRegularFont,
 		schriftgroesse: 24}
 }
 
-func (f *widget) liberationMonoBoldItalicSchreiber() *schreiber {
+func (f *widget) monoBoldItalicSchreiber() *schreiber {
 	return &schreiber{
-		fontdatei:      liberationMonoBoldItalicFont,
+		fontdatei:      monoBoldItalicFont,
 		schriftgroesse: 24}
 }
