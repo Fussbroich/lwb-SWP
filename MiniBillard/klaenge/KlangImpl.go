@@ -16,7 +16,7 @@ type klang struct {
 
 func (s *klang) Play() {
 	if s.play != nil {
-		// spielt den Klang einmal ab - nicht mehr stoppbar
+		// spielt den Klang einmal ab - bei gfx: nicht mehr stoppbar
 		go s.play()
 	}
 }
@@ -30,7 +30,7 @@ func (s *klang) StarteLoop() {
 }
 
 func (s *klang) Stoppe() {
-	// Todo: Der Klang läuft dennoch ganz durch und stoppt dann erst.
+	// Todo: Ein gfx-Klang läuft dennoch ganz durch und stoppt dann erst.
 	if s.player != nil {
 		s.player.Stoppe()
 	}
