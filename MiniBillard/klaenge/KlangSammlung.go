@@ -16,21 +16,22 @@ import (
 //	pulsweite (für Rechtecksignale) gibt den Prozentsatz (0<=p<=1) für den HIGH-Teil an.
 
 func MassivePulseSound() *klang {
-	fp := assets.KlangDateipfad("massivePulseLoop.wav")
+	fp := assets.MassivePulseDateipfad()
 	return &klang{
 		titel: "Massive Pulse",
 		dauer: 16 * time.Second,
 		autor: "unknown",
 		play: func() {
-			if gfx.FensterOffen() {
-				gfx.SetzeKlangparameter(22050, 2, 2, 1, 0.3)
-				gfx.SpieleSound(fp)
+			if !gfx.FensterOffen() {
+				return
 			}
+			gfx.SetzeKlangparameter(22050, 2, 2, 1, 0.3)
+			gfx.SpieleSound(fp)
 		}}
 }
 
 func CoolJazz2641SOUND() *klang {
-	fp := assets.KlangDateipfad("coolJazzLoop2641.wav")
+	fp := assets.CoolJazz2641Dateipfad()
 	return &klang{
 		titel: "Cool Jazz 2641",
 		dauer: 2*time.Minute + 8*time.Second,
@@ -45,7 +46,7 @@ func CoolJazz2641SOUND() *klang {
 }
 
 func BillardPubAmbienceSOUND() *klang {
-	fp := assets.KlangDateipfad("billardPubAmbience.wav")
+	fp := assets.BillardPubAmbienceDateipfad()
 	return &klang{
 		titel: "Billard Pub Ambience",
 		dauer: time.Minute + 13*time.Second,
@@ -60,7 +61,7 @@ func BillardPubAmbienceSOUND() *klang {
 }
 
 func CueHitsBallSound() *klang {
-	fp := assets.KlangDateipfad("cueHitsBall.wav")
+	fp := assets.CueHitsBallDateipfad()
 	return &klang{
 		dauer: 300 * time.Millisecond,
 		autor: "freesman (directory.audio)",
@@ -74,7 +75,7 @@ func CueHitsBallSound() *klang {
 }
 
 func BallHitsBallSound() *klang {
-	fp := assets.KlangDateipfad("ballHitsBall.wav")
+	fp := assets.BallHitsBallDateipfad()
 	return &klang{
 		dauer: 300 * time.Millisecond,
 		autor: "freesman (directory.audio)",
@@ -88,7 +89,7 @@ func BallHitsBallSound() *klang {
 }
 
 func BallInPocketSound() *klang {
-	fp := assets.KlangDateipfad("ballIntoPocket.wav")
+	fp := assets.BallInPocketDateipfad()
 	return &klang{
 		dauer: 300 * time.Millisecond,
 		autor: "freesman (directory.audio)",
@@ -102,7 +103,7 @@ func BallInPocketSound() *klang {
 }
 
 func BallHitsRailSound() *klang {
-	fp := assets.KlangDateipfad("ballHitsRail.wav")
+	fp := assets.BallHitsRailDateipfad()
 	return &klang{
 		dauer: 300 * time.Millisecond,
 		autor: "freesman (directory.audio)",
