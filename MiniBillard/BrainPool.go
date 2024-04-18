@@ -315,9 +315,9 @@ func (a *bpapp) tastenSteuerFunktion() func(uint16, uint8, uint16) bool {
 				a.billard.ZeitlupeAnAus()
 			case 'l': // Fenster-Layout anzeigen
 				a.renderer.LayoutAnAus()
-			case '+': // Spiel testen
+			case 'e': // Spiel testen
 				a.billard.ErhoeheStrafpunkte()
-			case '-': // Spiel testen
+			case 'r': // Spiel testen
 				a.billard.ReduziereStrafpunkte()
 			case '1': // Spiel testen
 				a.billard.SetzeRestzeit(10 * time.Second)

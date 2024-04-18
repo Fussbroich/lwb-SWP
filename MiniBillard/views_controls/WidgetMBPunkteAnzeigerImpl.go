@@ -3,7 +3,6 @@ package views_controls
 import (
 	"fmt"
 	"gfx"
-	"math"
 
 	"../modelle"
 )
@@ -29,11 +28,12 @@ func (f *miniBSpielinfo) Zeichne() {
 	var zeilenhöhe uint16
 	// dieses Widget zeigt Treffer und Strafen an
 	var anzKugeln uint8 = uint8(len(f.billard.GibKugeln()) - 1)
-	tr, st := f.billard.GibTreffer(), math.Min(float64(anzKugeln), float64(f.billard.GibStrafpunkte()))
+	tr, st := f.billard.GibTreffer(), float64(f.billard.GibStrafpunkte())
 	zeilenhöhe = höhe / 2
 	schreiber.SetzeSchriftgroesse(int(zeilenhöhe) * 3 / 5)
 	d := (zeilenhöhe - uint16(schreiber.GibSchriftgroesse())) / 2
-	var bBalken, xSBalken uint16 = breite - 2*ra - 5*uint16(schreiber.GibSchriftgroesse()), f.startX + 2*ra + 5*uint16(schreiber.GibSchriftgroesse())
+	var bBalken uint16 = breite - 2*ra - 5*uint16(schreiber.GibSchriftgroesse())
+	var xSBalken uint16 = f.startX + 2*ra + 5*uint16(schreiber.GibSchriftgroesse())
 
 	f.stiftfarbe(f.hg)
 	f.vollKreisGFX(ra, ra, ra)
@@ -45,9 +45,9 @@ func (f *miniBSpielinfo) Zeichne() {
 
 	// zeichne beide Fortschritts-Balken
 	f.stiftfarbe(gibFarbe(FanzTreffer())) // Treffer
-	gfx.Vollrechteck(xSBalken, f.startY+1, bBalken*uint16(tr)/uint16(anzKugeln), zeilenhöhe-2)
+	gfx.Vollrechteck(xSBalken, f.startY+1, min(bBalken*uint16(tr)/uint16(anzKugeln), bBalken), zeilenhöhe-2)
 	f.stiftfarbe(gibFarbe(FanzFouls())) // Fouls
-	gfx.Vollrechteck(xSBalken, f.startY+zeilenhöhe+1, bBalken*uint16(st)/uint16(anzKugeln), zeilenhöhe-2)
+	gfx.Vollrechteck(xSBalken, f.startY+zeilenhöhe+1, min(bBalken*uint16(st)/uint16(anzKugeln), bBalken), zeilenhöhe-2)
 	f.stiftfarbe(gibFarbe(FanzFouls()))
 	schreiber.Schreibe(xSBalken+d, f.startY+d, fmt.Sprint(tr))
 	f.stiftfarbe(gibFarbe(FanzTreffer()))
