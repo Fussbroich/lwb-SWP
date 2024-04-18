@@ -315,6 +315,10 @@ func (a *bpapp) tastenSteuerFunktion() func(uint16, uint8, uint16) bool {
 				a.billard.ZeitlupeAnAus()
 			case 'l': // Fenster-Layout anzeigen
 				a.renderer.LayoutAnAus()
+			case '+': // Spiel testen
+				a.billard.ErhoeheStrafpunkte()
+			case '-': // Spiel testen
+				a.billard.ReduziereStrafpunkte()
 			case '1': // Spiel testen
 				a.billard.SetzeRestzeit(10 * time.Second)
 				a.billard.SetzeKugeln1BallTest()
@@ -353,9 +357,9 @@ func (a *bpapp) Run() {
 	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion())
 	a.mausSteuerung.StarteRate(20) // go-Routine
 	a.umschalter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion())
-	a.umschalter.StarteRate(5) // go-Routine
-	a.geraeusche.StarteLoop()  // go-Routine
-	a.renderer.Starte()        // go-Routine
+	a.umschalter.StarteRate(20) // go-Routine
+	a.geraeusche.StarteLoop()   // go-Routine
+	a.renderer.Starte()         // go-Routine
 	a.laeuft = true
 
 	// ####### der Tastatur-Loop darf hier existieren ####################

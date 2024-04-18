@@ -37,5 +37,6 @@ type MiniBillardSpiel interface {
 	GibStrafpunkte() uint8
 	AlleEingelocht() bool
 	ReduziereStrafpunkte()
+	ErhoeheStrafpunkte() // Testzwecke
 	GibGroesse() (float64, float64)
 }

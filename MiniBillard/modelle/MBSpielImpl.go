@@ -202,6 +202,9 @@ func (s *mbspiel) ReduziereStrafpunkte() {
 	}
 }
 
+// Testzewcke
+func (s *mbspiel) ErhoeheStrafpunkte() { s.strafPunkte++ }
+
 // ######## die Lebens- und Pause-Methode ###########################################################
 func (s *mbspiel) Starte() {
 	// Kann zwischendrin gestoppt (Pause) und wieder gestartet werden ...
