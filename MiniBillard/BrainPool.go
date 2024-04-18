@@ -351,11 +351,11 @@ func (a *bpapp) Run() {
 	a.hilfeFenster.Ausblenden()
 	a.gameOverFenster.Ausblenden()
 	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion())
-	a.mausSteuerung.StarteRate(20)                                           // go-Routine
-	a.umschalter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion()) // go-Routine
-	a.umschalter.StarteRate(5)                                               // go-Routine
-	a.geraeusche.StarteLoop()                                                // go-Routine
-	a.renderer.Starte()                                                      // go-Routine
+	a.mausSteuerung.StarteRate(20) // go-Routine
+	a.umschalter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion())
+	a.umschalter.StarteRate(5) // go-Routine
+	a.geraeusche.StarteLoop()  // go-Routine
+	a.renderer.Starte()        // go-Routine
 	a.laeuft = true
 
 	// ####### der Tastatur-Loop darf hier existieren ####################
@@ -380,7 +380,7 @@ func (a *bpapp) Quit() {
 	a.geraeusche.Stoppe()
 	a.musik.Stoppe()
 	a.renderer.UeberblendeText("Bye!", views_controls.Fanzeige(), views_controls.Ftext(), 30)
-	go a.mausSteuerung.Stoppe()
+	go a.mausSteuerung.Stoppe() // go-Routine
 	a.umschalter.Stoppe()
 	a.billard.Stoppe()
 	a.renderer.Stoppe()
