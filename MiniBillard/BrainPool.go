@@ -75,7 +75,6 @@ func NewBPApp(b uint16) *bpapp {
 	var g uint16 = b / 32 // Rastermass für dieses App-Design
 
 	a := bpapp{rastermass: g, breite: 32 * g, hoehe: 22 * g, klickbare: []views_controls.Widget{}}
-	a.renderer = views_controls.NewFensterZeichner("BrainPool - Das MiniBillard für Schlaue.")
 
 	a.musik = klaenge.CoolJazz2641SOUND()
 	a.geraeusche = klaenge.BillardPubAmbienceSOUND()
@@ -93,7 +92,6 @@ func NewBPApp(b uint16) *bpapp {
 
 	// Views und Zeichner erzeugen
 	a.hintergrund = views_controls.NewFenster()
-	a.renderer.SetzeFensterHintergrund(a.hintergrund)
 	punktezaehler := views_controls.NewMBPunkteAnzeiger(a.billard)
 	restzeit := views_controls.NewMBRestzeitAnzeiger(a.billard)
 
@@ -104,6 +102,9 @@ func NewBPApp(b uint16) *bpapp {
 	a.hilfeFenster.Ausblenden() // wäre standardmäßig eingeblendet
 	a.gameOverFenster = views_controls.NewTextBox("GAME OVER!")
 	a.gameOverFenster.Ausblenden() // wäre standardmäßig eingeblendet
+
+	a.renderer = views_controls.NewFensterZeichner()
+	a.renderer.SetzeFensterHintergrund(a.hintergrund)
 
 	//setze Layout
 	a.hintergrund.SetzeKoordinaten(0, 0, a.breite, a.hoehe)
@@ -121,6 +122,17 @@ func NewBPApp(b uint16) *bpapp {
 	a.gameOverFenster.SetzeKoordinaten(xs-g3+2, ys-g3+2, xe+g3-2, ye+g3-2)
 	a.gameOverFenster.SetzeEckradius(g3 - 2)
 
+	//setzeFarben
+	a.hintergrund.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
+	a.spielFenster.SetzeFarben(views_controls.Fbillardtuch(), views_controls.Fdiamanten())
+	bande.SetzeFarben(views_controls.Ftext(), views_controls.Fanzeige())
+	punktezaehler.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
+	punktezaehler.SetzeTransparenz(255)
+	restzeit.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
+	a.quizFenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
+	a.hilfeFenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
+	a.gameOverFenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
+
 	// Buttonleiste
 	hilfeButton := views_controls.NewButton("(h)ilfe an/aus", a.hilfeAnAus)
 	neuesSpielButton := views_controls.NewButton("(n)eues Spiel", a.neuesSpielStarten)
@@ -135,17 +147,6 @@ func NewBPApp(b uint16) *bpapp {
 		k.SetzeEckradius(a.rastermass / 3)
 		k.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
 	}
-
-	//setzeFarben
-	a.hintergrund.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
-	a.spielFenster.SetzeFarben(views_controls.Fbillardtuch(), views_controls.Fdiamanten())
-	bande.SetzeFarben(views_controls.Ftext(), views_controls.Fanzeige())
-	punktezaehler.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
-	punktezaehler.SetzeTransparenz(255)
-	restzeit.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
-	a.quizFenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
-	a.hilfeFenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
-	a.gameOverFenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
 
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
 	a.klickbare = append(a.klickbare, a.quizFenster) // Quizzes sind auch klickbar
@@ -201,22 +202,30 @@ Eff.:
 	Falls Anzahl Fouls >> Anzahl Treffer: Quiz ist aktiviert.
 	Falls Anzahl Fouls < Anzahl Treffer oder 0: Spiel ist aktiviert
 */
-func (a *bpapp) quizUmschalterFunktion() {
-	if a.spielFenster.IstAktiv() && a.billard.GibRestzeit() == 0 {
-		a.billard.Stoppe()
-		a.spielFenster.Ausblenden()
-		a.gameOverFenster.Einblenden() // Hier ist Ende; man muss ein neues Spiel starten ...
-	} else if a.spielFenster.IstAktiv() && a.billard.GibStrafpunkte() > a.billard.GibTreffer()+2 {
-		// stoppe die Zeit und gehe zum Quizmodus
-		a.billard.Stoppe()
-		a.spielFenster.Ausblenden()
-		a.quiz.NaechsteFrage()
-		a.quizFenster.Einblenden()
-	} else if a.quizFenster.IstAktiv() && (a.billard.GibStrafpunkte() == 0 || a.billard.GibStrafpunkte() < a.billard.GibTreffer()) {
-		// zurück zum Spielmodus
-		a.quizFenster.Ausblenden()
-		a.billard.Starte()
-		a.spielFenster.Einblenden()
+func (a *bpapp) quizUmschalterFunktion() func() {
+	return func() {
+		tr, st, rz := a.billard.GibTreffer(), a.billard.GibStrafpunkte(), a.billard.GibRestzeit()
+		if a.spielFenster.IstAktiv() &&
+			rz == 0 {
+			//Spielzeit abgelaufen
+			a.billard.Stoppe()
+			a.quizFenster.Ausblenden()
+			a.spielFenster.Ausblenden()
+			a.gameOverFenster.Einblenden()
+		} else if a.spielFenster.IstAktiv() &&
+			st > tr+2 {
+			// zum Quizmodus
+			a.billard.Stoppe()
+			a.spielFenster.Ausblenden()
+			a.quiz.NaechsteFrage()
+			a.quizFenster.Einblenden()
+		} else if a.quizFenster.IstAktiv() &&
+			(st == 0 || st < tr) {
+			// zurück zum Spielmodus
+			a.quizFenster.Ausblenden()
+			a.billard.Starte()
+			a.spielFenster.Einblenden()
+		}
 	}
 }
 
@@ -232,43 +241,40 @@ Eff.:
 	ist der Stoss erfolgt.
 	Sonst: keiner
 */
-func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16) {
-	if taste == 1 && status == -1 { // es wurde links geklickt
-		// anklickbare Widgets abfragen
-		var benutzt bool
-		for _, b := range a.klickbare {
-			if b.IstAktiv() && b.ImFenster(mausX, mausY) {
-				b.MausklickBei(mausX, mausY)
-				benutzt = true
-				break
+func (a *bpapp) mausSteuerFunktion() func(uint8, int8, uint16, uint16) {
+	return func(taste uint8, status int8, mausX, mausY uint16) {
+		if taste == 1 && status == -1 { // es wurde links geklickt
+			// anklickbare Widgets abfragen
+			var benutzt bool
+			for _, b := range a.klickbare {
+				if b.IstAktiv() && b.ImFenster(mausX, mausY) {
+					b.MausklickBei(mausX, mausY)
+					benutzt = true
+					break
+				}
 			}
-		}
-		// falls niemand den Klick wollte, gib ihn ans Spiel
-		if !benutzt && a.spielFenster.IstAktiv() {
-			// kann auch außerhalb des Tuchs klicken
-			a.spielFenster.MausklickBei(mausX, mausY)
-		}
-	} else { // es wurde nicht geklickt
-		if a.spielFenster.IstAktiv() {
-			// sonst: zielen und Kraft aufbauen
-			switch taste {
-			case 4: // vorwärts scrollen
-				a.spielFenster.MausScrolltHoch()
-			case 5: // rückwärts scrollen
-				a.spielFenster.MausScrolltRunter()
-			default: // bewegen
-				a.spielFenster.MausBei(mausX, mausY)
+			// falls niemand den Klick wollte, gib ihn ans Spiel
+			if !benutzt && a.spielFenster.IstAktiv() {
+				// kann auch außerhalb des Tuchs klicken
+				a.spielFenster.MausklickBei(mausX, mausY)
+			}
+		} else { // es wurde nicht geklickt
+			if a.spielFenster.IstAktiv() {
+				// sonst: zielen und Kraft aufbauen
+				switch taste {
+				case 4: // vorwärts scrollen
+					a.spielFenster.MausScrolltHoch()
+				case 5: // rückwärts scrollen
+					a.spielFenster.MausScrolltRunter()
+				default: // bewegen
+					a.spielFenster.MausBei(mausX, mausY)
+				}
 			}
 		}
 	}
 }
 
 /*
-Zweck: starte die Laufzeit-Elemente der App
-Vor.: die App läuft nicht
-Eff.: die App läuft
-
-Ferner:
 Zweck: Einige Aspekte der App können mit der Tastatur bedient werden.
 Eff.:
 
@@ -287,29 +293,8 @@ Eff.:
 	Taste '3' gedrückt: Teste mit 3 Kugeln
 	Taste '9' gedrückt: Spiele mit 9 Kugeln
 */
-func (a *bpapp) Run() {
-	if a.laeuft {
-		return
-	}
-	println("Willkommen bei BrainPool")
-	a.billard.Starte()
-	a.spielFenster.Einblenden()
-	a.quizFenster.Ausblenden()
-	a.hilfeFenster.Ausblenden()
-	a.renderer.Starte() // go-Routine
-	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
-	a.mausSteuerung.StarteRate(20)                                         // go-Routine
-	a.umschalter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion) // go-Routine
-	a.umschalter.StarteRate(5)                                             // go-Routine
-	a.geraeusche.StarteLoop()                                              // go-Routine
-	a.laeuft = true
-
-	// ####### der Tastatur-Loop darf hier existieren ####################
-	for {
-		if !gfx.FensterOffen() {
-			break
-		}
-		taste, gedrückt, _ := gfx.TastaturLesen1()
+func (a *bpapp) tastenSteuerFunktion() func(uint16, uint8, uint16) bool {
+	return func(taste uint16, gedrückt uint8, tiefe uint16) bool {
 		if gedrückt == 1 {
 			switch taste {
 			case 'h': // Hilfe an-aus
@@ -324,7 +309,7 @@ func (a *bpapp) Run() {
 				a.musik.StarteLoop() // go-Routine
 			case 'q':
 				a.Quit()
-				return
+				return true
 				// ######  Testzwecke ####################################
 			case 'z': // Zeitlupe
 				a.billard.ZeitlupeAnAus()
@@ -340,6 +325,45 @@ func (a *bpapp) Run() {
 				a.billard.SetzeSpielzeit(4 * time.Minute)
 				a.billard.SetzeKugeln9Ball()
 			}
+		}
+		return false
+	}
+}
+
+/*
+Zweck: starte die Laufzeit-Elemente der App
+Vor.: die App läuft nicht
+Eff.: die App läuft
+*/
+func (a *bpapp) Run() {
+	if a.laeuft {
+		return
+	}
+	println("Willkommen bei BrainPool")
+	println("Öffne Gfx-Fenster")
+	b, h := a.hintergrund.GibGroesse()
+	gfx.Fenster(b, h) //Fenstergröße
+	gfx.Fenstertitel("BrainPool - Das MiniBillard für Schlaue.")
+
+	a.billard.Starte()
+	a.spielFenster.Einblenden()
+	a.quizFenster.Ausblenden()
+	a.hilfeFenster.Ausblenden()
+	a.gameOverFenster.Ausblenden()
+	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion())
+	a.mausSteuerung.StarteRate(20)                                           // go-Routine
+	a.umschalter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion()) // go-Routine
+	a.umschalter.StarteRate(5)                                               // go-Routine
+	a.geraeusche.StarteLoop()                                                // go-Routine
+	a.renderer.Starte()                                                      // go-Routine
+	a.laeuft = true
+
+	// ####### der Tastatur-Loop darf hier existieren ####################
+	var aktion func(uint16, uint8, uint16) bool = a.tastenSteuerFunktion()
+	for {
+		taste, gedrückt, tiefe := gfx.TastaturLesen1()
+		if aktion(taste, gedrückt, tiefe) {
+			return
 		}
 	}
 }

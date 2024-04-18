@@ -8,7 +8,6 @@ import (
 )
 
 type fzeichner struct {
-	titel         string
 	hintergrund   Widget
 	widgets       []Widget
 	overlay       Widget
@@ -19,8 +18,8 @@ type fzeichner struct {
 	rate          uint64
 }
 
-func NewFensterZeichner(titel string) *fzeichner {
-	return &fzeichner{rate: 80, titel: titel, hintergrund: NewFenster()}
+func NewFensterZeichner() *fzeichner {
+	return &fzeichner{rate: 80, hintergrund: NewFenster()}
 }
 
 func (r *fzeichner) SetzeFensterHintergrund(w Widget) {
@@ -37,13 +36,11 @@ func (r *fzeichner) Starte() {
 	if r.updaterLaeuft {
 		return
 	}
-	println("Öffne Gfx-Fenster")
-	b, h := r.hintergrund.GibGroesse()
-	gfx.Fenster(b, h) //Fenstergröße
-	gfx.Fenstertitel(r.titel)
-
 	r.updater = hilf.NewRoutine("Zeichner",
 		func() {
+			if !gfx.FensterOffen() {
+				return
+			}
 			gfx.UpdateAus()
 			gfx.Cls()
 			r.hintergrund.Zeichne()
@@ -73,7 +70,6 @@ func (r *fzeichner) Starte() {
 		})
 	r.updaterLaeuft = true
 	r.updater.StarteRate(r.rate)
-	//r.updater.Starte()
 }
 
 func (r *fzeichner) Stoppe() {
