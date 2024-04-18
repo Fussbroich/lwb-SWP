@@ -10,8 +10,8 @@ func fragenDateipfad(filename string) string {
 	return assetDateipfad(dir, filename)
 }
 
-func gibFragenDaten(filename string) [][]string {
-	file, err := os.Open(fragenDateipfad(filename))
+func gibFragenDaten(dateipfad string) [][]string {
+	file, err := os.Open(dateipfad)
 	if err != nil {
 		panic(err)
 	}
@@ -26,10 +26,17 @@ func gibFragenDaten(filename string) [][]string {
 	return rs
 }
 
-func BeispielFragen() [][]string {
-	return gibFragenDaten("BeispielQuiz.csv")
+func BeispielFragenDateipfad() string {
+	return fragenDateipfad("BeispielQuiz.csv")
 }
 
+func BeispielFragen() [][]string {
+	return gibFragenDaten(BeispielFragenDateipfad())
+}
+
+func InformatiksystemeFragenDateipfad() string {
+	return fragenDateipfad("InformatiksystemQuiz.csv")
+}
 func InformatiksystemeFragen() [][]string {
-	return gibFragenDaten("InformatiksystemQuiz.csv")
+	return gibFragenDaten(InformatiksystemeFragenDateipfad())
 }
