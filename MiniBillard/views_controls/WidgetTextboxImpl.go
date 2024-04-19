@@ -1,7 +1,6 @@
 package views_controls
 
 import (
-	"math"
 	"unicode"
 	"unicode/utf8"
 )
@@ -64,12 +63,11 @@ func (f *textbox) Zeichne() {
 	f.widget.Zeichne()
 	B, H := f.GibGroesse()
 	f.stiftfarbe(f.vg)
-	// Schriftgroesse automatisch anpasssen bzgl. Gesamtfläche der Box
 	schreiber := f.monoRegularSchreiber()
-	schreiber.SetzeSchriftgroesse(
-		int(math.Min(
-			24,
-			math.Sqrt(float64(B*H)/float64(utf8.RuneCountInString(f.text))*12/7*5/6))))
+	schreiber.SetzeSchriftgroesse(24)
+	// Schriftgroesse automatisch anpasssen bzgl. Gesamtfläche der Box
+	//	int(math.Min(24,
+	//		math.Sqrt(float64(B*H)/float64(utf8.RuneCountInString(f.text))*12/7*5/6))))
 
 	zMax, cMax := int(H)/schreiber.GibSchriftgroesse(), int(B)/(7*schreiber.GibSchriftgroesse()/12)
 	for z, zeile := range worteInZeilen(textInWorte(f.text), cMax) {
