@@ -98,9 +98,9 @@ func NewBPApp(b uint16) *bpapp {
 	bande := views_controls.NewFenster()
 	a.spielFenster = views_controls.NewMBSpieltisch(a.billard)
 	a.quizFenster = views_controls.NewQuizFenster(a.quiz, func() { a.billard.ReduziereStrafpunkte(); a.quiz.NaechsteFrage() }, func() { a.quiz.NaechsteFrage() })
-	a.hilfeFenster = views_controls.NewTextBox("Hilfe")
+	a.hilfeFenster = views_controls.NewTextBox(a.hilfetext())
 	a.hilfeFenster.Ausblenden() // wäre standardmäßig eingeblendet
-	a.gameOverFenster = views_controls.NewTextBox("GAME OVER!")
+	a.gameOverFenster = views_controls.NewTextBox("GAME OVER!\n\n\nStarte ein neues Spiel.")
 	a.gameOverFenster.Ausblenden() // wäre standardmäßig eingeblendet
 
 	a.renderer = views_controls.NewFensterZeichner()
@@ -159,6 +159,7 @@ func NewBPApp(b uint16) *bpapp {
 
 // ############### Regele die Umschaltung zwischen den App-Modi #######################
 /*
+Hilfe-Aktion
 Vor.: das Hilfefenster liegt zuoberst im Renderer
 Eff.: zeigt das Hilfefenster an oder blendet es wieder aus. Billard wird angehalten.
 */
@@ -178,6 +179,7 @@ func (a *bpapp) hilfeAnAus() {
 }
 
 /*
+Neues-Spiel-Aktion
 Vor.: keine
 Eff.: neues Spiel ist gestartet - Quiz ist ausgeblendet
 */
@@ -213,14 +215,14 @@ func (a *bpapp) quizUmschalterFunktion() func() {
 			a.spielFenster.Ausblenden()
 			a.gameOverFenster.Einblenden()
 		} else if a.spielFenster.IstAktiv() &&
-			st > tr+2 {
+			st > tr+2 { // Es sind zu viele Strafpunkte
 			// zum Quizmodus
 			a.billard.Stoppe()
 			a.spielFenster.Ausblenden()
 			a.quiz.NaechsteFrage()
 			a.quizFenster.Einblenden()
 		} else if a.quizFenster.IstAktiv() &&
-			(st == 0 || st < tr) {
+			(st == 0 || st < tr) { // Strafpunkte sind abgebaut
 			// zurück zum Spielmodus
 			a.quizFenster.Ausblenden()
 			a.billard.Starte()
@@ -272,6 +274,16 @@ func (a *bpapp) mausSteuerFunktion() func(uint8, int8, uint16, uint16) {
 			}
 		}
 	}
+}
+
+func (a *bpapp) hilfetext() string {
+	return "Hilfe\n\n" +
+		"Im Spielmodus: Maus bewegen ändert die Zielrichtung. Stoße durch Klicken mit der linken Maustaste. " +
+		"Die Stoßkraft wird durch Scrollen der Maus verändert.\n\n" +
+		"Du spielst gegen die Zeit. Alle neun Kugel müssen versenkt werden. " +
+		"Es gibt ein Foul, wenn die weiße Kugel reingeht oder wenn bei einem Stoß gar keine Kugel versenkt wird.\n\n" +
+		"Im Quizmodus: Klicke die richtigen Antworten an, um Fouls abzuarbeiten.\n\n" +
+		"Die übrige Bedienung erfolgt mit den Buttons unten."
 }
 
 /*

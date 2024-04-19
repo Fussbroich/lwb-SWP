@@ -1,7 +1,7 @@
 package views_controls
 
 import (
-	"unicode"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -13,47 +13,48 @@ type textbox struct {
 
 func NewTextBox(t string) *textbox { return &textbox{text: t, widget: *NewFenster()} }
 
-func worteInZeilen(worte []string, lMax int) (zeilen []string) {
-	var zeile string
-	// Baue Zeilen aus Worten.
-	for _, wort := range worte {
-		if utf8.RuneCountInString(wort) > lMax {
-			zeilen = append(zeilen, wort)
-			continue
-		}
-		if (utf8.RuneCountInString(zeile) + utf8.RuneCountInString(wort) + 1) <= lMax {
-			if zeile != "" {
-				zeile += " "
-			}
-			zeile += wort
+func teileTextInZeilen(text string, nMax int) (zeilen []string) {
+	// Brich Zeilen um, die länger als nMax Zeichen sind
+	for _, line := range strings.Split(text, "\n") {
+		if utf8.RuneCountInString(line) <= nMax {
+			zeilen = append(zeilen, strings.TrimSpace(line))
 		} else {
-			zeilen = append(zeilen, zeile)
-			zeile = wort
+			// Teile lange Zeilen in Teile von maximal n Zeichen auf
+			for len(line) > 0 {
+				if utf8.RuneCountInString(line) > nMax {
+					// Suche nach einem Leerzeichen oder Bindestrich, um die Zeile zu unterbrechen
+					breakIndex := nMax
+					for breakIndex > 0 && !isWhitespaceOrHyphen(line[breakIndex-1]) {
+						// Überprüfe, ob das Zeichen ein  Rune ist
+						if utf8.RuneStart(line[breakIndex-1]) {
+							_, size := utf8.DecodeLastRuneInString(line[:breakIndex])
+							breakIndex -= size
+						} else {
+							breakIndex--
+						}
+					}
+					if breakIndex == 0 {
+						// Kein Trennzeichen gefunden, daher verwende nMax Zeichen
+						zeilen = append(zeilen, strings.TrimSpace(line[:nMax]))
+						line = line[nMax:]
+					} else {
+						// Trennzeichen gefunden, daher verwende breakIndex
+						zeilen = append(zeilen, strings.TrimSpace(line[:breakIndex]))
+						line = line[breakIndex:]
+					}
+				} else {
+					zeilen = append(zeilen, line)
+					break
+				}
+			}
 		}
-	}
-	if zeile != "" {
-		zeilen = append(zeilen, zeile)
 	}
 	return
 }
 
-func textInWorte(text string) (worte []string) {
-	var wort string
-	// Zerlege den Text in Worte.
-	for _, char := range text {
-		if unicode.IsSpace(char) {
-			if wort != "" {
-				worte = append(worte, wort)
-				wort = ""
-			}
-		} else {
-			wort += string(char)
-		}
-	}
-	if wort != "" {
-		worte = append(worte, wort)
-	}
-	return
+// Hilfsfunktion, um zu überprüfen, ob ein Zeichen ein Leerzeichen oder Bindestrich ist
+func isWhitespaceOrHyphen(char byte) bool {
+	return char == ' ' || char == '-'
 }
 
 func (f *textbox) Zeichne() {
@@ -70,7 +71,7 @@ func (f *textbox) Zeichne() {
 	//		math.Sqrt(float64(B*H)/float64(utf8.RuneCountInString(f.text))*12/7*5/6))))
 
 	zMax, cMax := int(H)/schreiber.GibSchriftgroesse(), int(B)/(7*schreiber.GibSchriftgroesse()/12)
-	for z, zeile := range worteInZeilen(textInWorte(f.text), cMax) {
+	for z, zeile := range teileTextInZeilen(f.text, cMax) {
 		if z > zMax {
 			break
 		}
