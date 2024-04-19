@@ -1,15 +1,14 @@
-/*
-Autoren:
-
-	Thomas Schrader
-	Bettina Chang
-
-Zweck:
-
-	Softwareprojekt im Rahmen der Lehrerweiterbildung Berlin
-
-Datum: 15.04.2024
-*/
+// Autoren:
+//
+//	Thomas Schrader
+//	Bettina Chang
+//
+// Zweck:
+//
+//	Das Spielprogramm BrainPool -
+//	ein Softwareprojekt im Rahmen der Lehrerweiterbildung Berlin
+//
+// Datum: 19.04.2024
 package main
 
 import (
@@ -22,18 +21,15 @@ import (
 	"./views_controls"
 )
 
-// Ein Objekt, das die ganze App initialisiert und steuert
 type BPApp interface {
-	/*
-	   Vor.: Keine
-	   Eff.: Die App wurde gestartet und ein gfx-Fenster geöffnet.
-	*/
 	Run()
-	/*
-	   Vor.: Keine
-	   Eff.: Die App wurde beendet und das gfx-Fenster geschlossen.
-	*/
 	Quit()
+
+	HilfeAnAus()
+	NeuesSpielStarten()
+	PauseAnAus()
+	DarkmodeAnAus()
+	MusikAn()
 }
 
 type bpapp struct {
@@ -60,11 +56,10 @@ type bpapp struct {
 	umschalter    hilf.Routine
 }
 
-/*
-Zweck: baut die App zusammen
-Vor.:  keine
-Eff.:  Die App wurde beendet und das gfx-Fenster geschlossen.
-*/
+// Zweck: Konstruktor - baut eine App zusammen
+//
+//	Vor.:  keine
+//	Eff.:  Die App steht zum Starten bereit.
 func NewBPApp(b uint16) *bpapp {
 	if b > 1920 {
 		b = 1920 // größtmögliches gfx-Fenster ist 1920 Pixel breit
@@ -72,8 +67,19 @@ func NewBPApp(b uint16) *bpapp {
 	if b < 640 {
 		b = 640 // kleinere Bildschirme sind zum Spielen ungeeignet
 	}
+
+	var hilfetext string = "Hilfe\n\n" +
+		"Im Spielmodus (und nur, wenn alle Kugeln still stehen): " +
+		"Maus bewegen ändert die Zielrichtung. Stoß durch klicken mit der linken Maustaste. " +
+		"Die Stoßkraft wird durch scrollen der Maus verändert.\n\n" +
+		"Du spielst gegen die Zeit. Alle neun Kugel müssen versenkt werden. " +
+		"Es gibt ein Foul, wenn die weiße Kugel reingeht oder wenn bei einem Stoß gar keine Kugel versenkt wird.\n\n" +
+		"Im Quizmodus: Klicke die richtigen Antworten an, um Fouls abzuarbeiten.\n\n" +
+		"Die übrige Bedienung erfolgt mit den Buttons unten."
+
 	var g uint16 = b / 32 // Rastermass für dieses App-Design
 
+	// Das Seitenverhältnis des App-Fensters ist B:H = 16:11
 	a := bpapp{rastermass: g, breite: 32 * g, hoehe: 22 * g, klickbare: []views_controls.Widget{}}
 
 	a.musik = klaenge.CoolJazz2641SOUND()
@@ -98,7 +104,7 @@ func NewBPApp(b uint16) *bpapp {
 	bande := views_controls.NewFenster()
 	a.spielFenster = views_controls.NewMBSpieltisch(a.billard)
 	a.quizFenster = views_controls.NewQuizFenster(a.quiz, func() { a.billard.ReduziereStrafpunkte(); a.quiz.NaechsteFrage() }, func() { a.quiz.NaechsteFrage() })
-	a.hilfeFenster = views_controls.NewTextBox(a.hilfetext())
+	a.hilfeFenster = views_controls.NewTextBox(hilfetext)
 	a.hilfeFenster.Ausblenden() // wäre standardmäßig eingeblendet
 	a.gameOverFenster = views_controls.NewTextBox("GAME OVER!\n\n\nStarte ein neues Spiel.")
 	a.gameOverFenster.Ausblenden() // wäre standardmäßig eingeblendet
@@ -134,10 +140,10 @@ func NewBPApp(b uint16) *bpapp {
 	a.gameOverFenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
 
 	// Buttonleiste
-	hilfeButton := views_controls.NewButton("(h)ilfe an/aus", a.hilfeAnAus)
-	neuesSpielButton := views_controls.NewButton("(n)eues Spiel", a.neuesSpielStarten)
-	pauseButton := views_controls.NewButton("(m)usik spielen", a.musik.StarteLoop)
-	darkButton := views_controls.NewButton("(d)unkel/hell", a.renderer.DarkmodeAnAus)
+	hilfeButton := views_controls.NewButton("(h)ilfe an/aus", a.HilfeAnAus)
+	neuesSpielButton := views_controls.NewButton("(n)eues Spiel", a.NeuesSpielStarten)
+	pauseButton := views_controls.NewButton("(m)usik spielen", a.MusikAn)
+	darkButton := views_controls.NewButton("(d)unkel/hell", a.DarkmodeAnAus)
 	quitButton := views_controls.NewButton("(q)uit", a.Quit)
 
 	a.klickbare = []views_controls.Widget{hilfeButton, neuesSpielButton, pauseButton, darkButton, quitButton}
@@ -148,22 +154,23 @@ func NewBPApp(b uint16) *bpapp {
 		k.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
 	}
 
+	// Quizzes sind auch klickbar, aber das Spielfenster wird besonders behandelt
+	a.klickbare = append(a.klickbare, a.quizFenster)
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
-	a.klickbare = append(a.klickbare, a.quizFenster) // Quizzes sind auch klickbar
 	a.renderer.SetzeWidgets(bande, a.spielFenster, a.quizFenster, punktezaehler, restzeit,
-		hilfeButton, neuesSpielButton, pauseButton, darkButton, quitButton,
-		a.gameOverFenster, a.hilfeFenster)
+		hilfeButton, a.hilfeFenster, neuesSpielButton, pauseButton, darkButton, quitButton,
+		a.gameOverFenster)
 
 	return &a
 }
 
-// ############### Regele die Umschaltung zwischen den App-Modi #######################
-/*
-Hilfe-Aktion
-Vor.: das Hilfefenster liegt zuoberst im Renderer
-Eff.: zeigt das Hilfefenster an oder blendet es wieder aus. Billard wird angehalten.
-*/
-func (a *bpapp) hilfeAnAus() {
+// #### Regele die Steuerung der App und die Umschaltung zwischen den App-Modi ##################
+
+// Aktion für einen klickbaren Button oder eine Taste
+//
+//	Vor.: keine
+//	Eff.: zeigt das Hilfefenster an oder blendet es wieder aus. Das Spiel wird solang angehalten.
+func (a *bpapp) HilfeAnAus() {
 	if a.hilfeFenster.IstAktiv() {
 		a.hilfeFenster.Ausblenden()
 		if a.spielFenster.IstAktiv() {
@@ -178,12 +185,11 @@ func (a *bpapp) hilfeAnAus() {
 	}
 }
 
-/*
-Neues-Spiel-Aktion
-Vor.: keine
-Eff.: neues Spiel ist gestartet - Quiz ist ausgeblendet
-*/
-func (a *bpapp) neuesSpielStarten() {
+// Aktion für einen klickbaren Button oder eine Taste
+//
+//	Vor.: keine
+//	Eff.: neues Spiel ist gestartet - alle anderen Fenster sind ausgeblendet
+func (a *bpapp) NeuesSpielStarten() {
 	a.renderer.UeberblendeAus()
 	a.quizFenster.Ausblenden()
 	a.hilfeFenster.Ausblenden()
@@ -195,15 +201,39 @@ func (a *bpapp) neuesSpielStarten() {
 	}
 }
 
-/*
-Zweck: die sonstige Umschaltung zwischen Quiz und Spiel(wird als go-Routine ausgelagert)
-Vor.: keine
-Eff.:
+// Aktion für einen klickbaren Button oder eine Taste
+//
+//	Vor.: keine
+//	Eff.: die hinterlegte Musik startet im Loop
+func (a *bpapp) MusikAn() {
+	a.musik.StarteLoop()
+}
 
-	Falls Spielzeit abgelaufen war: Spiel wird beendet.
-	Falls Anzahl Fouls >> Anzahl Treffer: Quiz ist aktiviert.
-	Falls Anzahl Fouls < Anzahl Treffer oder 0: Spiel ist aktiviert
-*/
+// Aktion für einen klickbaren Button oder eine Taste
+//
+//	Vor.: keine
+//	Eff.: die GUI wird zwischen hell und dunkel umgeschaltet
+func (a *bpapp) DarkmodeAnAus() {
+	a.renderer.DarkmodeAnAus()
+}
+
+// Aktion für einen klickbaren Button oder eine Taste
+//
+//	Vor.: keine
+//	Eff.: das Spiel (und der Countdown) hält an, bzw. läuft weiter
+func (a *bpapp) PauseAnAus() {
+	a.billard.PauseAnAus()
+}
+
+// Umschalter zwischen den App-Zuständen (wird als go-Routine ausgelagert)
+//
+// Zweck: die Umschaltung zwischen Quiz und Spiel gemäß der Regeln.
+//
+//	Vor.: keine
+//	Eff.:
+//	Falls Spielzeit abgelaufen war: Spiel wird beendet.
+//	Falls Anzahl Fouls >> Anzahl Treffer: Quiz ist aktiviert.
+//	Falls Anzahl Fouls < Anzahl Treffer oder 0: Spiel ist aktiviert
 func (a *bpapp) quizUmschalterFunktion() func() {
 	return func() {
 		tr, st, rz := a.billard.GibTreffer(), a.billard.GibStrafpunkte(), a.billard.GibRestzeit()
@@ -231,18 +261,11 @@ func (a *bpapp) quizUmschalterFunktion() func() {
 	}
 }
 
-/*
-Zweck: Die App wird mit der Maus bedient. Die Maussteuerung wird als go-Routine ausgelagert.
-Vor.: keine
-Eff.:
-
-	Falls Quit, Hilfe oder Neues Spiel angeklickt wurde, ist die enstprechende Aktion ausgeführt.
-	Falls das Quiz aktiv ist und das Quizfenster angeklickt wurde, wird die Antwort ausgewertet.
-	  -- Falls dadurch genügend Strafpunkte abgebaut wurden, wird das Spiel aktiviert.
-	Falls das Spiel läuft und alle Kugeln still stehen: Es ist der Queue bewegt bzw.
-	ist der Stoss erfolgt.
-	Sonst: keiner
-*/
+// Die Maussteuerung (wird als go-Routine ausgelagert)
+//
+//	Vor.: keine
+//	Eff.: Gibt einige der möglichen Mausaktionen an passende Widgets weiter.
+//	Sonst: keiner
 func (a *bpapp) mausSteuerFunktion() func(uint8, int8, uint16, uint16) {
 	return func(taste uint8, status int8, mausX, mausY uint16) {
 		if taste == 1 && status == -1 { // es wurde links geklickt
@@ -276,49 +299,24 @@ func (a *bpapp) mausSteuerFunktion() func(uint8, int8, uint16, uint16) {
 	}
 }
 
-func (a *bpapp) hilfetext() string {
-	return "Hilfe\n\n" +
-		"Im Spielmodus: Maus bewegen ändert die Zielrichtung. Stoße durch Klicken mit der linken Maustaste. " +
-		"Die Stoßkraft wird durch Scrollen der Maus verändert.\n\n" +
-		"Du spielst gegen die Zeit. Alle neun Kugel müssen versenkt werden. " +
-		"Es gibt ein Foul, wenn die weiße Kugel reingeht oder wenn bei einem Stoß gar keine Kugel versenkt wird.\n\n" +
-		"Im Quizmodus: Klicke die richtigen Antworten an, um Fouls abzuarbeiten.\n\n" +
-		"Die übrige Bedienung erfolgt mit den Buttons unten."
-}
-
-/*
-Zweck: Einige Aspekte der App können mit der Tastatur bedient werden.
-Eff.:
-
-	Taste 'h' gedrückt: Hilfe angezeigt/ausgeblendet
-	Taste 'r' gedrückt: neues Spiel begonnen
-	Taste 'p' gedrückt: Spiel pausiert
-	Taste 'd' gedrückt: Umgebung abgedunkelt/aufgehellt
-	Taste 'm' gedrückt: Musik startet
-	Taste 'q' gedrückt: App ist beendet.
-
-	(für Testzwecke)
-
-	Taste 's' gedrückt: Bewegungen erfolgen in Zeitlupe
-	Taste 'l' gedrückt: Layout der App ist angezeigt
-	Taste '1' gedrückt: Teste mit 1 Kugel
-	Taste '3' gedrückt: Teste mit 3 Kugeln
-	Taste '9' gedrückt: Spiele mit 9 Kugeln
-*/
+// Die Tastatursteuerung.
+//
+//	Vor: keine
+//	Eff.: die zur Taste passende Spiel-Aktion ist ausgeführt
 func (a *bpapp) tastenSteuerFunktion() func(uint16, uint8, uint16) bool {
 	return func(taste uint16, gedrückt uint8, tiefe uint16) bool {
 		if gedrückt == 1 {
 			switch taste {
 			case 'h': // Hilfe an-aus
-				a.hilfeAnAus()
+				a.HilfeAnAus()
 			case 'n': // neues Spiel
-				a.neuesSpielStarten()
+				a.NeuesSpielStarten()
 			case 'p': // Spiel pausieren
-				a.billard.PauseAnAus()
+				a.PauseAnAus()
 			case 'd': // Dunkle Umgebung
-				a.renderer.DarkmodeAnAus()
+				a.DarkmodeAnAus()
 			case 'm': // Musik spielen, wenn man möchte
-				a.musik.StarteLoop() // go-Routine
+				a.MusikAn() // go-Routine
 			case 'q':
 				a.Quit()
 				return true
@@ -346,11 +344,10 @@ func (a *bpapp) tastenSteuerFunktion() func(uint16, uint8, uint16) bool {
 	}
 }
 
-/*
-Zweck: starte die Laufzeit-Elemente der App
-Vor.: die App läuft nicht
-Eff.: die App läuft
-*/
+// Zweck: startet die Laufzeit-Elemente der App
+//
+//	Vor.: die App läuft nicht
+//	Eff.: Die App wurde gestartet und ein gfx-Fenster geöffnet.
 func (a *bpapp) Run() {
 	if a.laeuft {
 		return
@@ -368,27 +365,27 @@ func (a *bpapp) Run() {
 	a.gameOverFenster.Ausblenden()
 	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion())
 	a.mausSteuerung.StarteRate(20) // go-Routine
+	// der eigentliche Event-Loop der App läuft nebenher
 	a.umschalter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion())
 	a.umschalter.StarteRate(20) // go-Routine
 	a.geraeusche.StarteLoop()   // go-Routine
 	a.renderer.Starte()         // go-Routine
 	a.laeuft = true
 
-	// ####### der Tastatur-Loop darf hier existieren ####################
+	// ####### der Tastatur-Loop darf dafür hier existieren ####################
 	var aktion func(uint16, uint8, uint16) bool = a.tastenSteuerFunktion()
 	for {
-		taste, gedrückt, tiefe := gfx.TastaturLesen1()
+		taste, gedrückt, tiefe := gfx.TastaturLesen1() // blockiert, bis Taste gedrückt
 		if aktion(taste, gedrückt, tiefe) {
 			return
 		}
 	}
 }
 
-/*
-Zweck: stoppt die Laufzeit-Elemente der App
-Vor.: die App läuft
-Eff.: die App läuft nicht
-*/
+// Zweck: stoppt die Laufzeit-Elemente der App
+//
+//	Vor.: die App läuft
+//	Eff.: Die App wurde beendet und das gfx-Fenster geschlossen.
 func (a *bpapp) Quit() {
 	if !a.laeuft {
 		return
