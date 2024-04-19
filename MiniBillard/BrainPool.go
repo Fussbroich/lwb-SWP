@@ -287,7 +287,7 @@ Eff.:
 
 	(für Testzwecke)
 
-	Taste 'z' gedrückt: Bewegungen erfolgen in Zeitlupe
+	Taste 's' gedrückt: Bewegungen erfolgen in Zeitlupe
 	Taste 'l' gedrückt: Layout der App ist angezeigt
 	Taste '1' gedrückt: Teste mit 1 Kugel
 	Taste '3' gedrückt: Teste mit 3 Kugeln
@@ -311,7 +311,7 @@ func (a *bpapp) tastenSteuerFunktion() func(uint16, uint8, uint16) bool {
 				a.Quit()
 				return true
 				// ######  Testzwecke ####################################
-			case 'z': // Zeitlupe
+			case 's': // Zeitlupe
 				a.billard.ZeitlupeAnAus()
 			case 'l': // Fenster-Layout anzeigen
 				a.renderer.LayoutAnAus()
