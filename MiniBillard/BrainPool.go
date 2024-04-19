@@ -26,6 +26,7 @@ type BPApp interface {
 	Quit()
 
 	HilfeAnAus()
+	ZeitlupeAnAus()
 	NeuesSpielStarten()
 	PauseAnAus()
 	DarkmodeAnAus()
@@ -225,6 +226,14 @@ func (a *bpapp) PauseAnAus() {
 	a.billard.PauseAnAus()
 }
 
+// Aktion für einen klickbaren Button oder eine Taste
+//
+//	Vor.: keine
+//	Eff.: das Spiel (und der Countdown) laufen in Zeitlupe.
+func (a *bpapp) ZeitlupeAnAus() {
+	a.billard.ZeitlupeAnAus()
+}
+
 // Umschalter zwischen den App-Zuständen (wird als go-Routine ausgelagert)
 //
 // Zweck: die Umschaltung zwischen Quiz und Spiel gemäß der Regeln.
@@ -322,7 +331,7 @@ func (a *bpapp) tastenSteuerFunktion() func(uint16, uint8, uint16) bool {
 				return true
 				// ######  Testzwecke ####################################
 			case 's': // Zeitlupe
-				a.billard.ZeitlupeAnAus()
+				a.ZeitlupeAnAus()
 			case 'l': // Fenster-Layout anzeigen
 				a.renderer.LayoutAnAus()
 			case 'e': // Spiel testen
