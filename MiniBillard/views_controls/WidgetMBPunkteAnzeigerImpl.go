@@ -16,6 +16,13 @@ func NewMBPunkteAnzeiger(billard modelle.MiniBillardSpiel) *miniBSpielinfo {
 	return &miniBSpielinfo{billard: billard, widget: *NewFenster()}
 }
 
+func uMin16(a, b uint16) uint16 {
+	if a <= b {
+		return a
+	}
+	return b
+}
+
 func (f *miniBSpielinfo) Zeichne() {
 	if !f.IstAktiv() {
 		return
@@ -27,8 +34,8 @@ func (f *miniBSpielinfo) Zeichne() {
 
 	var zeilenhöhe uint16
 	// dieses Widget zeigt Treffer und Strafen an
-	var anzKugeln uint8 = uint8(len(f.billard.GibKugeln()) - 1)
-	tr, st := f.billard.GibTreffer(), float64(f.billard.GibStrafpunkte())
+	var anzKugeln uint16 = uint16(len(f.billard.GibKugeln()) - 1)
+	tr, st := uint16(f.billard.GibTreffer()), uint16(f.billard.GibStrafpunkte())
 	zeilenhöhe = höhe / 2
 	schreiber.SetzeSchriftgroesse(int(zeilenhöhe) * 3 / 5)
 	d := (zeilenhöhe - uint16(schreiber.GibSchriftgroesse())) / 2
@@ -45,13 +52,17 @@ func (f *miniBSpielinfo) Zeichne() {
 
 	// zeichne beide Fortschritts-Balken
 	f.stiftfarbe(gibFarbe(FanzTreffer())) // Treffer
-	gfx.Vollrechteck(xSBalken, f.startY+1, min(bBalken*uint16(tr)/uint16(anzKugeln), bBalken), zeilenhöhe-2)
+	gfx.Vollrechteck(xSBalken, f.startY+1, uMin16(bBalken*tr/anzKugeln, bBalken), zeilenhöhe-2)
 	f.stiftfarbe(gibFarbe(FanzFouls())) // Fouls
-	gfx.Vollrechteck(xSBalken, f.startY+zeilenhöhe+1, min(bBalken*uint16(st)/uint16(anzKugeln), bBalken), zeilenhöhe-2)
-	f.stiftfarbe(gibFarbe(FanzFouls()))
-	schreiber.Schreibe(xSBalken+d, f.startY+d, fmt.Sprint(tr))
-	f.stiftfarbe(gibFarbe(FanzTreffer()))
-	schreiber.Schreibe(xSBalken+d, f.startY+zeilenhöhe+d, fmt.Sprint(st))
+	gfx.Vollrechteck(xSBalken, f.startY+zeilenhöhe+1, uMin16(bBalken*st/anzKugeln, bBalken), zeilenhöhe-2)
+	if tr > 0 {
+		f.stiftfarbe(gibFarbe(FanzFouls()))
+		schreiber.Schreibe(xSBalken+d, f.startY+d, fmt.Sprint(tr))
+	}
+	if st > 0 {
+		f.stiftfarbe(gibFarbe(FanzTreffer()))
+		schreiber.Schreibe(xSBalken+d, f.startY+zeilenhöhe+d, fmt.Sprint(st))
+	}
 
 	// Kreis links zeigt Treffer an
 	schreiber.SetzeSchriftgroesse(int(ra * 4 / 3))
