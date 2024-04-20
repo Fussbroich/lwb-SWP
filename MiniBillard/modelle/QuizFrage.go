@@ -1,20 +1,19 @@
 package modelle
 
-// TODO Ein Quiz ist ...
+// Eine QuizFrage ist ein Container für eine Frage mit 4 Antwortmöglichkeiten.
 //
-//	New...()
+//	NewQuizFrage(frage, a1, a2, a3, a4 string, richtig int) erzeugt eine Frage.
 type QuizFrage interface {
-	// TODO Spezifikation
-	// ...
-	//
-	//	Vor.: ...
-	//	Eff.: ...
+	// Getter für den Fragetext
+	//	Vor.: keine
+	//	Erg.: der Fragetext
 	GibFrage() string
+	// Getter für die 4 Antwortmöglichkeiten.
+	//	Vor.: keine
+	//	Erg.: die Antworten
 	GibAntworten() [4]string
-	// TODO Spezifikation
-	// ...
-	//
-	//	Vor.: ...
-	//	Eff.: ...
+	// Prüfe, ob eine bestimmte Antwort die richtige ist.
+	//	Vor.: keine
+	//	Eff.: wahr, falls die Antwort stimmt, sonst falsch.
 	IstRichtig(int) bool
 }

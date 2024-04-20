@@ -1,19 +1,20 @@
 package modelle
 
-// TODO Ein Quiz ist ...
+// Ein Quiz ist eine Sammlung von Fragen, die man aufrufen kann.
+// Dabei bestimmt die Implementierung, in welcher Reihenfolge die Fragen präsentiert werden.
 //
-//	New...()
+//	NewBeispielQuiz() - erzeugt ein Quiz mit sinnlosen Testfragen
+//	NewQuizInformatiksysteme() - erzeugt ein Quiz mit Fragen zur Computertechnik.
 type Quiz interface {
-	// TODO Spezifikation
-	// ...
+	// Schaltet das Quiz auf die nächste Frage, die "dran" ist.
 	//
-	//	Vor.: ...
-	//	Eff.: ...
+	//	Vor.: keine
+	//	Eff.: Die nächste Frage ist gesetzt.
 	NaechsteFrage()
-	// TODO Spezifikation
-	// ...
+
+	// Liefert die aktuell gesetzte Frage.
 	//
-	//	Vor.: ...
-	//	Eff.: ...
+	//	Vor.: keine
+	//	Erg.: Die aktuelle Frage.
 	GibAktuelleFrage() QuizFrage
 }
