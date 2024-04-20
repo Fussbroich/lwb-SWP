@@ -1,26 +1,61 @@
 package views_controls
 
+// TODO Ein Widget ist ...
+//
+//	Vor.: Das Grafikpaket gfx muss im GOPATH installiert sein.
+//
+//	New...()
 type Widget interface {
-	// Konstruktormethoden
+	// TODO Spezifikation
+	// ...
+	//
+	//	Vor.: ...
+	//	Eff.: ...
 	SetzeKoordinaten(uint16, uint16, uint16, uint16)
 	SetzeFarben(string, string)
-	LadeFarben()
 	SetzeTransparenz(uint8)
 	SetzeEckradius(uint16)
+	// Getter
 	GibStartkoordinaten() (uint16, uint16)
 	GibGroesse() (uint16, uint16)
 	// darstellen
+	// TODO Spezifikation
+	// ...
+	//
+	//	Vor.: ...
+	//	Eff.: ...
+	LadeFarben()
+	// TODO Spezifikation
+	// ...
+	//
+	//	Vor.: ...
+	//	Eff.: ...
 	Zeichne()
 	ZeichneOffset(uint16) // für besondere Fälle
 	ZeichneRand()
 	ZeichneLayout() // Testzwecke
 	// aktivieren und deaktivieren
+	// TODO Spezifikation
+	// ...
+	//
+	//	Vor.: ...
+	//	Eff.: ...
 	IstAktiv() bool
 	DarstellenAnAus()
 	Einblenden()
 	Ausblenden()
 	// Maussteuerung
+	// TODO Spezifikation
+	// ...
+	//
+	//	Vor.: ...
+	//	Eff.: ...
 	ImFenster(uint16, uint16) bool
+	// TODO Spezifikation
+	// ...
+	//
+	//	Vor.: ...
+	//	Eff.: ...
 	MausklickBei(uint16, uint16)
 	MausBei(uint16, uint16)
 	MausScrolltHoch()

@@ -2,7 +2,15 @@ package modelle
 
 import "../hilf"
 
+// TODO Eine MBKugel ist ...
+//
+//	New...()
 type MBKugel interface {
+	// TODO Spezifikation
+	// ...
+	//
+	//	Vor.: ...
+	//	Eff.: ...
 	BewegenIn(MiniBillardSpiel)
 	SetzeKollidiertMit(MBKugel)
 	SetzeKollidiertZurueck()

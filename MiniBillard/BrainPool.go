@@ -21,23 +21,34 @@ import (
 	"./views_controls"
 )
 
-type BPApp interface {
+// Eine App ist eine grafische Anwendung, die im "unmittelbaren Modus" in einem einzigen
+// Fenster läuft. Das bedeutet, dass nach jedem zeitlichen "Tick" (Zeiteinheit) das gesamte
+// Fenster mit allen grafischen Elementen (Widgets) neu gezeichnet wird. Die Modelle sind
+// Teil der App, und ihr Zustand wird jedesmal neu abgefragt.
+//
+//	Vor.: Das Grafikpaket gfx muss im GOPATH installiert sein.
+//
+//	Erzeugung eines BrainPool-Spiels (Bislang einzige Verwendung ;-) mit
+//	NewBPApp(uint16) - erhält die gewünschte Fensterbreite in Pixeln
+type App interface {
+	// Startet die Laufzeit-Elemente der App.
+	//
+	//	Vor.: die App läuft nicht
+	//	Eff.: Die App wurde gestartet und ein gfx-Fenster geöffnet.
 	Run()
-	Quit()
 
-	HilfeAnAus()
-	ZeitlupeAnAus()
-	NeuesSpielStarten()
-	PauseAnAus()
-	DarkmodeAnAus()
-	MusikAn()
+	// Stoppt die Laufzeit-Elemente der App auf geregelte Art und Weise.
+	//
+	//	Vor.: die App läuft
+	//	Eff.: Die App wurde beendet und das gfx-Fenster geschlossen.
+	Quit()
 }
 
 type bpapp struct {
-	laeuft     bool
-	rastermass uint16
-	breite     uint16 // Größe des gesamten App-Fensters
-	hoehe      uint16 // Größe des gesamten App-Fensters
+	laeuft bool
+	// Größe des gesamten App-Fensters
+	breite uint16
+	hoehe  uint16
 	// Klänge
 	musik      klaenge.Klang
 	geraeusche klaenge.Klang
@@ -50,17 +61,20 @@ type bpapp struct {
 	hilfeFenster    views_controls.Widget
 	gameOverFenster views_controls.Widget
 	hintergrund     views_controls.Widget
+	quitButton      views_controls.Widget
 	klickbare       []views_controls.Widget
-	renderer        views_controls.FensterZeichner
-	// Controls
+	// Verwalter für den Zeichen-Loop
+	renderer views_controls.FensterZeichner
+	// separates Eingabe-Control
 	mausSteuerung views_controls.EingabeRoutine
-	umschalter    hilf.Routine
+	// Spielmodus-Umschalter
+	umschalter hilf.Routine
 }
 
-// Zweck: Konstruktor - baut eine App zusammen
+// Zweck: Konstruktor für BrainPool - baut eine App zusammen
 //
 //	Vor.:  keine
-//	Eff.:  Die App steht zum Starten bereit.
+//	Eff.:  Ein App-Objekt steht zum Starten bereit.
 func NewBPApp(b uint16) *bpapp {
 	if b > 1920 {
 		b = 1920 // größtmögliches gfx-Fenster ist 1920 Pixel breit
@@ -81,7 +95,7 @@ func NewBPApp(b uint16) *bpapp {
 	var g uint16 = b / 32 // Rastermass für dieses App-Design
 
 	// Das Seitenverhältnis des App-Fensters ist B:H = 16:11
-	a := bpapp{rastermass: g, breite: 32 * g, hoehe: 22 * g, klickbare: []views_controls.Widget{}}
+	a := bpapp{breite: 32 * g, hoehe: 22 * g, klickbare: []views_controls.Widget{}}
 
 	a.musik = klaenge.CoolJazz2641SOUND()
 	a.geraeusche = klaenge.BillardPubAmbienceSOUND()
@@ -115,10 +129,10 @@ func NewBPApp(b uint16) *bpapp {
 
 	//setze Layout
 	a.hintergrund.SetzeKoordinaten(0, 0, a.breite, a.hoehe)
-	var xs, ys, xe, ye uint16 = 4 * a.rastermass, 6 * a.rastermass, 28 * a.rastermass, 18 * a.rastermass
-	var g3 uint16 = a.rastermass + a.rastermass/3
-	punktezaehler.SetzeKoordinaten(xs-g3, 1*a.rastermass, 18*a.rastermass, 3*a.rastermass)
-	restzeit.SetzeKoordinaten(20*a.rastermass+g3, a.rastermass, xe+g3, 3*a.rastermass)
+	var xs, ys, xe, ye uint16 = 4 * g, 6 * g, 28 * g, 18 * g
+	var g3 uint16 = g + g/3
+	punktezaehler.SetzeKoordinaten(xs-g3, 1*g, 18*g, 3*g)
+	restzeit.SetzeKoordinaten(20*g+g3, g, xe+g3, 3*g)
 	bande.SetzeKoordinaten(xs-g3, ys-g3, xe+g3, ye+g3)
 	bande.SetzeEckradius(g3)
 	a.spielFenster.SetzeKoordinaten(xs, ys, xe, ye)
@@ -147,11 +161,13 @@ func NewBPApp(b uint16) *bpapp {
 	darkButton := views_controls.NewButton("(d)unkel/hell", a.DarkmodeAnAus)
 	quitButton := views_controls.NewButton("(q)uit", a.Quit)
 
-	a.klickbare = []views_controls.Widget{hilfeButton, neuesSpielButton, pauseButton, darkButton, quitButton}
-	zb := (a.breite - 2*a.rastermass) / uint16(len(a.klickbare))
+	// Alle anklickbaren Widgets in ein Feld, damit man nicht alle einzeln bahandeln muss.
+	// Ausnahmen: spielfeld, quitButton müssen einzeln behandelt werden
+	a.klickbare = []views_controls.Widget{hilfeButton, neuesSpielButton, pauseButton, darkButton}
+	zb := (a.breite - 2*g) / uint16(len(a.klickbare))
 	for i, k := range a.klickbare {
-		k.SetzeKoordinaten(a.rastermass+uint16(i)*zb+zb/8, ye+5*a.rastermass/2, a.rastermass+uint16(i+1)*zb-zb/8, ye+13*a.rastermass/4)
-		k.SetzeEckradius(a.rastermass / 3)
+		k.SetzeKoordinaten(g+uint16(i)*zb+zb/8, ye+5*g/2, g+uint16(i+1)*zb-zb/8, ye+13*g/4)
+		k.SetzeEckradius(g / 3)
 		k.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
 	}
 
@@ -170,7 +186,7 @@ func NewBPApp(b uint16) *bpapp {
 // Aktion für einen klickbaren Button oder eine Taste
 //
 //	Vor.: keine
-//	Eff.: zeigt das Hilfefenster an oder blendet es wieder aus. Das Spiel wird solang angehalten.
+//	Eff.: zeigt das Hilfefenster an oder blendet es wieder aus. Das Spielmodell wird solang angehalten.
 func (a *bpapp) HilfeAnAus() {
 	if a.hilfeFenster.IstAktiv() {
 		a.hilfeFenster.Ausblenden()
@@ -235,8 +251,7 @@ func (a *bpapp) ZeitlupeAnAus() {
 }
 
 // Umschalter zwischen den App-Zuständen (wird als go-Routine ausgelagert)
-//
-// Zweck: die Umschaltung zwischen Quiz und Spiel gemäß der Regeln.
+// Regeln die Umschaltung zwischen Quiz und Spiel gemäß der Regeln.
 //
 //	Vor.: keine
 //	Eff.:
@@ -270,15 +285,21 @@ func (a *bpapp) quizUmschalterFunktion() func() {
 	}
 }
 
-// Die Maussteuerung (wird als go-Routine ausgelagert)
+// Die Maussteuerung der App (kann als go-Routine laufen).
 //
 //	Vor.: keine
 //	Eff.: Gibt einige der möglichen Mausaktionen an passende Widgets weiter.
 //	Sonst: keiner
-func (a *bpapp) mausSteuerFunktion() func(uint8, int8, uint16, uint16) {
-	return func(taste uint8, status int8, mausX, mausY uint16) {
+func (a *bpapp) mausSteuerFunktion() func(uint8, int8, uint16, uint16) (quitScan bool) {
+	return func(taste uint8, status int8, mausX, mausY uint16) (quitScan bool) {
 		if taste == 1 && status == -1 { // es wurde links geklickt
-			// anklickbare Widgets abfragen
+			// erstmal schauen, ob die Mausabfrage beendet werden soll
+			if a.quitButton.IstAktiv() && a.quitButton.ImFenster(mausX, mausY) {
+				a.quitButton.MausklickBei(mausX, mausY)
+				// Diese Funktion nicht mehr aufrufen:
+				return true
+			}
+			// sonstige anklickbare Widgets (aber nicht das Spielfenster) abfragen
 			var benutzt bool
 			for _, b := range a.klickbare {
 				if b.IstAktiv() && b.ImFenster(mausX, mausY) {
@@ -287,14 +308,15 @@ func (a *bpapp) mausSteuerFunktion() func(uint8, int8, uint16, uint16) {
 					break
 				}
 			}
-			// falls niemand den Klick wollte, gib ihn ans Spiel
+			// Falls bislang niemand den Klick wollte, gib ihn ans Spiel.
+			// (Zum Spielen kann man irgendwo klicken, daher die Sonderbehandlung ...)
 			if !benutzt && a.spielFenster.IstAktiv() {
 				// kann auch außerhalb des Tuchs klicken
 				a.spielFenster.MausklickBei(mausX, mausY)
 			}
 		} else { // es wurde nicht geklickt
 			if a.spielFenster.IstAktiv() {
-				// sonst: zielen und Kraft aufbauen
+				// zielen und Kraft aufbauen
 				switch taste {
 				case 4: // vorwärts scrollen
 					a.spielFenster.MausScrolltHoch()
@@ -305,15 +327,17 @@ func (a *bpapp) mausSteuerFunktion() func(uint8, int8, uint16, uint16) {
 				}
 			}
 		}
+		return
 	}
 }
 
-// Die Tastatursteuerung.
+// Die Tastatursteuerung der App.
 //
 //	Vor: keine
-//	Eff.: die zur Taste passende Spiel-Aktion ist ausgeführt
-func (a *bpapp) tastenSteuerFunktion() func(uint16, uint8, uint16) bool {
-	return func(taste uint16, gedrückt uint8, tiefe uint16) bool {
+//	Eff.: die zur Taste passende Spiel-Aktion ist ausgeführt.
+//	Erg.: Soll der Afrufer die Abfrage beenden (Quit) true, sonst false.
+func (a *bpapp) tastenSteuerFunktion() func(uint16, uint8, uint16) (quitScan bool) {
+	return func(taste uint16, gedrückt uint8, tiefe uint16) (quitScan bool) {
 		if gedrückt == 1 {
 			switch taste {
 			case 'h': // Hilfe an-aus
@@ -328,6 +352,7 @@ func (a *bpapp) tastenSteuerFunktion() func(uint16, uint8, uint16) bool {
 				a.MusikAn() // go-Routine
 			case 'q':
 				a.Quit()
+				// Tastaturabfrage beenden (diese Funktion nicht mehr aufrufen):
 				return true
 				// ######  Testzwecke ####################################
 			case 's': // Zeitlupe
@@ -349,11 +374,11 @@ func (a *bpapp) tastenSteuerFunktion() func(uint16, uint8, uint16) bool {
 				a.billard.SetzeKugeln9Ball()
 			}
 		}
-		return false
+		return
 	}
 }
 
-// Zweck: startet die Laufzeit-Elemente der App
+// Startet die Laufzeit-Elemente der BrainPool App.
 //
 //	Vor.: die App läuft nicht
 //	Eff.: Die App wurde gestartet und ein gfx-Fenster geöffnet.
@@ -367,31 +392,34 @@ func (a *bpapp) Run() {
 	gfx.Fenster(b, h) //Fenstergröße
 	gfx.Fenstertitel("BrainPool - Das MiniBillard für Schlaue.")
 
-	a.billard.Starte()
+	a.billard.Starte() // Modell bereit zum Spielen
 	a.spielFenster.Einblenden()
 	a.quizFenster.Ausblenden()
 	a.hilfeFenster.Ausblenden()
 	a.gameOverFenster.Ausblenden()
-	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion())
-	a.mausSteuerung.StarteRate(20) // go-Routine
-	// der eigentliche Event-Loop der App läuft nebenher
-	a.umschalter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion())
-	a.umschalter.StarteRate(20) // go-Routine
-	a.geraeusche.StarteLoop()   // go-Routine
-	a.renderer.Starte()         // go-Routine
+	a.geraeusche.StarteLoop() // go-Routine
+	a.renderer.Starte()       // go-Routine
 	a.laeuft = true
 
+	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion())
+	a.mausSteuerung.StarteRate(20) // go-Routine
+	//  ####### der eigentliche Event-Loop der App läuft nebenher #############
+	a.umschalter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion())
+	a.umschalter.StarteRate(20) // go-Routine
 	// ####### der Tastatur-Loop darf dafür hier existieren ####################
+	var quitScan bool
 	var aktion func(uint16, uint8, uint16) bool = a.tastenSteuerFunktion()
 	for {
 		taste, gedrückt, tiefe := gfx.TastaturLesen1() // blockiert, bis Taste gedrückt
-		if aktion(taste, gedrückt, tiefe) {
+		quitScan = aktion(taste, gedrückt, tiefe)
+		if quitScan {
+			// Das Tastaturlesen beenden und aus dem Loop aussteigen.
 			return
 		}
 	}
 }
 
-// Zweck: stoppt die Laufzeit-Elemente der App
+// Stoppt die Laufzeit-Elemente der BrainPool App auf geregelte Art und Weise.
 //
 //	Vor.: die App läuft
 //	Eff.: Die App wurde beendet und das gfx-Fenster geschlossen.
