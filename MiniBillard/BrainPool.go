@@ -62,7 +62,7 @@ type bpapp struct {
 	gameOverFenster views_controls.Widget
 	hintergrund     views_controls.Widget
 	quitButton      views_controls.Widget
-	klickbare       []views_controls.Widget
+	buttonLeiste    []views_controls.Widget
 	// Verwalter für den Zeichen-Loop
 	renderer views_controls.FensterZeichner
 	// separates Eingabe-Control
@@ -95,7 +95,7 @@ func NewBPApp(b uint16) *bpapp {
 	var g uint16 = b / 32 // Rastermass für dieses App-Design
 
 	// Das Seitenverhältnis des App-Fensters ist B:H = 16:11
-	a := bpapp{breite: 32 * g, hoehe: 22 * g, klickbare: []views_controls.Widget{}}
+	a := bpapp{breite: 32 * g, hoehe: 22 * g, buttonLeiste: []views_controls.Widget{}}
 
 	a.musik = klaenge.CoolJazz2641SOUND()
 	a.geraeusche = klaenge.BillardPubAmbienceSOUND()
@@ -159,23 +159,19 @@ func NewBPApp(b uint16) *bpapp {
 	neuesSpielButton := views_controls.NewButton("(n)eues Spiel", a.NeuesSpielStarten)
 	pauseButton := views_controls.NewButton("(m)usik spielen", a.MusikAn)
 	darkButton := views_controls.NewButton("(d)unkel/hell", a.DarkmodeAnAus)
-	quitButton := views_controls.NewButton("(q)uit", a.Quit)
+	a.quitButton = views_controls.NewButton("(q)uit", a.Quit)
+	a.buttonLeiste = []views_controls.Widget{hilfeButton, neuesSpielButton, pauseButton, darkButton, a.quitButton}
 
-	// Alle anklickbaren Widgets in ein Feld, damit man nicht alle einzeln bahandeln muss.
-	// Ausnahmen: spielfeld, quitButton müssen einzeln behandelt werden
-	a.klickbare = []views_controls.Widget{hilfeButton, neuesSpielButton, pauseButton, darkButton}
-	zb := (a.breite - 2*g) / uint16(len(a.klickbare))
-	for i, k := range a.klickbare {
-		k.SetzeKoordinaten(g+uint16(i)*zb+zb/8, ye+5*g/2, g+uint16(i+1)*zb-zb/8, ye+13*g/4)
-		k.SetzeEckradius(g / 3)
-		k.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
+	zb := (a.breite - 2*g) / uint16(len(a.buttonLeiste))
+	for i, b := range a.buttonLeiste {
+		b.SetzeKoordinaten(g+uint16(i)*zb+zb/8, ye+5*g/2, g+uint16(i+1)*zb-zb/8, ye+13*g/4)
+		b.SetzeEckradius(g / 3)
+		b.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
 	}
 
-	// Quizzes sind auch klickbar, aber das Spielfenster wird besonders behandelt
-	a.klickbare = append(a.klickbare, a.quizFenster)
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
 	a.renderer.SetzeWidgets(bande, a.spielFenster, a.quizFenster, punktezaehler, restzeit,
-		hilfeButton, a.hilfeFenster, neuesSpielButton, pauseButton, darkButton, quitButton,
+		hilfeButton, a.hilfeFenster, neuesSpielButton, pauseButton, darkButton, a.quitButton,
 		a.gameOverFenster)
 
 	return &a
@@ -285,7 +281,7 @@ func (a *bpapp) quizUmschalterFunktion() func() {
 	}
 }
 
-// Die Maussteuerung der App (kann als go-Routine laufen).
+// Die Maussteuerung der App (kann als go-Routine in einem Loop laufen).
 //
 //	Vor.: keine
 //	Eff.: Gibt einige der möglichen Mausaktionen an passende Widgets weiter.
@@ -293,28 +289,25 @@ func (a *bpapp) quizUmschalterFunktion() func() {
 func (a *bpapp) mausSteuerFunktion() func(uint8, int8, uint16, uint16) (quitScan bool) {
 	return func(taste uint8, status int8, mausX, mausY uint16) (quitScan bool) {
 		if taste == 1 && status == -1 { // es wurde links geklickt
-			// erstmal schauen, ob die Mausabfrage beendet werden soll
-			if a.quitButton.IstAktiv() && a.quitButton.ImFenster(mausX, mausY) {
-				a.quitButton.MausklickBei(mausX, mausY)
-				// Diese Funktion nicht mehr aufrufen:
-				return true
-			}
-			// sonstige anklickbare Widgets (aber nicht das Spielfenster) abfragen
-			var benutzt bool
-			for _, b := range a.klickbare {
+			// Buttonleiste abfragen
+			for _, b := range a.buttonLeiste {
 				if b.IstAktiv() && b.ImFenster(mausX, mausY) {
 					b.MausklickBei(mausX, mausY)
-					benutzt = true
-					break
+					return
 				}
 			}
+			// schauen, ob das Quiz angeklickt wurde
+			if a.quizFenster.IstAktiv() && a.quizFenster.ImFenster(mausX, mausY) {
+				a.quizFenster.MausklickBei(mausX, mausY)
+				return
+			}
 			// Falls bislang niemand den Klick wollte, gib ihn ans Spiel.
-			// (Zum Spielen kann man irgendwo klicken, daher die Sonderbehandlung ...)
-			if !benutzt && a.spielFenster.IstAktiv() {
+			// (Zum Spielen kann man auch außerhalb des Spieltisches klicken, daher die Sonderbehandlung ...)
+			if a.spielFenster.IstAktiv() {
 				// kann auch außerhalb des Tuchs klicken
 				a.spielFenster.MausklickBei(mausX, mausY)
 			}
-		} else { // es wurde nicht geklickt
+		} else { // es wurde gar nicht geklickt
 			if a.spielFenster.IstAktiv() {
 				// zielen und Kraft aufbauen
 				switch taste {
