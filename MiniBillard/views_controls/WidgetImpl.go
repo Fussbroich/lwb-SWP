@@ -19,7 +19,11 @@ type widget struct {
 
 // ########## Methoden für die Konstruktion ############################################
 
-func NewFenster() *widget { return &widget{hg: Weiss(), vg: Schwarz(), aktiv: true} }
+func NewFenster() *widget {
+	w := widget{aktiv: true}
+	w.SetzeFarben(Fhintergrund(), Ftext())
+	return &w
+}
 
 func (f *widget) SetzeKoordinaten(startx, starty, stopx, stopy uint16) {
 	f.startX, f.startY, f.stopX, f.stopY = startx, starty, stopx, stopy

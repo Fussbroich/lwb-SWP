@@ -43,7 +43,9 @@ func (r *fzeichner) Starte() {
 			}
 			gfx.UpdateAus()
 			gfx.Cls()
-			r.hintergrund.Zeichne()
+			if r.hintergrund != nil {
+				r.hintergrund.Zeichne()
+			}
 			for _, f := range r.widgets {
 				if f.IstAktiv() {
 					f.Zeichne()
@@ -52,17 +54,19 @@ func (r *fzeichner) Starte() {
 					}
 				}
 			}
-			b, h := r.hintergrund.GibGroesse()
-			// zeige die frame rate
-			fps := NewInfoText(fmt.Sprintf("%04d fps", r.updater.GibRate()/10*10))
-			fps.SetzeKoordinaten(0, 0, b/2, h/30)
-			fps.SetzeFarben(Fanzeige(), Finfos())
-			fps.Zeichne()
-			// zeige das copyright an
-			copy := NewInfoText("(c)2024 Bettina Chang, Thomas Schrader")
-			copy.SetzeKoordinaten(2*b/3, 0, b, h/30)
-			copy.SetzeFarben(Fanzeige(), Finfos())
-			copy.Zeichne()
+			if r.hintergrund != nil {
+				b, h := r.hintergrund.GibGroesse()
+				// zeige die frame rate
+				fps := NewInfoText(fmt.Sprintf("%04d fps", r.updater.GibRate()/10*10))
+				fps.SetzeKoordinaten(0, 0, b/2, h/30)
+				fps.SetzeFarben(Fanzeige(), Finfos())
+				fps.Zeichne()
+				// zeige das copyright an
+				copy := NewInfoText("(c)2024 Bettina Chang, Thomas Schrader")
+				copy.SetzeKoordinaten(2*b/3, 0, b, h/30)
+				copy.SetzeFarben(Fanzeige(), Finfos())
+				copy.Zeichne()
+			}
 			if r.overlay != nil {
 				r.overlay.Zeichne()
 			}
@@ -89,7 +93,9 @@ func (r *fzeichner) DarkmodeAnAus() {
 	} else {
 		StandardFarbSchema()
 	}
-	r.hintergrund.LadeFarben()
+	if r.hintergrund != nil {
+		r.hintergrund.LadeFarben()
+	}
 	if r.overlay != nil {
 		r.overlay.LadeFarben()
 	}
