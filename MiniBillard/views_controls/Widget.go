@@ -52,7 +52,7 @@ type Widget interface {
 	Zeichne()
 	// Die Datenlademethode
 	//	Vor.: keine
-	//	Eff.: Das Widget lädt die Daten aus seinem zugeordneten Modell neu.
+	//	Eff.: Das Widget lädt seine anzuzeigenden Daten - falls vorhanden - aus seinem zugeordneten Modell neu.
 	Update()
 	// für besondere Fälle
 	// (beispielsweise, wenn der Rand besser zu sehen sein soll)

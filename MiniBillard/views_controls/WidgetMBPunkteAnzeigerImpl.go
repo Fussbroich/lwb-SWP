@@ -8,7 +8,8 @@ import (
 )
 
 type miniBSpielinfo struct {
-	billard modelle.MiniBillardSpiel
+	billard                     modelle.MiniBillardSpiel
+	anzKugeln, treffer, strafen uint16
 	widget
 }
 
@@ -23,6 +24,16 @@ func uMin16(a, b uint16) uint16 {
 	return b
 }
 
+func (f *miniBSpielinfo) Update() {
+	anz := uint16(len(f.billard.GibKugeln()) - 1)
+	tr, st := uint16(f.billard.GibTreffer()), uint16(f.billard.GibStrafpunkte())
+	f.veraltet = anz != f.anzKugeln || tr != f.treffer || st != f.strafen
+	if !f.veraltet {
+		return
+	}
+	f.anzKugeln, f.treffer, f.strafen = anz, tr, st
+}
+
 func (f *miniBSpielinfo) Zeichne() {
 	if !f.IstAktiv() {
 		return
@@ -32,11 +43,8 @@ func (f *miniBSpielinfo) Zeichne() {
 	breite, höhe := f.GibGroesse()
 	ra := höhe / 2
 
-	var zeilenhöhe uint16
 	// dieses Widget zeigt Treffer und Strafen an
-	var anzKugeln uint16 = uint16(len(f.billard.GibKugeln()) - 1)
-	tr, st := uint16(f.billard.GibTreffer()), uint16(f.billard.GibStrafpunkte())
-	zeilenhöhe = höhe / 2
+	var zeilenhöhe uint16 = höhe / 2
 	schreiber.SetzeSchriftgroesse(int(zeilenhöhe) * 3 / 5)
 	d := (zeilenhöhe - uint16(schreiber.GibSchriftgroesse())) / 2
 	var bBalken uint16 = breite - 2*ra - 5*uint16(schreiber.GibSchriftgroesse())
@@ -52,16 +60,16 @@ func (f *miniBSpielinfo) Zeichne() {
 
 	// zeichne beide Fortschritts-Balken
 	f.stiftfarbe(gibFarbe(FanzTreffer())) // Treffer
-	gfx.Vollrechteck(xSBalken, f.startY+1, uMin16(bBalken*tr/anzKugeln, bBalken), zeilenhöhe-2)
+	gfx.Vollrechteck(xSBalken, f.startY+1, uMin16(bBalken*f.treffer/f.anzKugeln, bBalken), zeilenhöhe-2)
 	f.stiftfarbe(gibFarbe(FanzFouls())) // Fouls
-	gfx.Vollrechteck(xSBalken, f.startY+zeilenhöhe+1, uMin16(bBalken*st/anzKugeln, bBalken), zeilenhöhe-2)
-	if tr > 0 {
+	gfx.Vollrechteck(xSBalken, f.startY+zeilenhöhe+1, uMin16(bBalken*f.strafen/f.anzKugeln, bBalken), zeilenhöhe-2)
+	if f.treffer > 0 {
 		f.stiftfarbe(gibFarbe(FanzFouls()))
-		schreiber.Schreibe(xSBalken+d, f.startY+d, fmt.Sprint(tr))
+		schreiber.Schreibe(xSBalken+d, f.startY+d, fmt.Sprint(f.treffer))
 	}
-	if st > 0 {
+	if f.strafen > 0 {
 		f.stiftfarbe(gibFarbe(FanzTreffer()))
-		schreiber.Schreibe(xSBalken+d, f.startY+zeilenhöhe+d, fmt.Sprint(st))
+		schreiber.Schreibe(xSBalken+d, f.startY+zeilenhöhe+d, fmt.Sprint(f.strafen))
 	}
 
 	// Kreis links zeigt Treffer an
@@ -69,12 +77,12 @@ func (f *miniBSpielinfo) Zeichne() {
 	f.stiftfarbe(f.vg)
 	f.kreisGFX(ra, ra, ra)
 	var x, y uint16
-	if tr > 9 {
+	if f.treffer > 9 {
 		x = ra + f.startX - uint16(schreiber.GibSchriftgroesse())*2/5
 		y = ra + f.startY - uint16(schreiber.GibSchriftgroesse())/2
 	} else {
 		x = ra + f.startX - uint16(schreiber.GibSchriftgroesse())/4
 		y = ra + f.startY - uint16(schreiber.GibSchriftgroesse())/2
 	}
-	schreiber.Schreibe(x, y, fmt.Sprintf("%d", tr))
+	schreiber.Schreibe(x, y, fmt.Sprintf("%d", f.treffer))
 }

@@ -8,7 +8,8 @@ import (
 )
 
 type widget struct {
-	aktiv          bool
+	aktiv          bool // wahr: muss gezeichnet werden
+	veraltet       bool // wahr: muss neu gezeichnet werden
 	hg, vg         Farbe
 	hgName, vgName string
 	startX, startY uint16
@@ -26,23 +27,28 @@ func NewFenster() *widget {
 }
 
 func (f *widget) SetzeKoordinaten(startx, starty, stopx, stopy uint16) {
+	f.veraltet = true
 	f.startX, f.startY, f.stopX, f.stopY = startx, starty, stopx, stopy
 }
 
 func (f *widget) SetzeFarben(hg, vg string) {
+	f.veraltet = true
 	f.hgName, f.vgName = hg, vg
 	f.hg, f.vg = gibFarbe(f.hgName), gibFarbe(f.vgName)
 }
 
 func (f *widget) LadeFarben() {
+	f.veraltet = true
 	f.hg, f.vg = gibFarbe(f.hgName), gibFarbe(f.vgName)
 }
 
 func (f *widget) SetzeTransparenz(tr uint8) {
+	f.veraltet = true
 	f.trans = tr
 }
 
 func (f *widget) SetzeEckradius(ra uint16) {
+	f.veraltet = true
 	f.eckra = ra
 }
 
@@ -65,9 +71,7 @@ func (f *widget) ZeichneLayout() {
 	f.transparenz(0)
 }
 
-func (f *widget) Update() {
-	// Stub
-}
+func (f *widget) Update() {} // stub
 
 // Hier wird nur der Hintergrund gezeichnet, andere Widgets können dies erweitern.
 func (f *widget) Zeichne() {
@@ -147,11 +151,11 @@ func (f *widget) ZeichneRand() {
 
 func (f *widget) IstAktiv() bool { return f.aktiv }
 
-func (f *widget) DarstellenAnAus() { f.aktiv = !f.aktiv }
-
 func (f *widget) Einblenden() { f.aktiv = true }
 
 func (f *widget) Ausblenden() { f.aktiv = false }
+
+func (f *widget) DarstellenAnAus() { f.aktiv = !f.aktiv }
 
 // ########## Methoden für die Maussteuerung ############################################
 
