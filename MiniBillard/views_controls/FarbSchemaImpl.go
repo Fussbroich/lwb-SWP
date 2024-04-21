@@ -1,7 +1,11 @@
 package views_controls
 
 type FarbSchema interface {
-	GetFarbe(string) Farbe
+	// Getter für eine bestimmte Farbe aus einem Schema.
+	// Hinweis: Schema-Farben haben Namen (Strings). Wird eine unbekannte
+	// Farbe angefordert, so gibt die Methode rot zurück. Für die bekannten
+	// Farbnamen der hier vorinstallierten Schemata gibt es die Spezialfunktion F...()
+	GibFarbe(string) Farbe
 }
 
 type schema struct {
@@ -16,6 +20,7 @@ var (
 			"schwarz":     Schwarz(),
 			"hintergrund": F(225, 232, 236),
 			"text":        F(1, 88, 122),
+			"bande":       F(1, 88, 122),
 			"anzeige":     Weiss(),
 			"infos":       F(240, 255, 255),
 			"billardtuch": F(92, 179, 193),
@@ -33,7 +38,8 @@ var (
 			"weiss":       Weiss(),
 			"schwarz":     Schwarz(),
 			"hintergrund": F(25, 32, 36),
-			"text":        F(1, 88, 122),
+			"text":        F(125, 170, 195),
+			"bande":       F(1, 88, 122),
 			"anzeige":     F(25, 32, 36),
 			"infos":       F(140, 155, 155),
 			"billardtuch": F(92, 179, 193),
@@ -41,21 +47,21 @@ var (
 			"anz_treffer": F(143, 86, 0),
 			"anz_fouls":   F(119, 40, 0),
 			"quiz":        F(25, 32, 36),
-			"quiz_a0":     F(243, 186, 0),
-			"quiz_a1":     F(92, 179, 193),
-			"quiz_a2":     F(92, 179, 193),
-			"quiz_a3":     F(243, 186, 0)}}
+			"quiz_a0":     F(80, 64, 19),
+			"quiz_a1":     F(40, 61, 65),
+			"quiz_a2":     F(40, 61, 65),
+			"quiz_a3":     F(80, 64, 19)}}
 	farbschema *schema = &standardfarbschema
 )
 
-func StandardFarbSchema() { farbschema = &standardfarbschema }
+func SetzeStandardFarbSchema() { farbschema = &standardfarbschema }
 
-func DarkFarbSchema() { farbschema = &darkfarbschema }
+func SetzeDarkFarbSchema() { farbschema = &darkfarbschema }
 
 func (s *schema) GibFarbe(name string) Farbe {
 	c, ok := s.farben[name]
 	if !ok {
-		return Weiss()
+		return Rot()
 	}
 	return c
 }
@@ -72,6 +78,7 @@ func FWeiss() string       { return "weiss" }
 func FSchwarz() string     { return "schwarz" }
 func Fhintergrund() string { return "hintergrund" }
 func Ftext() string        { return "text" }
+func Fbande() string       { return "bande" }
 func Fanzeige() string     { return "anzeige" }
 func Fbillardtuch() string { return "billardtuch" }
 func Finfos() string       { return "infos" }

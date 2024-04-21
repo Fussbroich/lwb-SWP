@@ -11,11 +11,14 @@ import (
 type miniBSpielfeld struct {
 	billard       modelle.MiniBillardSpiel
 	kugelZeichner *kugelZeichner
+	schreiber     *schreiber
 	widget
 }
 
 func NewMBSpieltisch(billard modelle.MiniBillardSpiel) *miniBSpielfeld {
-	return &miniBSpielfeld{billard: billard, widget: *NewFenster()}
+	f := miniBSpielfeld{billard: billard, widget: *NewFenster()}
+	f.schreiber = f.monoRegularSchreiber()
+	return &f
 }
 
 // stoßen
@@ -70,6 +73,10 @@ func (f *miniBSpielfeld) zeichneDiamant(x, y, d uint16) {
 	gfx.Volldreieck(x-d/2, y, x+d/2, y, x, y+d/2)
 }
 
+func (f *miniBSpielfeld) Update() {
+	// TODO kann man hier Rechenzeit sparen?
+}
+
 func (f *miniBSpielfeld) Zeichne() {
 	if !f.IstAktiv() {
 		return
@@ -77,12 +84,11 @@ func (f *miniBSpielfeld) Zeichne() {
 	if f.kugelZeichner == nil {
 		f.kugelZeichner = newKugelZeichnerIn(&f.widget)
 	}
+	// zeichne das Tuch
+	f.widget.Zeichne()
 	breite, höhe := f.GibGroesse()
 	kS := f.billard.GibSpielkugel()
 	ra := kS.GibRadius()
-	schreiber := f.monoRegularSchreiber()
-	// zeichne das Tuch
-	f.widget.Zeichne()
 
 	// zeichne Diamanten
 	f.stiftfarbe(f.vg)
@@ -118,16 +124,16 @@ func (f *miniBSpielfeld) Zeichne() {
 		f.breiteLinie(pK, pK.Plus(f.billard.GibVStoss().Mal(ra)), 4, farbe)
 		// Schreibe den Wert der Stärke daneben
 		f.stiftfarbe(F(100, 100, 100))
-		schreiber.SetzeSchriftgroesse(int(ra*0.67 + 0.5))
+		f.schreiber.SetzeSchriftgroesse(int(ra*0.67 + 0.5))
 		pStärke := pK.Plus(f.billard.GibVStoss().Mal(ra * 3 / 4))
-		schreiber.Schreibe(f.startX+uint16(pStärke.X()), f.startY+uint16(pStärke.Y()-2*ra), fmt.Sprintf("Stärke: %d", uint16(stärke+0.5)))
+		f.schreiber.Schreibe(f.startX+uint16(pStärke.X()), f.startY+uint16(pStärke.Y()-2*ra), fmt.Sprintf("Stärke: %d", uint16(stärke+0.5)))
 	}
 	// debugging
 	if !f.billard.Laeuft() {
 		// Pause
 		f.stiftfarbe(F(100, 100, 100))
-		schreiber.SetzeSchriftgroesse(int(f.billard.GibSpielkugel().GibRadius() + 0.5))
-		schreiber.Schreibe(4*breite/5, f.startY+5, "Pause")
+		f.schreiber.SetzeSchriftgroesse(int(f.billard.GibSpielkugel().GibRadius() + 0.5))
+		f.schreiber.Schreibe(4*breite/5, f.startY+5, "Pause")
 	} else if f.billard.IstZeitlupe() {
 		// zeichne Geschwindigkeiten
 		for _, k := range f.billard.GibAktiveKugeln() {
@@ -136,7 +142,7 @@ func (f *miniBSpielfeld) Zeichne() {
 			}
 		}
 		f.stiftfarbe(F(100, 100, 100))
-		schreiber.SetzeSchriftgroesse(int(f.billard.GibSpielkugel().GibRadius() + 0.5))
-		schreiber.Schreibe(4*breite/5, f.startY+5, "Zeitlupe")
+		f.schreiber.SetzeSchriftgroesse(int(f.billard.GibSpielkugel().GibRadius() + 0.5))
+		f.schreiber.Schreibe(4*breite/5, f.startY+5, "Zeitlupe")
 	}
 }

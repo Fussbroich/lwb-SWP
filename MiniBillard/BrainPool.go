@@ -146,7 +146,7 @@ func NewBPApp(b uint16) *bpapp {
 	//setzeFarben
 	a.hintergrund.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
 	a.spielFenster.SetzeFarben(views_controls.Fbillardtuch(), views_controls.Fdiamanten())
-	bande.SetzeFarben(views_controls.Ftext(), views_controls.Fanzeige())
+	bande.SetzeFarben(views_controls.Fbande(), views_controls.Fanzeige())
 	punktezaehler.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
 	punktezaehler.SetzeTransparenz(255)
 	restzeit.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())

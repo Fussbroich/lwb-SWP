@@ -42,7 +42,6 @@ func (f *quizfenster) Zeichne() {
 	if !f.IstAktiv() {
 		return
 	}
-	f.ZeichneRand()
 	f.widget.Zeichne()
 	f.stiftfarbe(f.vg)
 
@@ -76,7 +75,6 @@ func (f *quizfenster) Zeichne() {
 	f.antworten = [4]Widget{a0, a1, a2, a3}
 	f.frage.Zeichne()
 	for _, af := range f.antworten {
-		af.ZeichneRand()
 		af.Zeichne()
 	}
 }

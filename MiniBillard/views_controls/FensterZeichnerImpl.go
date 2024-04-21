@@ -93,9 +93,9 @@ func (r *fzeichner) LayoutAnAus() { r.layoutModus = !r.layoutModus }
 
 func (r *fzeichner) DarkmodeAnAus() {
 	if !r.darkmode {
-		DarkFarbSchema()
+		SetzeDarkFarbSchema()
 	} else {
-		StandardFarbSchema()
+		SetzeStandardFarbSchema()
 	}
 	if r.hintergrund != nil {
 		r.hintergrund.LadeFarben()
