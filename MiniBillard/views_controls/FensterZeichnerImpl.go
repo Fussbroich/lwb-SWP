@@ -44,14 +44,18 @@ func (r *fzeichner) Starte() {
 			gfx.UpdateAus()
 			gfx.Cls()
 			if r.hintergrund != nil {
+				r.hintergrund.Update()
 				r.hintergrund.Zeichne()
 			}
 			for _, f := range r.widgets {
-				if f.IstAktiv() {
-					f.Zeichne()
-					if r.layoutModus {
-						f.ZeichneLayout()
-					}
+				f.Update()
+			}
+			for _, f := range r.widgets {
+				f.Zeichne()
+			}
+			if r.layoutModus {
+				for _, f := range r.widgets {
+					f.ZeichneLayout()
 				}
 			}
 			if r.hintergrund != nil {

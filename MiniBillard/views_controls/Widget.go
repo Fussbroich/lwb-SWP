@@ -2,7 +2,7 @@ package views_controls
 
 // Ein Widget ist ein darstellbares Objekt mit einem bestimmten Design.
 //
-// Es kann oft Daten aus einem Modell abrufen.
+// Es hat oft ein Modell zugeordnet, aus dem es Daten abrufen kann.
 // Es kann bisweilen auch Mausaktionen enthalten und ausführen.
 //
 //	Vor.: Das Grafikpaket gfx muss im GOPATH installiert sein und
@@ -35,14 +35,25 @@ type Widget interface {
 	//	Erg.: die Breite und die Höhe sind geliefert
 	GibGroesse() (uint16, uint16)
 	// darstellen:
-	// Lädt die Anzeigefarben neu aus dem aktiven Schema.
+	// Lädt die Anzeigefarben neu aus dem aktiven Farb-Schema.
 	//	Vor.: keine
-	//	Eff.: Die Farben werden ans aktive Schema angepasst
+	//	Eff.: Die Farben werden nach Änderung des Schemas ans aktive Schema angepasst
 	LadeFarben()
 	// Die Darstellungsmethode
 	//	Vor.: keine
-	//	Eff.: Das Widget stellt sich im gfx-Fenster dar
+	//	Eff.: Das Widget stellt sich im gfx-Fenster dar, falls es aktiv ist.
+	// Die Oberklasse zeichnet den Hintergrund und ergänzende Klassen zeichnen neue Inhalte.
+	// Aufrufer (ergänzende Klassen) - die den Inhalt ergänzen wollen, müssen
+	// ihren Inhalt erst danach zeichnen, sonst wird
+	// dieser ggf. überdeckt. Transparenz wird beachtet.
+	//
+	//	Hinweise: Bei Widgets, die immer sichtbar sind, kann das Verhalten geändert werden,
+	//	so dass sie sich nur dann neu zeichnen, falls sich Daten geändert haben.
 	Zeichne()
+	// Die Datenlademethode
+	//	Vor.: keine
+	//	Eff.: Das Widget lädt die Daten aus seinem zugeordneten Modell neu.
+	Update()
 	// für besondere Fälle
 	// (beispielsweise, wenn der Rand besser zu sehen sein soll)
 	ZeichneOffset(uint16)

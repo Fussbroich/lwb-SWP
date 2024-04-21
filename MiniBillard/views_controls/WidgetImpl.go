@@ -65,10 +65,11 @@ func (f *widget) ZeichneLayout() {
 	f.transparenz(0)
 }
 
-// Zeichnet den Hintergrund und danach den Inhalt
-// Aufrufer - die den Inhalt ergänzen wollen, müssen
-// ihren Inhalt erst danach zeichnen, sonst wird
-// dieser ggf. überdeckt. Transparenz wird beachtet.
+func (f *widget) Update() {
+	// Stub
+}
+
+// Hier wird nur der Hintergrund gezeichnet, andere Widgets können dies erweitern.
 func (f *widget) Zeichne() {
 	if !f.IstAktiv() {
 		return
