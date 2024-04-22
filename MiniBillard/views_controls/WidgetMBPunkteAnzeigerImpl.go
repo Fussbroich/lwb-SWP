@@ -28,9 +28,6 @@ func (f *miniBSpielinfo) Update() {
 	anz := uint16(len(f.billard.GibKugeln()) - 1)
 	tr, st := uint16(f.billard.GibTreffer()), uint16(f.billard.GibStrafpunkte())
 	f.veraltet = anz != f.anzKugeln || tr != f.treffer || st != f.strafen
-	if !f.veraltet {
-		return
-	}
 	f.anzKugeln, f.treffer, f.strafen = anz, tr, st
 }
 

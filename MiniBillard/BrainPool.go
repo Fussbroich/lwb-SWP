@@ -119,9 +119,9 @@ func NewBPApp(b uint16) *bpapp {
 	bande := views_controls.NewFenster()
 	a.spielFenster = views_controls.NewMBSpieltisch(a.billard)
 	a.quizFenster = views_controls.NewQuizFenster(a.quiz, func() { a.billard.ReduziereStrafpunkte(); a.quiz.NaechsteFrage() }, func() { a.quiz.NaechsteFrage() })
-	a.hilfeFenster = views_controls.NewTextBox(hilfetext)
+	a.hilfeFenster = views_controls.NewTextBox(hilfetext, 18)
 	a.hilfeFenster.Ausblenden() // wäre standardmäßig eingeblendet
-	a.gameOverFenster = views_controls.NewTextBox("GAME OVER!\n\n\nStarte ein neues Spiel.")
+	a.gameOverFenster = views_controls.NewTextBox("GAME OVER!\n\n\nStarte ein neues Spiel.", 24)
 	a.gameOverFenster.Ausblenden() // wäre standardmäßig eingeblendet
 
 	a.renderer = views_controls.NewFensterZeichner()

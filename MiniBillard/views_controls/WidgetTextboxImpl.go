@@ -7,11 +7,19 @@ import (
 
 // Eine simple Box, die Text in Zeilen umbricht und anzeigt.
 type textbox struct {
-	text string
+	text           string
+	schriftgroesse int
+	schreiber      *schreiber
 	widget
 }
 
-func NewTextBox(t string) *textbox { return &textbox{text: t, widget: *NewFenster()} }
+func NewTextBox(t string, g int) *textbox {
+	w := textbox{text: t, schriftgroesse: g,
+		widget: *NewFenster()}
+	w.schreiber = w.monoRegularSchreiber()
+	w.schreiber.SetzeSchriftgroesse(g)
+	return &w
+}
 
 func teileTextInZeilen(text string, nMax int) (zeilen []string) {
 	// Brich Zeilen um, die länger als nMax Zeichen sind
@@ -64,17 +72,14 @@ func (f *textbox) Zeichne() {
 	f.widget.Zeichne()
 	B, H := f.GibGroesse()
 	f.stiftfarbe(f.vg)
-	schreiber := f.monoRegularSchreiber()
-	schreiber.SetzeSchriftgroesse(24)
-	// Schriftgroesse automatisch anpasssen bzgl. Gesamtfläche der Box
-	//	int(math.Min(24,
-	//		math.Sqrt(float64(B*H)/float64(utf8.RuneCountInString(f.text))*12/7*5/6))))
-
-	zMax, cMax := int(H)/schreiber.GibSchriftgroesse(), int(B)/(7*schreiber.GibSchriftgroesse()/12)
+	zMax, cMax := int(H)/f.schriftgroesse, int(B)/(2*f.schriftgroesse/3)
 	for z, zeile := range teileTextInZeilen(f.text, cMax) {
 		if z > zMax {
 			break
 		}
-		schreiber.Schreibe(f.startX+f.eckra, f.startY+f.eckra+uint16(z*(schreiber.GibSchriftgroesse()*6/5)), zeile)
+		f.schreiber.Schreibe(
+			f.startX+f.eckra,
+			f.startY+f.eckra+uint16(z*(f.schriftgroesse*6/5)),
+			zeile)
 	}
 }
