@@ -8,7 +8,7 @@
 //	Das Spielprogramm BrainPool -
 //	ein Softwareprojekt im Rahmen der Lehrerweiterbildung Berlin
 //
-// Datum: 19.04.2024
+// Datum: 22.04.2024
 package main
 
 import (
@@ -90,7 +90,7 @@ func NewBPApp(b uint16) *bpapp {
 		"Du spielst gegen die Zeit. Alle neun Kugel müssen versenkt werden. " +
 		"Es gibt ein Foul, wenn die weiße Kugel reingeht oder wenn bei einem Stoß gar keine Kugel versenkt wird.\n\n" +
 		"Im Quizmodus: Klicke die richtigen Antworten an, um Fouls abzuarbeiten.\n\n" +
-		"Die übrige Bedienung erfolgt mit den Buttons unten."
+		"Die übrige Bedienung erfolgt durch anklicken der Buttons unten oder drücken der entsprechenden Taste."
 
 	var g uint16 = b / 32 // Rastermass für dieses App-Design
 

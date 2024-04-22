@@ -113,7 +113,6 @@ func (k1 *mbkugel) pruefeKugelKollisionIn(s MiniBillardSpiel, k2 MBKugel) {
 	}
 
 	// Kugeln überlappen!
-	// TODO: darf nicht sein
 	überlappen := distAkt.Betrag() < k1.r+k2.GibRadius()
 
 	// die Stoßnormale geht durch die Mittelpunkte der Kugeln
