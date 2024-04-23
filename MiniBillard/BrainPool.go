@@ -12,6 +12,7 @@
 package main
 
 import (
+	"fmt"
 	"gfx"
 	"time"
 
@@ -254,30 +255,28 @@ func (a *bpapp) ZeitlupeAnAus() {
 //	Falls Spielzeit abgelaufen war: Spiel wird beendet.
 //	Falls Anzahl Fouls >> Anzahl Treffer: Quiz ist aktiviert.
 //	Falls Anzahl Fouls < Anzahl Treffer oder 0: Spiel ist aktiviert
-func (a *bpapp) quizUmschalterFunktion() func() {
-	return func() {
-		tr, st, rz := a.billard.GibTreffer(), a.billard.GibStrafpunkte(), a.billard.GibRestzeit()
-		if a.spielFenster.IstAktiv() &&
-			rz == 0 {
-			//Spielzeit abgelaufen
-			a.billard.Stoppe()
-			a.quizFenster.Ausblenden()
-			a.spielFenster.Ausblenden()
-			a.gameOverFenster.Einblenden()
-		} else if a.spielFenster.IstAktiv() &&
-			st > tr+2 { // Es sind zu viele Strafpunkte
-			// zum Quizmodus
-			a.billard.Stoppe()
-			a.spielFenster.Ausblenden()
-			a.quiz.NaechsteFrage()
-			a.quizFenster.Einblenden()
-		} else if a.quizFenster.IstAktiv() &&
-			(st == 0 || st < tr) { // Strafpunkte sind abgebaut
-			// zurück zum Spielmodus
-			a.quizFenster.Ausblenden()
-			a.billard.Starte()
-			a.spielFenster.Einblenden()
-		}
+func (a *bpapp) quizUmschalterFunktion() {
+	tr, st, rz := a.billard.GibTreffer(), a.billard.GibStrafpunkte(), a.billard.GibRestzeit()
+	if a.spielFenster.IstAktiv() &&
+		rz == 0 {
+		//Spielzeit abgelaufen
+		a.billard.Stoppe()
+		a.quizFenster.Ausblenden()
+		a.spielFenster.Ausblenden()
+		a.gameOverFenster.Einblenden()
+	} else if a.spielFenster.IstAktiv() &&
+		st > tr+2 { // Es sind zu viele Strafpunkte
+		// zum Quizmodus
+		a.billard.Stoppe()
+		a.spielFenster.Ausblenden()
+		a.quiz.NaechsteFrage()
+		a.quizFenster.Einblenden()
+	} else if a.quizFenster.IstAktiv() &&
+		(st == 0 || st < tr) { // Strafpunkte sind abgebaut
+		// zurück zum Spielmodus
+		a.quizFenster.Ausblenden()
+		a.billard.Starte()
+		a.spielFenster.Einblenden()
 	}
 }
 
@@ -286,41 +285,38 @@ func (a *bpapp) quizUmschalterFunktion() func() {
 //	Vor.: keine
 //	Eff.: Gibt einige der möglichen Mausaktionen an passende Widgets weiter.
 //	Sonst: keiner
-func (a *bpapp) mausSteuerFunktion() func(uint8, int8, uint16, uint16) (quitScan bool) {
-	return func(taste uint8, status int8, mausX, mausY uint16) (quitScan bool) {
-		if taste == 1 && status == -1 { // es wurde links geklickt
-			// Buttonleiste abfragen
-			for _, b := range a.buttonLeiste {
-				if b.IstAktiv() && b.ImFenster(mausX, mausY) {
-					b.MausklickBei(mausX, mausY)
-					return
-				}
-			}
-			// schauen, ob das Quiz angeklickt wurde
-			if a.quizFenster.IstAktiv() && a.quizFenster.ImFenster(mausX, mausY) {
-				a.quizFenster.MausklickBei(mausX, mausY)
+func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16) {
+	if taste == 1 && status == -1 { // es wurde links geklickt
+		// Buttonleiste abfragen
+		for _, b := range a.buttonLeiste {
+			if b.IstAktiv() && b.ImFenster(mausX, mausY) {
+				b.MausklickBei(mausX, mausY)
 				return
 			}
-			// Falls bislang niemand den Klick wollte, gib ihn ans Spiel.
-			// (Zum Spielen kann man auch außerhalb des Spieltisches klicken, daher die Sonderbehandlung ...)
-			if a.spielFenster.IstAktiv() {
-				// kann auch außerhalb des Tuchs klicken
-				a.spielFenster.MausklickBei(mausX, mausY)
-			}
-		} else { // es wurde gar nicht geklickt
-			if a.spielFenster.IstAktiv() {
-				// zielen und Kraft aufbauen
-				switch taste {
-				case 4: // vorwärts scrollen
-					a.spielFenster.MausScrolltHoch()
-				case 5: // rückwärts scrollen
-					a.spielFenster.MausScrolltRunter()
-				default: // bewegen
-					a.spielFenster.MausBei(mausX, mausY)
-				}
+		}
+		// schauen, ob das Quiz angeklickt wurde
+		if a.quizFenster.IstAktiv() && a.quizFenster.ImFenster(mausX, mausY) {
+			a.quizFenster.MausklickBei(mausX, mausY)
+			return
+		}
+		// Falls bislang niemand den Klick wollte, gib ihn ans Spiel.
+		// (Zum Spielen kann man auch außerhalb des Spieltisches klicken, daher die Sonderbehandlung ...)
+		if a.spielFenster.IstAktiv() {
+			// kann auch außerhalb des Tuchs klicken
+			a.spielFenster.MausklickBei(mausX, mausY)
+		}
+	} else { // es wurde gar nicht geklickt
+		if a.spielFenster.IstAktiv() {
+			// zielen und Kraft aufbauen
+			switch taste {
+			case 4: // vorwärts scrollen
+				a.spielFenster.MausScrolltHoch()
+			case 5: // rückwärts scrollen
+				a.spielFenster.MausScrolltRunter()
+			default: // bewegen
+				a.spielFenster.MausBei(mausX, mausY)
 			}
 		}
-		return
 	}
 }
 
@@ -329,45 +325,41 @@ func (a *bpapp) mausSteuerFunktion() func(uint8, int8, uint16, uint16) (quitScan
 //	Vor: keine
 //	Eff.: die zur Taste passende Spiel-Aktion ist ausgeführt.
 //	Erg.: Soll der Afrufer die Abfrage beenden (Quit) true, sonst false.
-func (a *bpapp) tastenSteuerFunktion() func(uint16, uint8, uint16) (quitScan bool) {
-	return func(taste uint16, gedrückt uint8, tiefe uint16) (quitScan bool) {
-		if gedrückt == 1 {
-			switch taste {
-			case 'h': // Hilfe an-aus
-				a.HilfeAnAus()
-			case 'n': // neues Spiel
-				a.NeuesSpielStarten()
-			case 'p': // Spiel pausieren
-				a.PauseAnAus()
-			case 'd': // Dunkle Umgebung
-				a.DarkmodeAnAus()
-			case 'm': // Musik spielen, wenn man möchte
-				a.MusikAn() // go-Routine
-			case 'q':
-				a.Quit()
-				// Tastaturabfrage beenden (diese Funktion nicht mehr aufrufen):
-				return true
-				// ######  Testzwecke ####################################
-			case 's': // Zeitlupe
-				a.ZeitlupeAnAus()
-			case 'l': // Fenster-Layout anzeigen
-				a.renderer.LayoutAnAus()
-			case 'e': // Spiel testen
-				a.billard.ErhoeheStrafpunkte()
-			case 'r': // Spiel testen
-				a.billard.ReduziereStrafpunkte()
-			case '1': // Spiel testen
-				a.billard.SetzeRestzeit(10 * time.Second)
-				a.billard.SetzeKugeln1BallTest()
-			case '3': // Spiel testen
-				a.billard.SetzeSpielzeit(90 * time.Second)
-				a.billard.SetzeKugeln3Ball()
-			case '9': // Spiel testen
-				a.billard.SetzeSpielzeit(4 * time.Minute)
-				a.billard.SetzeKugeln9Ball()
-			}
+func (a *bpapp) tastenSteuerFunktion(taste uint16, gedrückt uint8, _ uint16) {
+	if gedrückt == 1 {
+		switch taste {
+		case 'h': // Hilfe an-aus
+			a.HilfeAnAus()
+		case 'n': // neues Spiel
+			a.NeuesSpielStarten()
+		case 'p': // Spiel pausieren
+			a.PauseAnAus()
+		case 'd': // Dunkle Umgebung
+			a.DarkmodeAnAus()
+		case 'm': // Musik spielen, wenn man möchte
+			a.MusikAn() // go-Routine
+		case 'q':
+			a.Quit()
+			return
+			// ######  Testzwecke ####################################
+		case 's': // Zeitlupe
+			a.ZeitlupeAnAus()
+		case 'l': // Fenster-Layout anzeigen
+			a.renderer.LayoutAnAus()
+		case 'e': // Spiel testen
+			a.billard.ErhoeheStrafpunkte()
+		case 'r': // Spiel testen
+			a.billard.ReduziereStrafpunkte()
+		case '1': // Spiel testen
+			a.billard.SetzeRestzeit(10 * time.Second)
+			a.billard.SetzeKugeln1BallTest()
+		case '3': // Spiel testen
+			a.billard.SetzeSpielzeit(90 * time.Second)
+			a.billard.SetzeKugeln3Ball()
+		case '9': // Spiel testen
+			a.billard.SetzeSpielzeit(4 * time.Minute)
+			a.billard.SetzeKugeln9Ball()
 		}
-		return
 	}
 }
 
@@ -394,21 +386,21 @@ func (a *bpapp) Run() {
 	a.renderer.Starte()       // go-Routine
 	a.laeuft = true
 
-	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion())
+	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
 	a.mausSteuerung.StarteRate(20) // go-Routine
 	//  ####### der eigentliche Event-Loop der App läuft nebenher #############
-	a.umschalter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion())
+	a.umschalter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion)
 	a.umschalter.StarteRate(20) // go-Routine
 	// ####### der Tastatur-Loop darf dafür hier existieren ####################
-	var quitScan bool
-	var aktion func(uint16, uint8, uint16) bool = a.tastenSteuerFunktion()
+	rec := func() {
+		if r := recover(); r != nil {
+			println("ABGEFANGEN:", fmt.Sprint(r))
+		}
+	}
+	defer rec()
 	for {
 		taste, gedrückt, tiefe := gfx.TastaturLesen1() // blockiert, bis Taste gedrückt
-		quitScan = aktion(taste, gedrückt, tiefe)
-		if quitScan {
-			// Das Tastaturlesen beenden und aus dem Loop aussteigen.
-			return
-		}
+		a.tastenSteuerFunktion(taste, gedrückt, tiefe)
 	}
 }
 

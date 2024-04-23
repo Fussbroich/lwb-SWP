@@ -1,23 +1,28 @@
 package views_controls
 
 import (
+	"fmt"
 	"gfx"
 
 	"../hilf"
 )
 
 type bpMausRoutine struct {
-	steuerFunktion func(uint8, int8, uint16, uint16) bool
+	steuerFunktion func(uint8, int8, uint16, uint16)
 	steuerRoutine  hilf.Routine
 }
 
-func NewMausRoutine(f func(t uint8, s int8, x uint16, y uint16) (quitScan bool)) *bpMausRoutine {
+func NewMausRoutine(f func(t uint8, s int8, x uint16, y uint16)) *bpMausRoutine {
 	return &bpMausRoutine{steuerFunktion: f}
 }
 
 func (ctl *bpMausRoutine) mausLesenUndAuswerten() {
+	defer func() {
+		if r := recover(); r != nil {
+			println("ABGEFANGEN:", fmt.Sprint(r))
+		}
+	}()
 	taste, status, mausX, mausY := gfx.MausLesen1()
-	// quitScan wird ignoriert, wenn die Funktion in einer Routine läuft
 	ctl.steuerFunktion(taste, status, mausX, mausY)
 }
 
