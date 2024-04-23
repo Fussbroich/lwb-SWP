@@ -12,7 +12,6 @@
 package main
 
 import (
-	"fmt"
 	"gfx"
 	"time"
 
@@ -47,6 +46,7 @@ type App interface {
 
 type bpapp struct {
 	laeuft bool
+	quit   bool
 	// Größe des gesamten App-Fensters
 	breite uint16
 	hoehe  uint16
@@ -67,7 +67,8 @@ type bpapp struct {
 	// Verwalter für den Zeichen-Loop
 	renderer views_controls.FensterZeichner
 	// separates Eingabe-Control
-	mausSteuerung views_controls.EingabeRoutine
+	mausSteuerung   views_controls.EingabeRoutine
+	tastenSteuerung views_controls.EingabeRoutine
 	// Spielmodus-Umschalter
 	umschalter hilf.Routine
 }
@@ -156,7 +157,7 @@ func NewBPApp(b uint16) *bpapp {
 	a.gameOverFenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
 
 	// Buttonleiste
-	hilfeButton := views_controls.NewButton("(h)ilfe an/aus", a.HilfeAnAus)
+	hilfeButton := views_controls.NewButton("(h)ilfe", a.HilfeAnAus)
 	neuesSpielButton := views_controls.NewButton("(n)eues Spiel", a.NeuesSpielStarten)
 	pauseButton := views_controls.NewButton("(m)usik spielen", a.MusikAn)
 	darkButton := views_controls.NewButton("(d)unkel/hell", a.DarkmodeAnAus)
@@ -340,7 +341,6 @@ func (a *bpapp) tastenSteuerFunktion(taste uint16, gedrückt uint8, _ uint16) {
 			a.MusikAn() // go-Routine
 		case 'q':
 			a.Quit()
-			return
 			// ######  Testzwecke ####################################
 		case 's': // Zeitlupe
 			a.ZeitlupeAnAus()
@@ -387,20 +387,19 @@ func (a *bpapp) Run() {
 	a.laeuft = true
 
 	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
-	a.mausSteuerung.StarteRate(20) // go-Routine
+	a.mausSteuerung.Starte() // go-Routine, regelt sich selbst
+
 	//  ####### der eigentliche Event-Loop der App läuft nebenher #############
 	a.umschalter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion)
 	a.umschalter.StarteRate(20) // go-Routine
-	// ####### der Tastatur-Loop darf dafür hier existieren ####################
-	rec := func() {
-		if r := recover(); r != nil {
-			println("ABGEFANGEN:", fmt.Sprint(r))
-		}
-	}
-	defer rec()
+
+	// Dafür darf der Tastatur-Loop hier existieren
+	a.tastenSteuerung = views_controls.NewTastenRoutine(a.tastenSteuerFunktion)
 	for {
-		taste, gedrückt, tiefe := gfx.TastaturLesen1() // blockiert, bis Taste gedrückt
-		a.tastenSteuerFunktion(taste, gedrückt, tiefe)
+		if a.quit {
+			return
+		}
+		a.tastenSteuerung.Einmal()
 	}
 }
 
@@ -412,10 +411,12 @@ func (a *bpapp) Quit() {
 	if !a.laeuft {
 		return
 	}
+	a.quit = true
 	a.geraeusche.Stoppe()
 	a.musik.Stoppe()
 	a.renderer.UeberblendeText("Bye!", views_controls.Fanzeige(), views_controls.Ftext(), 30)
-	go a.mausSteuerung.Stoppe() // go-Routine
+	go a.mausSteuerung.Stoppe()   // go-Routine
+	go a.tastenSteuerung.Stoppe() // go-Routine
 	a.umschalter.Stoppe()
 	a.billard.Stoppe()
 	a.renderer.Stoppe()

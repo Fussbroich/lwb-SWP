@@ -19,6 +19,8 @@ func NewRoutine(name string, f func()) *routine {
 // Prüfe, ob die Routine noch läuft
 func (r *routine) Laeuft() bool { return r.stop != nil }
 
+func (r *routine) Einmal() { r.frun() }
+
 // Starte eine Funktion als goroutine.
 // Lasse sie in einem fest vorgegebenen Takt loopen (feste Rate je Sekunde).
 func (r *routine) StarteLoop(tick time.Duration) {

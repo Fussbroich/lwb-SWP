@@ -9,4 +9,5 @@ type Routine interface {
 	GibRate() uint64
 	Stoppe()
 	Laeuft() bool
+	Einmal()
 }
