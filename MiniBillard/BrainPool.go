@@ -377,8 +377,8 @@ func (a *bpapp) Run() {
 	a.quizFenster.Ausblenden()
 	a.hilfeFenster.Ausblenden()
 	a.gameOverFenster.Ausblenden()
-	a.geraeusche.StarteLoop() // go-Routine
 	a.renderer.Starte()       // go-Routine
+	a.geraeusche.StarteLoop() // go-Routine
 	a.laeuft = true
 
 	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
