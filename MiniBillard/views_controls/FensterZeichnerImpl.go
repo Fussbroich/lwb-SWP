@@ -9,6 +9,7 @@ import (
 
 type fzeichner struct {
 	hintergrund   Widget
+	fenstertitel  string
 	widgets       []Widget
 	overlay       Widget
 	updater       hilf.Routine
@@ -19,16 +20,16 @@ type fzeichner struct {
 }
 
 func NewFensterZeichner() *fzeichner {
-	return &fzeichner{rate: 80, hintergrund: NewFenster()}
+	hintergrund := NewFenster()
+	hintergrund.SetzeKoordinaten(0, 0, 640, 480)
+	return &fzeichner{rate: 80, hintergrund: hintergrund}
 }
 
-func (r *fzeichner) SetzeFensterHintergrund(w Widget) {
-	r.hintergrund = w
-}
+func (r *fzeichner) SetzeFensterHintergrund(w Widget) { r.hintergrund = w }
 
-func (r *fzeichner) SetzeWidgets(w ...Widget) {
-	r.widgets = w
-}
+func (r *fzeichner) SetzeFensterTitel(t string) { r.fenstertitel = t }
+
+func (r *fzeichner) SetzeWidgets(w ...Widget) { r.widgets = w }
 
 // ######## die Start- und Stop-Methode ###########################################################
 
@@ -36,6 +37,10 @@ func (r *fzeichner) Starte() {
 	if r.updaterLaeuft {
 		return
 	}
+	b, h := r.hintergrund.GibGroesse()
+	println("Öffne Gfx-Fenster")
+	gfx.Fenster(b, h) //Fenster öffnen
+	gfx.Fenstertitel(r.fenstertitel)
 	r.updater = hilf.NewRoutine("Zeichner",
 		func() {
 			if !gfx.FensterOffen() {
@@ -85,6 +90,10 @@ func (r *fzeichner) Stoppe() {
 		return
 	}
 	r.updater.Stoppe()
+	if gfx.FensterOffen() {
+		println("Schließe Gfx-Fenster")
+		gfx.FensterAus()
+	}
 	r.updaterLaeuft = false
 }
 

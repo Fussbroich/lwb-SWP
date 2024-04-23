@@ -9,22 +9,26 @@ package views_controls
 //
 //	NewFensterZeichner() erzeugt ein leeres Objekt.
 type FensterZeichner interface {
-	// Startet das wiederholte zeichnen der Widgets, sobald ein gfx-Fenster geöffnet wird.
+	// Startet das wiederholte zeichnen der Widgets, öffnet ein gfx-Fenster.
 	//
 	//	Vor.: keine
-	//	Eff.: Die Widgets stellen sich dar.
+	//	Eff.: Das gfx-Fenster öffnet sich und die Widgets stellen sich dar.
+	//	Hinweis: Die Größe des Fensters wird durch den Fensterhintergrund
+	//	bestimmt, der auch nur ein Widget ist
 	Starte()
-	// Stoppt das wiederholte zeichnen der Widgets.
+	// Stoppt das wiederholte zeichnen der Widgets und schließt das Zeichenfenster.
 	//
 	//	Vor.: keine
-	//	Eff.: Die Darstellung ist eingefroren.
+	//	Eff.: Das gfx-Fenster ist geschlossen.
 	Stoppe()
 	// Setzt den Hintergrund.
 	//
 	// Der Hintergrund ist auch nur ein Widget und wird immer zuerst (zuunterst) gezeichnet.
+	// Außerdem gibt er die Größe des gesamten Fensters vor.
 	//	Vor.: keine
 	//	Eff.: Der Hintergrund ändert sich.
 	SetzeFensterHintergrund(Widget)
+	SetzeFensterTitel(string)
 	// Setzt die Widgets, die gezeichnet werden sollen.
 	//
 	// Die Methode ruft man normalerweise nur beim Erzeugen einer App auf.

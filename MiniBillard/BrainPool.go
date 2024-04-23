@@ -12,7 +12,6 @@
 package main
 
 import (
-	"gfx"
 	"time"
 
 	"./hilf"
@@ -128,6 +127,7 @@ func NewBPApp(b uint16) *bpapp {
 
 	a.renderer = views_controls.NewFensterZeichner()
 	a.renderer.SetzeFensterHintergrund(a.hintergrund)
+	a.renderer.SetzeFensterTitel("BrainPool - Das MiniBillard für Schlaue.")
 
 	//setze Layout
 	a.hintergrund.SetzeKoordinaten(0, 0, a.breite, a.hoehe)
@@ -372,11 +372,6 @@ func (a *bpapp) Run() {
 		return
 	}
 	println("Willkommen bei BrainPool")
-	println("Öffne Gfx-Fenster")
-	b, h := a.hintergrund.GibGroesse()
-	gfx.Fenster(b, h) //Fenstergröße
-	gfx.Fenstertitel("BrainPool - Das MiniBillard für Schlaue.")
-
 	a.billard.Starte() // Modell bereit zum Spielen
 	a.spielFenster.Einblenden()
 	a.quizFenster.Ausblenden()
@@ -419,13 +414,9 @@ func (a *bpapp) Quit() {
 	go a.tastenSteuerung.Stoppe() // go-Routine
 	a.umschalter.Stoppe()
 	a.billard.Stoppe()
-	a.renderer.Stoppe()
 	time.Sleep(500 * time.Millisecond)
 	println("BrainPool wird beendet")
-	if gfx.FensterOffen() {
-		println("Schließe Gfx-Fenster")
-		gfx.FensterAus()
-	}
+	a.renderer.Stoppe()
 }
 
 // ####### der Startpunkt ##################################################
