@@ -410,9 +410,9 @@ func (a *bpapp) Quit() {
 	go a.tastenSteuerung.Stoppe() // go-Routine
 	a.umschalter.Stoppe()
 	a.billard.Stoppe()
+	a.renderer.Stoppe()
 	time.Sleep(500 * time.Millisecond)
 	println("BrainPool wird beendet")
-	a.renderer.Stoppe()
 }
 
 // ####### der Startpunkt ##################################################

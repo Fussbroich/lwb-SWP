@@ -31,7 +31,7 @@ func (r *routine) StarteHier() {
 	r.rate = 1e9
 	r.verzoegerung = 0
 	r.stop = make(chan bool)
-	println("Starte", r.name)
+	println("Starte lokal:", r.name)
 	defer r.fausnahme()
 	var startzeit time.Time = time.Now()
 	var laufzeit time.Duration
