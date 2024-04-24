@@ -22,8 +22,8 @@ func MassivePulseSound() *klang {
 		dauer: 16 * time.Second,
 		autor: "unknown",
 		play: func() {
-			if !gfx.FensterOffen() {
-				return
+			for !gfx.FensterOffen() {
+				time.Sleep(100 * time.Millisecond)
 			}
 			gfx.SetzeKlangparameter(22050, 2, 2, 1, 0.3)
 			gfx.SpieleSound(fp)
@@ -37,8 +37,8 @@ func CoolJazz2641SOUND() *klang {
 		dauer: 2*time.Minute + 8*time.Second,
 		autor: "Julius H. (pixabay)",
 		play: func() {
-			if !gfx.FensterOffen() {
-				return
+			for !gfx.FensterOffen() {
+				time.Sleep(100 * time.Millisecond)
 			}
 			gfx.SetzeKlangparameter(16000, 2, 2, 1, 0.3)
 			gfx.SpieleSound(fp)
@@ -52,8 +52,8 @@ func BillardPubAmbienceSOUND() *klang {
 		dauer: time.Minute + 13*time.Second,
 		autor: "",
 		play: func() {
-			if !gfx.FensterOffen() {
-				return
+			for !gfx.FensterOffen() {
+				time.Sleep(100 * time.Millisecond)
 			}
 			gfx.SetzeKlangparameter(22050, 2, 2, 1, 0.3)
 			gfx.SpieleSound(fp)

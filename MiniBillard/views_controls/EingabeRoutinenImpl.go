@@ -11,8 +11,6 @@ type bpEingabeRoutine struct {
 	hilf.Routine
 }
 
-func (r *bpEingabeRoutine) Lesen1() { r.Routine.Einmal() }
-
 func NewMausRoutine(f func(t uint8, s int8, x uint16, y uint16)) *bpEingabeRoutine {
 	routine := hilf.NewRoutine("Maussteuerung",
 		func() {
@@ -26,7 +24,7 @@ func NewMausRoutine(f func(t uint8, s int8, x uint16, y uint16)) *bpEingabeRouti
 		if err := recover(); err != nil {
 			if fmt.Sprint(err) == "Das gfx-Fenster ist nicht offen!" ||
 				fmt.Sprint(err) == "Das Grafikfenster wurde geschlossen! Programmabbruch!!" {
-				println("Maussteuerung: Grafik-Fenster ist schon zu. Nichts mehr zu tun.")
+				// Nichts mehr zu tun
 				return
 			}
 			panic(err)
@@ -48,7 +46,7 @@ func NewTastenRoutine(f func(uint16, uint8, uint16)) *bpEingabeRoutine {
 		if err := recover(); err != nil {
 			if fmt.Sprint(err) == "Das gfx-Fenster ist nicht offen!" ||
 				fmt.Sprint(err) == "Das Grafikfenster wurde geschlossen! Programmabbruch!!" {
-				println("Tastensteuerung: Grafik-Fenster ist schon zu. Nichts mehr zu tun.")
+				// Nichts mehr zu tun
 				return
 			}
 			panic(err)

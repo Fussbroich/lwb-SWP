@@ -4,5 +4,4 @@ import "../hilf"
 
 type EingabeRoutine interface {
 	hilf.Routine
-	Lesen1()
 }

@@ -91,7 +91,8 @@ func NewBPApp(b uint16) *bpapp {
 		"Du spielst gegen die Zeit. Alle neun Kugel müssen versenkt werden. " +
 		"Es gibt ein Foul, wenn die weiße Kugel reingeht oder wenn bei einem Stoß gar keine Kugel versenkt wird.\n\n" +
 		"Im Quizmodus: Klicke die richtigen Antworten an, um Fouls abzuarbeiten.\n\n" +
-		"Die übrige Bedienung erfolgt durch anklicken der Buttons unten oder drücken der entsprechenden Taste."
+		"Die übrige Bedienung erfolgt durch Anklicken der Buttons unten " +
+		"oder mit der angegebenen Taste auf der Tastatur."
 
 	var g uint16 = b / 32 // Rastermass für dieses App-Design
 
@@ -377,12 +378,12 @@ func (a *bpapp) Run() {
 	a.quizFenster.Ausblenden()
 	a.hilfeFenster.Ausblenden()
 	a.gameOverFenster.Ausblenden()
-	a.renderer.Starte()       // go-Routine
 	a.geraeusche.StarteLoop() // go-Routine
+	a.renderer.Starte()       // go-Routine
 	a.laeuft = true
 
 	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
-	a.mausSteuerung.StarteRate(20) // go-Routine mit begrenzter Rate
+	a.mausSteuerung.StarteRate(50) // go-Routine mit begrenzter Rate
 
 	//  ####### der eigentliche Event-Loop der App läuft nebenher #############
 	a.umschalter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion)
@@ -390,12 +391,7 @@ func (a *bpapp) Run() {
 
 	// Dafür darf der Tastatur-Loop hier existieren
 	a.tastenSteuerung = views_controls.NewTastenRoutine(a.tastenSteuerFunktion)
-	for {
-		if a.quit {
-			return
-		}
-		a.tastenSteuerung.Lesen1()
-	}
+	a.tastenSteuerung.StarteHier()
 }
 
 // Stoppt die Laufzeit-Elemente der BrainPool App auf geregelte Art und Weise.

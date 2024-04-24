@@ -7,9 +7,9 @@ type Routine interface {
 	StarteLoop(time.Duration)
 	StarteRate(uint64)
 	Starte()
+	StarteHier() // Läuft ohne go-Routine
 	GibRate() uint64
 	GibName() string
 	Stoppe()
 	Laeuft() bool
-	Einmal()
 }
