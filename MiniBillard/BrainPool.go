@@ -382,11 +382,11 @@ func (a *bpapp) Run() {
 	a.laeuft = true
 
 	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
-	a.mausSteuerung.Starte() // go-Routine, regelt sich selbst
+	a.mausSteuerung.StarteRate(20) // go-Routine mit begrenzter Rate
 
 	//  ####### der eigentliche Event-Loop der App läuft nebenher #############
 	a.umschalter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion)
-	a.umschalter.StarteRate(20) // go-Routine
+	a.umschalter.StarteRate(20) // go-Routine mit begrenzter Rate
 
 	// Dafür darf der Tastatur-Loop hier existieren
 	a.tastenSteuerung = views_controls.NewTastenRoutine(a.tastenSteuerFunktion)
@@ -394,7 +394,7 @@ func (a *bpapp) Run() {
 		if a.quit {
 			return
 		}
-		a.tastenSteuerung.Einmal()
+		a.tastenSteuerung.Lesen1()
 	}
 }
 

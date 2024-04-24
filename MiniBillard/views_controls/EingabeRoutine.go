@@ -1,7 +1,8 @@
 package views_controls
 
+import "../hilf"
+
 type EingabeRoutine interface {
-	Starte()
-	Stoppe()
-	Einmal()
+	hilf.Routine
+	Lesen1()
 }

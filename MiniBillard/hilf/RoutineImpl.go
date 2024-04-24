@@ -5,16 +5,20 @@ import "time"
 type routine struct {
 	name         string
 	frun         func()
+	fausnahme    func()
 	rate         uint64 // Hertz
 	verzoegerung time.Duration
 	stop         chan bool
 }
 
-func NewRoutine(name string, f func()) *routine {
+func NewRoutine(name string, f_run func()) *routine {
 	return &routine{
-		name: name,
-		frun: f}
+		name:      name,
+		frun:      f_run,
+		fausnahme: func() {}}
 }
+
+func (r *routine) SetzeAusnahmeHandler(f func()) { r.fausnahme = f }
 
 // Prüfe, ob die Routine noch läuft
 func (r *routine) Laeuft() bool { return r.stop != nil }
@@ -34,6 +38,7 @@ func (r *routine) StarteLoop(tick time.Duration) {
 	r.stop = make(chan bool)
 	runner := func() {
 		defer func() { takt.Stop(); println("Stoppe", r.name) }()
+		defer r.fausnahme()
 		for {
 			r.frun() // Starte die Funktion sofort, ohne auf den ersten Tick zu warten.
 			select {
@@ -62,13 +67,14 @@ func (r *routine) StarteRate(sollRate uint64) {
 	var minRate, maxRate uint64 = sollRate * 4 / 5, sollRate * 6 / 5
 	r.stop = make(chan bool)
 	runner := func() {
+		defer r.fausnahme()
 		var startzeit time.Time = time.Now()
 		var laufzeit time.Duration
 		var läufe float64
 		for {
 			laufzeit = time.Since(startzeit)
-			if laufzeit >= time.Second/20 { // Rate alle 20stel Sekunde anpassen
-				r.rate = uint64(läufe / laufzeit.Seconds()) // Rate ist "Läufe je Sekunde"
+			if laufzeit >= time.Second/50 { // Rate alle 50stel Sekunde anpassen
+				r.rate = uint64(0.5 + läufe/laufzeit.Seconds()) // Rate ist "Läufe je Sekunde"
 				if r.rate < minRate {
 					if r.verzoegerung > 0 {
 						r.verzoegerung -= time.Millisecond
@@ -111,13 +117,14 @@ func (r *routine) Starte() {
 	r.verzoegerung = 0
 	r.stop = make(chan bool)
 	runner := func() {
+		defer r.fausnahme()
 		var startzeit time.Time = time.Now()
 		var laufzeit time.Duration
 		var läufe float64
 		for {
 			laufzeit = time.Since(startzeit)
 			if laufzeit >= time.Second/5 { // Rate alle 5tel Sekunde messen:
-				r.rate = uint64(läufe / laufzeit.Seconds()) // Rate ist "Läufe je Sekunde".
+				r.rate = uint64(0.5 + läufe/laufzeit.Seconds()) // Rate ist "Läufe je Sekunde".
 				startzeit = time.Now()
 				läufe = 0
 			}
@@ -136,9 +143,9 @@ func (r *routine) Starte() {
 	go runner()
 }
 
-func (r *routine) GibRate() uint64 {
-	return uint64(r.rate)
-}
+func (r *routine) GibRate() uint64 { return r.rate }
+
+func (r *routine) GibName() string { return r.name }
 
 func (r *routine) Stoppe() {
 	if r.stop == nil {
