@@ -12,6 +12,7 @@
 package main
 
 import (
+	"runtime"
 	"time"
 
 	"./hilf"
@@ -384,20 +385,24 @@ func (a *bpapp) Run() {
 	a.hilfeFenster.Ausblenden()
 	a.gameOverFenster.Ausblenden()
 	a.geraeusche.StarteLoop() // go-Routine
-	a.renderer.Starte()       // go-Routine, öffnet schließlich das gfx-Fenster
+	//  ####### der Zeichner läuft nebenher #############
+	a.renderer.Starte() // go-Routine, öffnet schließlich das gfx-Fenster
 	time.Sleep(500 * time.Millisecond)
 	a.laeuft = true
 
-	//  ####### die Maussteuerung läuft nebenher #############
+	// ####### die Maussteuerung läuft nebenher ################
+	// die Maus schreibt ggf. sehr häufig auf das Billard-Modell
 	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
-	a.mausSteuerung.Starte() // go-Routine - schreibt ggf. sehr häufig auf das Billard-Modell
-	//a.mausSteuerung.StarteRate(50) // mit begrenzter Rate starten
-
-	//  ####### der eigentliche Spiel-Loop der App läuft nebenher #############
+	if runtime.GOOS == "windows" {
+		a.mausSteuerung.StarteRate(50) // go-Routine, begrenzte Rate -> gfx entlasten!
+	} else {
+		a.mausSteuerung.Starte() // go-Routine
+	}
+	// ### der eigentliche Spiel-Loop der App läuft nebenher ###
 	a.umschalter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion)
 	a.umschalter.StarteRate(20) // go-Routine mit begrenzter Rate
 
-	// Dafür darf der Tastatur-Loop hier existieren
+	// ### Dafür darf der Tastatur-Loop hier existieren ########
 	a.tastenSteuerung = views_controls.NewTastenRoutine(a.tastenSteuerFunktion)
 	a.tastenSteuerung.StarteHier() // blockiert, bis Quit() aufgerufen wird
 }
@@ -414,8 +419,8 @@ func (a *bpapp) Quit() {
 	a.geraeusche.Stoppe()
 	a.musik.Stoppe()
 	a.renderer.UeberblendeText("Bye!", views_controls.Fanzeige(), views_controls.Ftext(), 30)
-	go a.mausSteuerung.Stoppe()   // go-Routine
-	go a.tastenSteuerung.Stoppe() // go-Routine
+	go a.mausSteuerung.Stoppe()   // go-Routine, blockiert sonst
+	go a.tastenSteuerung.Stoppe() // go-Routine, blockiert sonst
 	a.umschalter.Stoppe()
 	a.billard.Stoppe()
 	println("*********************************************")
@@ -428,5 +433,5 @@ func (a *bpapp) Quit() {
 func main() {
 	// Die gewünschte Fensterbreite in Pixeln wird übergeben.
 	// Das Seitenverhältnis des Spiels ist B:H = 16:11
-	NewBPApp(1024).Run() // läuft bis Spiel beendet wird
+	NewBPApp(1024).Run() // blockiert bis Quit() aufgerufen wird
 }
