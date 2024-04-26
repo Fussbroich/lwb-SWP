@@ -250,7 +250,7 @@ func (a *bpapp) ZeitlupeAnAus() {
 }
 
 // Umschalter zwischen den App-Zuständen (wird als go-Routine ausgelagert)
-// Regeln die Umschaltung zwischen Quiz und Spiel gemäß der Regeln.
+// Die Regeln der App - bestimmen die Umschaltung zwischen Quiz und Spiel.
 //
 //	Vor.: keine
 //	Eff.:
@@ -368,30 +368,38 @@ func (a *bpapp) tastenSteuerFunktion(taste uint16, gedrückt uint8, _ uint16) {
 //
 //	Vor.: die App läuft nicht
 //	Eff.: Die App wurde gestartet und ein gfx-Fenster geöffnet.
+//	Hinweis: Verschiedene Reihenfolgen des Startens einzelner Elemente können
+//	unerwünschte Nebeneffekte haben. Auch ist es ratsam, die Tastensteuerung
+//	lokal loopen zu lassen.
 func (a *bpapp) Run() {
 	if a.laeuft {
 		return
 	}
-	println("Willkommen bei BrainPool")
+	println("*********************************************")
+	println("*** Willkommen bei BrainPool              ***")
+	println("*********************************************")
 	a.billard.Starte() // Modell bereit zum Spielen
 	a.spielFenster.Einblenden()
 	a.quizFenster.Ausblenden()
 	a.hilfeFenster.Ausblenden()
 	a.gameOverFenster.Ausblenden()
 	a.geraeusche.StarteLoop() // go-Routine
-	a.renderer.Starte()       // go-Routine
+	a.renderer.Starte()       // go-Routine, öffnet schließlich das gfx-Fenster
+	time.Sleep(500 * time.Millisecond)
 	a.laeuft = true
 
+	//  ####### die Maussteuerung läuft nebenher #############
 	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
-	a.mausSteuerung.StarteRate(50) // go-Routine mit begrenzter Rate
+	a.mausSteuerung.Starte() // go-Routine - schreibt ggf. sehr häufig auf das Billard-Modell
+	//a.mausSteuerung.StarteRate(50) // mit begrenzter Rate starten
 
-	//  ####### der eigentliche Event-Loop der App läuft nebenher #############
+	//  ####### der eigentliche Spiel-Loop der App läuft nebenher #############
 	a.umschalter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion)
 	a.umschalter.StarteRate(20) // go-Routine mit begrenzter Rate
 
 	// Dafür darf der Tastatur-Loop hier existieren
 	a.tastenSteuerung = views_controls.NewTastenRoutine(a.tastenSteuerFunktion)
-	a.tastenSteuerung.StarteHier()
+	a.tastenSteuerung.StarteHier() // blockiert, bis Quit() aufgerufen wird
 }
 
 // Stoppt die Laufzeit-Elemente der BrainPool App auf geregelte Art und Weise.
@@ -410,9 +418,10 @@ func (a *bpapp) Quit() {
 	go a.tastenSteuerung.Stoppe() // go-Routine
 	a.umschalter.Stoppe()
 	a.billard.Stoppe()
+	println("*********************************************")
+	println("*** BrainPool wird beendet                ***")
+	println("*********************************************")
 	a.renderer.Stoppe()
-	time.Sleep(500 * time.Millisecond)
-	println("BrainPool wird beendet")
 }
 
 // ####### der Startpunkt ##################################################
