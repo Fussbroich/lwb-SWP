@@ -34,6 +34,12 @@ type FensterZeichner interface {
 	// Die Methode ruft man normalerweise nur beim Erzeugen einer App auf.
 	// Widgets lassen sich zur Laufzeit ein- und ausblenden, ohne sie auszutauschen.
 	SetzeWidgets(...Widget)
+	// darstellen:
+	// Manche Widgets sind sehr kompliziert und belasten den gfx-Server -
+	// hiermit kann man die Darstellung etwas vereinfachen, falls das Widget es unterstützt.
+	//	Vor.: keine
+	//	Eff.: Die Darstellung wird ggf. vereinfacht.
+	ZeichneSchlicht()
 	// Ruft die Widgets dazu auf, ihr Layout mit anzuzeigen
 	LayoutAnAus()
 	// Setzt das dunkle Farbschema und ruft die Widgets zum Laden der Farben auf.

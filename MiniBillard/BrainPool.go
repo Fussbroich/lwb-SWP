@@ -379,6 +379,11 @@ func (a *bpapp) Run() {
 	println("*********************************************")
 	println("*** Willkommen bei BrainPool              ***")
 	println("*********************************************")
+	os := runtime.GOOS
+	if os != "windows" && os != "linux" {
+		println("BrainPool läuft derzeit nur unter Windows oder Linux.")
+		return
+	}
 	a.billard.Starte() // Modell bereit zum Spielen
 	a.spielFenster.Einblenden()
 	a.quizFenster.Ausblenden()
@@ -386,14 +391,17 @@ func (a *bpapp) Run() {
 	a.gameOverFenster.Ausblenden()
 	a.geraeusche.StarteLoop() // go-Routine
 	//  ####### der Zeichner läuft nebenher #############
-	a.renderer.Starte() // go-Routine, öffnet schließlich das gfx-Fenster
+	if os == "windows" {
+		a.renderer.ZeichneSchlicht() // -> gfx entlasten!
+	}
+	a.renderer.Starte() // go-Routine, öffnet das gfx-Fenster
 	time.Sleep(500 * time.Millisecond)
 	a.laeuft = true
 
 	// ####### die Maussteuerung läuft nebenher ################
 	// die Maus schreibt ggf. sehr häufig auf das Billard-Modell
 	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
-	if runtime.GOOS == "windows" {
+	if os == "windows" {
 		a.mausSteuerung.StarteRate(50) // go-Routine, begrenzte Rate -> gfx entlasten!
 	} else {
 		a.mausSteuerung.Starte() // go-Routine

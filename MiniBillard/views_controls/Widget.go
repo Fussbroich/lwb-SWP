@@ -39,6 +39,12 @@ type Widget interface {
 	//	Vor.: keine
 	//	Eff.: Die Farben werden nach Änderung des Schemas ans aktive Schema angepasst
 	LadeFarben()
+	// darstellen:
+	// Manche Widgets sind sehr kompliziert und belasten den gfx-Server -
+	// hiermit kann man die Darstellung etwas vereinfachen, falls das Widget es unterstützt.
+	//	Vor.: keine
+	//	Eff.: Die Darstellung wird ggf. vereinfacht.
+	SetzeSchlicht()
 	// Die Darstellungsmethode
 	//	Vor.: keine
 	//	Eff.: Das Widget stellt sich im gfx-Fenster dar, falls es aktiv ist.

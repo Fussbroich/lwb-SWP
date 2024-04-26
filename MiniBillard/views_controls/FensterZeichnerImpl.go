@@ -16,6 +16,7 @@ type fzeichner struct {
 	updaterLaeuft bool
 	layoutModus   bool
 	darkmode      bool
+	schlicht      bool
 	rate          uint64
 }
 
@@ -36,6 +37,11 @@ func (r *fzeichner) SetzeWidgets(w ...Widget) { r.widgets = w }
 func (r *fzeichner) Starte() {
 	if r.updaterLaeuft {
 		return
+	}
+	if r.schlicht {
+		for _, f := range r.widgets {
+			f.SetzeSchlicht()
+		}
 	}
 	b, h := r.hintergrund.GibGroesse()
 	println("Öffne Gfx-Fenster")
@@ -99,6 +105,8 @@ func (r *fzeichner) Stoppe() {
 
 // ######## die übrigen Methoden ####################################################
 func (r *fzeichner) LayoutAnAus() { r.layoutModus = !r.layoutModus }
+
+func (r *fzeichner) ZeichneSchlicht() { r.schlicht = true }
 
 func (r *fzeichner) DarkmodeAnAus() {
 	if !r.darkmode {
