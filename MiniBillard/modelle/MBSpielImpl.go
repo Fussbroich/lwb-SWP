@@ -240,9 +240,12 @@ func (s *mbspiel) Starte() {
 					k.SetzeKollidiertZurueck()
 					if !k.GibV().IstNull() {
 						still = false
+						break
 					}
 				}
-				s.stillstand = still
+				if still {
+					s.stillstand = true
+				}
 				// prüfe Fouls und Sieg nach Stillstand
 				if s.angestossen && s.stillstand {
 					s.angestossen = false
@@ -343,7 +346,7 @@ func (s *mbspiel) Stosse() {
 	// stoßen
 	s.angestossen = true
 	s.angespielte = nil
-	if !(s.stosskraft == 0) {
+	if s.stosskraft != 0 {
 		s.spielkugel.SetzeV(s.stossricht.Mal(s.stosskraft))
 		s.stosskraft = 5
 		s.stillstand = false

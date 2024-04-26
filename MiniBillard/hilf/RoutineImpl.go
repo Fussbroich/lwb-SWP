@@ -23,37 +23,6 @@ func (r *routine) SetzeAusnahmeHandler(f func()) { r.fausnahme = f }
 // Prüfe, ob die Routine noch läuft
 func (r *routine) Laeuft() bool { return r.stop != nil }
 
-func (r *routine) StarteHier() {
-	if r.stop != nil {
-		println("Fehler:", r.name, "läuft bereits.")
-		return
-	}
-	r.rate = 1e9
-	r.verzoegerung = 0
-	r.stop = make(chan bool)
-	println("Starte lokal:", r.name)
-	defer r.fausnahme()
-	var startzeit time.Time = time.Now()
-	var laufzeit time.Duration
-	var läufe float64
-	for {
-		laufzeit = time.Since(startzeit)
-		if laufzeit >= time.Second/5 { // Rate alle 5tel Sekunde messen:
-			r.rate = uint64(0.5 + läufe/laufzeit.Seconds()) // Rate ist "Läufe je Sekunde".
-			startzeit = time.Now()
-			läufe = 0
-		}
-		select {
-		case <-r.stop:
-			println("Stoppe", r.name)
-			return
-		default:
-			r.frun()
-			läufe++
-		}
-	}
-}
-
 // Starte eine Funktion als goroutine.
 // Lasse sie in einem fest vorgegebenen Takt loopen (feste Rate je Sekunde).
 func (r *routine) StarteLoop(tick time.Duration) {
@@ -170,6 +139,40 @@ func (r *routine) Starte() {
 	// starte Prozess
 	println("Starte", r.name)
 	go runner()
+}
+
+// Starte eine Funktion lokal in einer Endlosschleife.
+// Lasse sie so schnell wie möglich loopen und bestimme laufend die Rate je Sekunde.
+// Hinweis: blockiert, bis sie von außerhalb gestoppt wird.
+func (r *routine) StarteHier() {
+	if r.stop != nil {
+		println("Fehler:", r.name, "läuft bereits.")
+		return
+	}
+	r.rate = 1e9
+	r.verzoegerung = 0
+	r.stop = make(chan bool)
+	println("Starte lokal:", r.name)
+	defer r.fausnahme()
+	var startzeit time.Time = time.Now()
+	var laufzeit time.Duration
+	var läufe float64
+	for {
+		laufzeit = time.Since(startzeit)
+		if laufzeit >= time.Second/5 { // Rate alle 5tel Sekunde messen:
+			r.rate = uint64(0.5 + läufe/laufzeit.Seconds()) // Rate ist "Läufe je Sekunde".
+			startzeit = time.Now()
+			läufe = 0
+		}
+		select {
+		case <-r.stop:
+			println("Stoppe", r.name)
+			return
+		default:
+			r.frun()
+			läufe++
+		}
+	}
 }
 
 func (r *routine) GibRate() uint64 { return r.rate }
