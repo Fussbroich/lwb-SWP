@@ -16,7 +16,9 @@ func (f *button) MausklickBei(mausX, mausY uint16) {
 }
 
 func (f *button) Zeichne() {
-	f.ZeichneRand()
+	if !f.schlicht {
+		f.ZeichneRand()
+	}
 	f.widget.ZeichneOffset(2)
 	breite, höhe := f.GibGroesse()
 
