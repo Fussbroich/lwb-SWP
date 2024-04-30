@@ -163,7 +163,7 @@ func NewBPApp(b uint16) *bpapp {
 	neuesSpielButton := views_controls.NewButton("(n)eues Spiel", a.NeuesSpielStarten)
 	pauseButton := views_controls.NewButton("(m)usik spielen", a.MusikAn)
 	darkButton := views_controls.NewButton("(d)unkel/hell", a.DarkmodeAnAus)
-	a.quitButton = views_controls.NewButton("(q)uit", a.Quit)
+	a.quitButton = views_controls.NewButton("(s)chließen", a.Quit)
 	a.buttonLeiste = []views_controls.Widget{hilfeButton, neuesSpielButton, pauseButton, darkButton, a.quitButton}
 
 	zb := (a.breite - 2*g) / uint16(len(a.buttonLeiste))
@@ -341,10 +341,10 @@ func (a *bpapp) tastenSteuerFunktion(taste uint16, gedrückt uint8, _ uint16) {
 			a.DarkmodeAnAus()
 		case 'm': // Musik spielen, wenn man möchte
 			a.MusikAn() // go-Routine
-		case 'q':
+		case 's':
 			a.Quit()
 			// ######  Testzwecke ####################################
-		case 's': // Zeitlupe
+		case 't': // Zeitlupe
 			a.ZeitlupeAnAus()
 		case 'l': // Fenster-Layout anzeigen
 			a.renderer.LayoutAnAus()
