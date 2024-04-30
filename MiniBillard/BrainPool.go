@@ -85,20 +85,10 @@ func NewBPApp(b uint16) *bpapp {
 		b = 640 // kleinere Bildschirme sind zum Spielen ungeeignet
 	}
 
-	var hilfetext string = "Hilfe\n\n" +
-		"Im Spielmodus (und nur, wenn alle Kugeln still stehen): " +
-		"Maus bewegen ändert die Zielrichtung. Stoß durch klicken mit der linken Maustaste. " +
-		"Die Stoßkraft wird durch scrollen der Maus verändert.\n\n" +
-		"Du spielst gegen die Zeit. Alle neun Kugel müssen versenkt werden. " +
-		"Es gibt ein Foul, wenn die weiße Kugel reingeht oder wenn bei einem Stoß gar keine Kugel versenkt wird.\n\n" +
-		"Im Quizmodus: Klicke die richtigen Antworten an, um Fouls abzuarbeiten.\n\n" +
-		"Die übrige Bedienung erfolgt durch Anklicken der Buttons unten " +
-		"oder mit der angegebenen Taste auf der Tastatur."
-
 	var g uint16 = b / 32 // Rastermass für dieses App-Design
 
 	// Das Seitenverhältnis des App-Fensters ist B:H = 16:11
-	a := bpapp{breite: 32 * g, hoehe: 22 * g, buttonLeiste: []views_controls.Widget{}}
+	a := bpapp{breite: 32 * g, hoehe: 22 * g}
 
 	a.musik = klaenge.CoolJazz2641SOUND()
 	a.geraeusche = klaenge.BillardPubAmbienceSOUND()
@@ -122,6 +112,16 @@ func NewBPApp(b uint16) *bpapp {
 	bande := views_controls.NewFenster()
 	a.spielFenster = views_controls.NewMBSpieltisch(a.billard)
 	a.quizFenster = views_controls.NewQuizFenster(a.quiz, func() { a.billard.ReduziereStrafpunkte(); a.quiz.NaechsteFrage() }, func() { a.quiz.NaechsteFrage() })
+	var hilfetext string = "Hilfe\n\n" +
+		"Im Spielmodus (und nur, wenn alle Kugeln still stehen): " +
+		"Maus bewegen ändert die Zielrichtung. Stoß durch klicken mit der linken Maustaste. " +
+		"Die Stoßkraft wird durch scrollen der Maus verändert.\n\n" +
+		"Du spielst gegen die Zeit. Alle neun Kugeln müssen versenkt werden. " +
+		"Es gibt ein Foul, wenn die weiße Kugel reingeht oder wenn bei einem Stoß gar keine Kugel versenkt wird.\n\n" +
+		"Im Quizmodus: Klicke die richtigen Antworten an, um Fouls abzuarbeiten.\n\n" +
+		"Die übrige Bedienung erfolgt durch Anklicken der Buttons unten " +
+		"oder mit der angegebenen Taste auf der Tastatur."
+
 	a.hilfeFenster = views_controls.NewTextBox(hilfetext, 18)
 	a.hilfeFenster.Ausblenden() // wäre standardmäßig eingeblendet
 	a.gameOverFenster = views_controls.NewTextBox("GAME OVER!\n\n\nStarte ein neues Spiel.", 24)
