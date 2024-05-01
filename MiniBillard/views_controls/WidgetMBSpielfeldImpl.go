@@ -123,7 +123,7 @@ func (f *miniBSpielfeld) Zeichne() {
 		} else {
 			farbe = F(250, 175, 50)
 		}
-		f.breiteLinie(pK, pK.Plus(f.billard.GibVStoss().Mal(ra)), 4, farbe)
+		f.breiteLinie(pK, pK.Plus(f.billard.GibVStoss().Mal(ra)), ra/4, farbe)
 		// Schreibe den Wert der Stärke daneben
 		f.stiftfarbe(F(100, 100, 100))
 		f.schreiber.SetzeSchriftgroesse(int(ra*0.67 + 0.5))
@@ -140,7 +140,7 @@ func (f *miniBSpielfeld) Zeichne() {
 		// zeichne Geschwindigkeiten
 		for _, k := range f.billard.GibAktiveKugeln() {
 			if !k.GibV().IstNull() {
-				f.breiteLinie(k.GibPos(), k.GibPos().Plus(k.GibV().Mal(k.GibRadius())), 2, F(250, 175, 50))
+				f.breiteLinie(k.GibPos(), k.GibPos().Plus(k.GibV().Mal(k.GibRadius())), ra/8, F(250, 175, 50))
 			}
 		}
 		f.stiftfarbe(F(100, 100, 100))
