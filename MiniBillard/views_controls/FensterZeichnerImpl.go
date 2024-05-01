@@ -130,12 +130,12 @@ func (r *fzeichner) Ueberblende(f Widget) {
 	r.overlay = f
 }
 
-func (r *fzeichner) UeberblendeText(t string, hg, vg string, tr uint8) {
+func (r *fzeichner) UeberblendeText(t string, hg, vg string, sg int) {
 	b, h := r.hintergrund.GibGroesse()
 	r.overlay = NewTextOverlay(t)
 	r.overlay.SetzeKoordinaten(0, 0, b, h)
 	r.overlay.SetzeFarben(hg, vg)
-	r.overlay.SetzeTransparenz(tr)
+	r.overlay.SetzeTransparenz(30)
 }
 
 func (r *fzeichner) UeberblendeAus() {

@@ -8,12 +8,12 @@
 //	Das Spielprogramm BrainPool -
 //	ein Softwareprojekt im Rahmen der Lehrerweiterbildung Berlin
 //
-// Datum: 22.04.2024
+// Datum: 01.05.2024
 package main
 
 import (
-	"runtime"
-	"time"
+	"runtime" //stellt das Betriebssystem fest
+	"time"    //
 
 	"./hilf"
 	"./klaenge"
@@ -28,8 +28,7 @@ import (
 //
 //	Vor.: Das Grafikpaket gfx muss im GOPATH installiert sein.
 //
-//	Erzeugung eines BrainPool-Spiels (Bislang einzige Verwendung ;-) mit
-//	NewBPApp(uint16) - erhält die gewünschte Fensterbreite in Pixeln
+//	Erzeugung eines BrainPool-Spiels mit NewBPApp(uint16) - erhält die gewünschte Fensterbreite in Pixeln
 type App interface {
 	// Startet die Laufzeit-Elemente der App.
 	//
@@ -81,8 +80,8 @@ func NewBPApp(b uint16) *bpapp {
 	if b > 1920 {
 		b = 1920 // größtmögliches gfx-Fenster ist 1920 Pixel breit
 	}
-	if b < 640 {
-		b = 640 // kleinere Bildschirme sind zum Spielen ungeeignet
+	if b < 480 {
+		b = 480 // kleinere Bildschirme sind zum Spielen ungeeignet
 	}
 
 	var g uint16 = b / 32 // Rastermass für dieses App-Design
@@ -122,9 +121,9 @@ func NewBPApp(b uint16) *bpapp {
 		"Die übrige Bedienung erfolgt durch Anklicken der Buttons unten " +
 		"oder mit der angegebenen Taste auf der Tastatur."
 
-	a.hilfeFenster = views_controls.NewTextBox(hilfetext, 18)
+	a.hilfeFenster = views_controls.NewTextBox(hilfetext, int(a.breite/56))
 	a.hilfeFenster.Ausblenden() // wäre standardmäßig eingeblendet
-	a.gameOverFenster = views_controls.NewTextBox("GAME OVER!\n\n\nStarte ein neues Spiel.", 24)
+	a.gameOverFenster = views_controls.NewTextBox("GAME OVER!\n\n\nStarte ein neues Spiel.", int(a.breite/24))
 	a.gameOverFenster.Ausblenden() // wäre standardmäßig eingeblendet
 
 	a.renderer = views_controls.NewFensterZeichner()
@@ -135,11 +134,16 @@ func NewBPApp(b uint16) *bpapp {
 	a.hintergrund.SetzeKoordinaten(0, 0, a.breite, a.hoehe)
 	var xs, ys, xe, ye uint16 = 4 * g, 6 * g, 28 * g, 18 * g
 	var g3 uint16 = g + g/3
+	// oben links ist der Punktezähler
 	punktezaehler.SetzeKoordinaten(xs-g3, 1*g, 18*g, 3*g)
+	// oben rechts ist der Countdown
 	restzeit.SetzeKoordinaten(20*g+g3, g, xe+g3, 3*g)
+	// Hintergrund für das Tuch
 	bande.SetzeKoordinaten(xs-g3, ys-g3, xe+g3, ye+g3)
 	bande.SetzeEckradius(g3)
+	// Spielfeld (Tuch)
 	a.spielFenster.SetzeKoordinaten(xs, ys, xe, ye)
+	// die übrigen Fenster stehen genau vor dem Spielfeld
 	a.quizFenster.SetzeKoordinaten(xs-g3+2, ys-g3+2, xe+g3-2, ye+g3-2)
 	a.quizFenster.SetzeEckradius(g3 - 2)
 	a.hilfeFenster.SetzeKoordinaten(xs-g3+2, ys-g3+2, xe+g3-2, ye+g3-2)
@@ -395,7 +399,6 @@ func (a *bpapp) Run() {
 		a.renderer.ZeichneSchlicht() // -> gfx entlasten!
 	}
 	a.renderer.Starte() // go-Routine, öffnet das gfx-Fenster
-	time.Sleep(500 * time.Millisecond)
 	a.laeuft = true
 
 	// ####### die Maussteuerung läuft nebenher ################
@@ -426,7 +429,7 @@ func (a *bpapp) Quit() {
 	a.quit = true
 	a.geraeusche.Stoppe()
 	a.musik.Stoppe()
-	a.renderer.UeberblendeText("Bye!", views_controls.Fanzeige(), views_controls.Ftext(), 30)
+	a.renderer.UeberblendeText("Bye!", views_controls.Fanzeige(), views_controls.Ftext(), 20)
 	go a.mausSteuerung.Stoppe()   // go-Routine, blockiert sonst
 	go a.tastenSteuerung.Stoppe() // go-Routine, blockiert sonst
 	a.umschalter.Stoppe()
@@ -434,6 +437,7 @@ func (a *bpapp) Quit() {
 	println("*********************************************")
 	println("*** BrainPool wird beendet                ***")
 	println("*********************************************")
+	time.Sleep(750 * time.Millisecond)
 	a.renderer.Stoppe()
 }
 
