@@ -331,7 +331,7 @@ func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16
 //
 //	Vor: keine
 //	Eff.: die zur Taste passende Spiel-Aktion ist ausgeführt.
-//	Erg.: Soll der Afrufer die Abfrage beenden (Quit) true, sonst false.
+//	Erg.: Soll der Aufrufer die Abfrage beenden (Quit) true, sonst false.
 func (a *bpapp) tastenSteuerFunktion(taste uint16, gedrückt uint8, _ uint16) {
 	if gedrückt == 1 {
 		switch taste {
