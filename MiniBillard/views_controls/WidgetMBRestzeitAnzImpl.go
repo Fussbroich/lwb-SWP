@@ -37,7 +37,7 @@ func (f *miniBRestzeit) Zeichne() {
 	}
 	f.widget.Zeichne()
 	breite, höhe := f.GibGroesse()
-	schreiber := f.monoBoldSchreiber()
+	schreiber := f.newSchreiber(Bold)
 	schreiber.SetzeSchriftgroesse(int(höhe) * 4 / 5)
 	dx := (breite - uint16(len(f.rzString)*schreiber.GibSchriftgroesse()*3/5)) / 2
 	dy := (höhe - uint16(schreiber.GibSchriftgroesse())) / 2

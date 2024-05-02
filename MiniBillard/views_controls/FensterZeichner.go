@@ -54,7 +54,7 @@ type FensterZeichner interface {
 	//
 	//	Vor.: keine
 	//	Eff.: das neue Widget wir immer als letztes (zuoberst) angezeigt
-	UeberblendeText(string, string, string, int)
+	UeberblendeText(string, FarbID, FarbID, int)
 	// Entfernt das ueberblendete Widget wieder.
 	//
 	//	Vor.: keine

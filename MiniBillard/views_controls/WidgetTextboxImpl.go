@@ -13,11 +13,11 @@ type textbox struct {
 	widget
 }
 
-func NewTextBox(t string, g int) *textbox {
-	w := textbox{text: t, schriftgroesse: g,
+func NewTextBox(text string, style FontStyle, schriftgroesse int) *textbox {
+	w := textbox{text: text, schriftgroesse: schriftgroesse,
 		widget: *NewFenster()}
-	w.schreiber = w.monoRegularSchreiber()
-	w.schreiber.SetzeSchriftgroesse(g)
+	w.schreiber = w.newSchreiber(style)
+	w.schreiber.SetzeSchriftgroesse(schriftgroesse)
 	return &w
 }
 

@@ -74,12 +74,12 @@ func (r *fzeichner) Starte() {
 				// zeige die frame rate
 				fps := NewInfoText(fmt.Sprintf("%04d fps", r.updater.GibRate()/10*10))
 				fps.SetzeKoordinaten(0, 0, b/2, h/30)
-				fps.SetzeFarben(Fanzeige(), Finfos())
+				fps.SetzeFarben(Fanzeige, Finfos)
 				fps.Zeichne()
 				// zeige das copyright an
 				copy := NewInfoText("(c)2024 Bettina Chang, Thomas Schrader")
 				copy.SetzeKoordinaten(2*b/3, 0, b, h/30)
-				copy.SetzeFarben(Fanzeige(), Finfos())
+				copy.SetzeFarben(Fanzeige, Finfos)
 				copy.Zeichne()
 			}
 			if r.overlay != nil {
@@ -130,7 +130,7 @@ func (r *fzeichner) Ueberblende(f Widget) {
 	r.overlay = f
 }
 
-func (r *fzeichner) UeberblendeText(t string, hg, vg string, sg int) {
+func (r *fzeichner) UeberblendeText(t string, hg, vg FarbID, sg int) {
 	b, h := r.hintergrund.GibGroesse()
 	r.overlay = NewTextOverlay(t)
 	r.overlay.SetzeKoordinaten(0, 0, b, h)

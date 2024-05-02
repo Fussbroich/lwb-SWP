@@ -10,7 +10,7 @@ type text_overlay struct {
 // TextOverlay zeigt den Hintergrund
 func NewTextOverlay(t string) *text_overlay {
 	w := text_overlay{text: t, widget: *NewFenster()}
-	w.schreiber = w.monoBoldItalicSchreiber()
+	w.schreiber = w.newSchreiber(BoldItalic)
 	return &w
 }
 
@@ -36,7 +36,7 @@ type infotext struct {
 // InfoText hat immer einen transparenten Hintergrund.
 func NewInfoText(t string) *infotext {
 	w := infotext{text: t, widget: *NewFenster()}
-	w.schreiber = w.monoBoldSchreiber()
+	w.schreiber = w.newSchreiber(Bold)
 	w.SetzeTransparenz(255)
 	return &w
 }

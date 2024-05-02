@@ -127,9 +127,9 @@ func NewBPApp(b uint16) *bpapp {
 		"Die übrige Bedienung erfolgt durch Anklicken der Buttons unten " +
 		"oder mit der angegebenen Taste auf der Tastatur."
 
-	a.hilfeFenster = views_controls.NewTextBox(hilfetext, int(a.breite/56))
+	a.hilfeFenster = views_controls.NewTextBox(hilfetext, views_controls.Regular, int(a.breite/56))
 	a.hilfeFenster.Ausblenden() // wäre standardmäßig eingeblendet
-	a.gameOverFenster = views_controls.NewTextBox("GAME OVER!\n\n\nStarte ein neues Spiel.", int(a.breite/24))
+	a.gameOverFenster = views_controls.NewTextBox("GAME OVER", views_controls.BoldItalic, int(a.breite/12))
 	a.gameOverFenster.Ausblenden() // wäre standardmäßig eingeblendet
 
 	a.renderer = views_controls.NewFensterZeichner()
@@ -158,15 +158,15 @@ func NewBPApp(b uint16) *bpapp {
 	a.gameOverFenster.SetzeEckradius(g3 - 2)
 
 	//setzeFarben
-	a.hintergrund.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
-	a.spielFenster.SetzeFarben(views_controls.Fbillardtuch(), views_controls.Fdiamanten())
-	bande.SetzeFarben(views_controls.Fbande(), views_controls.Fanzeige())
-	punktezaehler.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
+	a.hintergrund.SetzeFarben(views_controls.Fhintergrund, views_controls.Ftext)
+	a.spielFenster.SetzeFarben(views_controls.Fbillardtuch, views_controls.Fdiamanten)
+	bande.SetzeFarben(views_controls.Fbande, views_controls.Fanzeige)
+	punktezaehler.SetzeFarben(views_controls.Fanzeige, views_controls.Ftext)
 	punktezaehler.SetzeTransparenz(255)
-	restzeit.SetzeFarben(views_controls.Fanzeige(), views_controls.Ftext())
-	a.quizFenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
-	a.hilfeFenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
-	a.gameOverFenster.SetzeFarben(views_controls.Fquiz(), views_controls.Ftext())
+	restzeit.SetzeFarben(views_controls.Fanzeige, views_controls.Ftext)
+	a.quizFenster.SetzeFarben(views_controls.Fquiz, views_controls.Ftext)
+	a.hilfeFenster.SetzeFarben(views_controls.Fquiz, views_controls.Ftext)
+	a.gameOverFenster.SetzeFarben(views_controls.Fquiz, views_controls.Ftext)
 
 	// Buttonleiste
 	hilfeButton := views_controls.NewButton("(h)ilfe", a.HilfeAnAus)
@@ -180,7 +180,7 @@ func NewBPApp(b uint16) *bpapp {
 	for i, b := range a.buttonLeiste {
 		b.SetzeKoordinaten(g+uint16(i)*zb+zb/8, ye+5*g/2, g+uint16(i+1)*zb-zb/8, ye+13*g/4)
 		b.SetzeEckradius(g / 3)
-		b.SetzeFarben(views_controls.Fhintergrund(), views_controls.Ftext())
+		b.SetzeFarben(views_controls.Fhintergrund, views_controls.Ftext)
 	}
 
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
@@ -363,7 +363,7 @@ func (a *bpapp) tastenSteuerFunktion(taste uint16, gedrückt uint8, _ uint16) {
 		case 'r': // Spiel testen
 			a.billard.ReduziereStrafpunkte()
 		case '1': // Spiel testen
-			a.billard.SetzeRestzeit(10 * time.Second)
+			a.billard.SetzeRestzeit(5 * time.Second)
 			a.billard.SetzeKugeln1BallTest()
 		case '3': // Spiel testen
 			a.billard.SetzeSpielzeit(90 * time.Second)
@@ -435,7 +435,7 @@ func (a *bpapp) Quit() {
 	a.quit = true
 	a.geraeusche.Stoppe()
 	a.musik.Stoppe()
-	a.renderer.UeberblendeText("Bye!", views_controls.Fanzeige(), views_controls.Ftext(), 20)
+	a.renderer.UeberblendeText("Bye!", views_controls.Fanzeige, views_controls.Ftext, 20)
 	go a.mausSteuerung.Stoppe()   // go-Routine, blockiert sonst
 	go a.tastenSteuerung.Stoppe() // go-Routine, blockiert sonst
 	a.umschalter.Stoppe()

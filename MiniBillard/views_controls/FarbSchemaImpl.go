@@ -2,55 +2,77 @@ package views_controls
 
 type FarbSchema interface {
 	// Getter für eine bestimmte Farbe aus einem Schema.
-	// Hinweis: Schema-Farben haben Namen (Strings). Wird eine unbekannte
+	// Hinweis: Schema-Farben haben IDs. Wird eine unbekannte
 	// Farbe angefordert, so gibt die Methode rot zurück. Für die bekannten
-	// Farbnamen der hier vorinstallierten Schemata gibt es die Spezialfunktion F...()
-	GibFarbe(string) Farbe
+	// Farben der hier vorinstallierten Schemata gibt es die Konstanten F...
+	GibFarbe(FarbID) Farbe
 }
 
 type schema struct {
-	farben map[string]Farbe
+	farben map[FarbID]Farbe
 }
+
+type FarbID uint8
+
+const (
+	Frot FarbID = iota
+	Fweiss
+	Fschwarz
+	Fhintergrund
+	Ftext
+	Fbande
+	Fanzeige
+	Fbillardtuch
+	Finfos
+	Fdiamanten
+	FanzTreffer
+	FanzFouls
+	Fquiz
+	FquizA0
+	FquizA1
+	FquizA2
+	FquizA3
+)
 
 var (
 	standardfarbschema schema = schema{
-		farben: map[string]Farbe{
-			"rot":         Rot(),
-			"weiss":       Weiss(),
-			"schwarz":     Schwarz(),
-			"hintergrund": F(225, 232, 236),
-			"text":        F(1, 88, 122),
-			"bande":       F(1, 88, 122),
-			"anzeige":     Weiss(),
-			"infos":       F(240, 255, 255),
-			"billardtuch": F(92, 179, 193),
-			"diamanten":   F(180, 230, 255),
-			"anz_treffer": F(243, 186, 0),
-			"anz_fouls":   F(219, 80, 0),
-			"quiz":        F(225, 232, 236),
-			"quiz_a0":     F(243, 186, 0),
-			"quiz_a1":     F(92, 179, 193),
-			"quiz_a2":     F(92, 179, 193),
-			"quiz_a3":     F(243, 186, 0)}}
+		farben: map[FarbID]Farbe{
+			Frot:         Rot(),
+			Fweiss:       Weiss(),
+			Fschwarz:     Schwarz(),
+			Fhintergrund: F(225, 232, 236),
+			Ftext:        F(1, 88, 122),
+			Fbande:       F(1, 88, 122),
+			Fanzeige:     Weiss(),
+			Finfos:       F(240, 255, 255),
+			Fbillardtuch: F(92, 179, 193),
+			Fdiamanten:   F(180, 230, 255),
+			FanzTreffer:  F(243, 186, 0),
+			FanzFouls:    F(219, 80, 0),
+			Fquiz:        F(225, 232, 236),
+			FquizA0:      F(243, 186, 0),
+			FquizA1:      F(92, 179, 193),
+			FquizA2:      F(92, 179, 193),
+			FquizA3:      F(243, 186, 0)}}
 	darkfarbschema = schema{
-		farben: map[string]Farbe{
-			"rot":         Rot(),
-			"weiss":       Weiss(),
-			"schwarz":     Schwarz(),
-			"hintergrund": F(25, 32, 36),
-			"text":        F(125, 170, 195),
-			"bande":       F(1, 88, 122),
-			"anzeige":     F(25, 32, 36),
-			"infos":       F(140, 155, 155),
-			"billardtuch": F(92, 179, 193),
-			"diamanten":   F(180, 230, 255),
-			"anz_treffer": F(143, 86, 0),
-			"anz_fouls":   F(119, 40, 0),
-			"quiz":        F(25, 32, 36),
-			"quiz_a0":     F(80, 64, 19),
-			"quiz_a1":     F(40, 61, 65),
-			"quiz_a2":     F(40, 61, 65),
-			"quiz_a3":     F(80, 64, 19)}}
+		farben: map[FarbID]Farbe{
+			Frot:         Rot(),
+			Fweiss:       Weiss(),
+			Fschwarz:     Schwarz(),
+			Fhintergrund: F(25, 32, 36),
+			Ftext:        F(125, 170, 195),
+			Fbande:       F(1, 88, 122),
+			Fanzeige:     F(25, 32, 36),
+			Finfos:       F(140, 155, 155),
+			Fbillardtuch: F(92, 179, 193),
+			Fdiamanten:   F(180, 230, 255),
+			FanzTreffer:  F(143, 86, 0),
+			FanzFouls:    F(119, 40, 0),
+			Fquiz:        F(25, 32, 36),
+			FquizA0:      F(80, 64, 19),
+			FquizA1:      F(40, 61, 65),
+			FquizA2:      F(40, 61, 65),
+			FquizA3:      F(80, 64, 19)}}
 	farbschema *schema = &standardfarbschema
 )
 
@@ -58,48 +80,17 @@ func SetzeStandardFarbSchema() { farbschema = &standardfarbschema }
 
 func SetzeDarkFarbSchema() { farbschema = &darkfarbschema }
 
-func (s *schema) GibFarbe(name string) Farbe {
-	c, ok := s.farben[name]
+func (s *schema) GibFarbe(id FarbID) Farbe {
+	c, ok := s.farben[id]
 	if !ok {
 		return Rot()
 	}
 	return c
 }
 
-func gibFarbe(name string) Farbe {
+func gibFarbe(id FarbID) Farbe {
 	if farbschema == nil {
 		farbschema = &standardfarbschema
 	}
-	return farbschema.GibFarbe(name)
-}
-
-func FRot() string         { return "rot" }
-func FWeiss() string       { return "weiss" }
-func FSchwarz() string     { return "schwarz" }
-func Fhintergrund() string { return "hintergrund" }
-func Ftext() string        { return "text" }
-func Fbande() string       { return "bande" }
-func Fanzeige() string     { return "anzeige" }
-func Fbillardtuch() string { return "billardtuch" }
-func Finfos() string       { return "infos" }
-func Fdiamanten() string   { return "diamanten" }
-func FanzTreffer() string  { return "anz_treffer" }
-func FanzFouls() string    { return "anz_fouls" }
-func Fquiz() string        { return "quiz" }
-func FquizA0() string      { return "quiz_a0" }
-func FquizA1() string      { return "quiz_a1" }
-func FquizA2() string      { return "quiz_a2" }
-func FquizA3() string      { return "quiz_a3" }
-
-// Zusätzliche praktische Farben
-func Weiss() Farbe {
-	return &rgb{r: 255, g: 255, b: 255}
-}
-
-func Schwarz() Farbe {
-	return &rgb{}
-}
-
-func Rot() Farbe {
-	return &rgb{r: 255}
+	return farbschema.GibFarbe(id)
 }

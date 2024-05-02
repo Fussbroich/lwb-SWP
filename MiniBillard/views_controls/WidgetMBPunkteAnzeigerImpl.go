@@ -36,7 +36,7 @@ func (f *miniBSpielinfo) Zeichne() {
 		return
 	}
 	f.widget.Zeichne()
-	schreiber := f.monoBoldSchreiber()
+	schreiber := f.newSchreiber(Bold)
 	breite, höhe := f.GibGroesse()
 	ra := höhe / 2
 
@@ -56,16 +56,16 @@ func (f *miniBSpielinfo) Zeichne() {
 	schreiber.Schreibe(f.startX+2*ra+d, f.startY+zeilenhöhe+d, "Fouls")
 
 	// zeichne beide Fortschritts-Balken
-	f.stiftfarbe(gibFarbe(FanzTreffer())) // Treffer
+	f.stiftfarbe(gibFarbe(FanzTreffer)) // Treffer
 	gfx.Vollrechteck(xSBalken, f.startY+1, uMin16(bBalken*f.treffer/f.anzKugeln, bBalken), zeilenhöhe-2)
-	f.stiftfarbe(gibFarbe(FanzFouls())) // Fouls
+	f.stiftfarbe(gibFarbe(FanzFouls)) // Fouls
 	gfx.Vollrechteck(xSBalken, f.startY+zeilenhöhe+1, uMin16(bBalken*f.strafen/f.anzKugeln, bBalken), zeilenhöhe-2)
 	if f.treffer > 0 {
-		f.stiftfarbe(gibFarbe(FanzFouls()))
+		f.stiftfarbe(gibFarbe(FanzFouls))
 		schreiber.Schreibe(xSBalken+d, f.startY+d, fmt.Sprint(f.treffer))
 	}
 	if f.strafen > 0 {
-		f.stiftfarbe(gibFarbe(FanzTreffer()))
+		f.stiftfarbe(gibFarbe(FanzTreffer))
 		schreiber.Schreibe(xSBalken+d, f.startY+zeilenhöhe+d, fmt.Sprint(f.strafen))
 	}
 

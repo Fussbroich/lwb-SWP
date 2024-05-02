@@ -17,7 +17,7 @@ type Widget interface {
 	// Konstruktormethode/Setter zum Verändern der Anzeige-Details im Fenster
 	//	Vor.: keine
 	//	Eff.: die Einstellung ändern sich
-	SetzeFarben(string, string)
+	SetzeFarben(FarbID, FarbID)
 	// Konstruktormethode/Setter zum Verändern der Anzeige-Details im Fenster
 	//	Vor.: keine
 	//	Eff.: die Einstellung ändern sich

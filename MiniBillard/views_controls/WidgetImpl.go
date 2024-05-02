@@ -8,22 +8,22 @@ import (
 )
 
 type widget struct {
-	aktiv          bool // wahr: muss gezeichnet werden
-	veraltet       bool // wahr: muss neu gezeichnet werden
-	schlicht       bool
-	hg, vg         Farbe
-	hgName, vgName string
-	startX, startY uint16
-	stopX, stopY   uint16
-	trans          uint8
-	eckra          uint16
+	aktiv              bool // wahr: muss gezeichnet werden
+	veraltet           bool // wahr: muss neu gezeichnet werden
+	schlicht           bool
+	hg, vg             Farbe
+	hgFarbID, vgFarbID FarbID
+	startX, startY     uint16
+	stopX, stopY       uint16
+	trans              uint8
+	eckra              uint16
 }
 
 // ########## Methoden für die Konstruktion ############################################
 
 func NewFenster() *widget {
 	w := widget{aktiv: true}
-	w.SetzeFarben(Fhintergrund(), Ftext())
+	w.SetzeFarben(Fhintergrund, Ftext)
 	return &w
 }
 
@@ -32,15 +32,15 @@ func (f *widget) SetzeKoordinaten(startx, starty, stopx, stopy uint16) {
 	f.startX, f.startY, f.stopX, f.stopY = startx, starty, stopx, stopy
 }
 
-func (f *widget) SetzeFarben(hg, vg string) {
+func (f *widget) SetzeFarben(hg, vg FarbID) {
 	f.veraltet = true
-	f.hgName, f.vgName = hg, vg
-	f.hg, f.vg = gibFarbe(f.hgName), gibFarbe(f.vgName)
+	f.hgFarbID, f.vgFarbID = hg, vg
+	f.hg, f.vg = gibFarbe(f.hgFarbID), gibFarbe(f.vgFarbID)
 }
 
 func (f *widget) LadeFarben() {
 	f.veraltet = true
-	f.hg, f.vg = gibFarbe(f.hgName), gibFarbe(f.vgName)
+	f.hg, f.vg = gibFarbe(f.hgFarbID), gibFarbe(f.vgFarbID)
 }
 
 func (f *widget) SetzeSchlicht() { f.schlicht = true }

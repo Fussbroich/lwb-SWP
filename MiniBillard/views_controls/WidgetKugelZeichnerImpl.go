@@ -15,7 +15,7 @@ type kugelZeichner struct {
 // Kugelzeichner übernimmt die Koordinaten eines anderen Widgets
 func newKugelZeichnerIn(w *widget) *kugelZeichner {
 	k := kugelZeichner{widget: *w}
-	k.schreiber = w.monoBoldSchreiber()
+	k.schreiber = w.newSchreiber(Bold)
 	return &k
 }
 

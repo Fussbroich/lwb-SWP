@@ -17,7 +17,7 @@ type miniBSpielfeld struct {
 
 func NewMBSpieltisch(billard modelle.MiniBillardSpiel) *miniBSpielfeld {
 	f := miniBSpielfeld{billard: billard, widget: *NewFenster()}
-	f.schreiber = f.monoRegularSchreiber()
+	f.schreiber = f.newSchreiber(Regular)
 	return &f
 }
 
