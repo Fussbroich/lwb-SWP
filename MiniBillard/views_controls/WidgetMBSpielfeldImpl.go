@@ -73,10 +73,6 @@ func (f *miniBSpielfeld) zeichneDiamant(x, y, d uint16) {
 	gfx.Volldreieck(x-d/2, y, x+d/2, y, x, y+d/2)
 }
 
-func (f *miniBSpielfeld) Update() {
-	// TODO kann man hier Rechenzeit sparen?
-}
-
 func (f *miniBSpielfeld) Zeichne() {
 	if !f.IstAktiv() {
 		return
