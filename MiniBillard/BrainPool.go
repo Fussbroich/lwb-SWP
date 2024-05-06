@@ -169,10 +169,10 @@ func NewBPApp(b uint16) *bpapp {
 	a.gameOverFenster.SetzeFarben(views_controls.Fquiz, views_controls.Ftext)
 
 	// Buttonleiste
-	hilfeButton := views_controls.NewButton("(h)ilfe", a.HilfeAnAus)
-	neuesSpielButton := views_controls.NewButton("(n)eues Spiel", a.NeuesSpielStarten)
-	pauseButton := views_controls.NewButton("(m)usik spielen", a.MusikAn)
-	darkButton := views_controls.NewButton("(d)unkel/hell", a.DarkmodeAnAus)
+	hilfeButton := views_controls.NewButton("(h)ilfe", a.hilfeAnAus)
+	neuesSpielButton := views_controls.NewButton("(n)eues Spiel", a.neuesSpielStarten)
+	pauseButton := views_controls.NewButton("(m)usik spielen", a.musikAn)
+	darkButton := views_controls.NewButton("(d)unkel/hell", a.darkmodeAnAus)
 	a.quitButton = views_controls.NewButton("(s)chließen", a.Quit)
 	a.buttonLeiste = []views_controls.Widget{hilfeButton, neuesSpielButton, pauseButton, darkButton, a.quitButton}
 
@@ -197,7 +197,7 @@ func NewBPApp(b uint16) *bpapp {
 //
 //	Vor.: keine
 //	Eff.: zeigt das Hilfefenster an oder blendet es wieder aus. Das Spielmodell wird solang angehalten.
-func (a *bpapp) HilfeAnAus() {
+func (a *bpapp) hilfeAnAus() {
 	if a.hilfeFenster.IstAktiv() {
 		a.hilfeFenster.Ausblenden()
 		if a.spielFenster.IstAktiv() {
@@ -216,7 +216,7 @@ func (a *bpapp) HilfeAnAus() {
 //
 //	Vor.: keine
 //	Eff.: neues Spiel ist gestartet - alle anderen Fenster sind ausgeblendet
-func (a *bpapp) NeuesSpielStarten() {
+func (a *bpapp) neuesSpielStarten() {
 	a.renderer.UeberblendeAus()
 	a.quizFenster.Ausblenden()
 	a.hilfeFenster.Ausblenden()
@@ -232,7 +232,7 @@ func (a *bpapp) NeuesSpielStarten() {
 //
 //	Vor.: keine
 //	Eff.: die hinterlegte Musik startet im Loop
-func (a *bpapp) MusikAn() {
+func (a *bpapp) musikAn() {
 	a.musik.StarteLoop()
 }
 
@@ -240,7 +240,7 @@ func (a *bpapp) MusikAn() {
 //
 //	Vor.: keine
 //	Eff.: die GUI wird zwischen hell und dunkel umgeschaltet
-func (a *bpapp) DarkmodeAnAus() {
+func (a *bpapp) darkmodeAnAus() {
 	a.renderer.DarkmodeAnAus()
 }
 
@@ -248,7 +248,7 @@ func (a *bpapp) DarkmodeAnAus() {
 //
 //	Vor.: keine
 //	Eff.: das Spiel (und der Countdown) hält an, bzw. läuft weiter
-func (a *bpapp) PauseAnAus() {
+func (a *bpapp) pauseAnAus() {
 	a.billard.PauseAnAus()
 }
 
@@ -256,7 +256,7 @@ func (a *bpapp) PauseAnAus() {
 //
 //	Vor.: keine
 //	Eff.: das Spiel (und der Countdown) laufen in Zeitlupe.
-func (a *bpapp) ZeitlupeAnAus() {
+func (a *bpapp) zeitlupeAnAus() {
 	a.billard.ZeitlupeAnAus()
 }
 
@@ -342,20 +342,20 @@ func (a *bpapp) tastenSteuerFunktion(taste uint16, gedrückt uint8, _ uint16) {
 	if gedrückt == 1 {
 		switch taste {
 		case 'h': // Hilfe an-aus
-			a.HilfeAnAus()
+			a.hilfeAnAus()
 		case 'n': // neues Spiel
-			a.NeuesSpielStarten()
+			a.neuesSpielStarten()
 		case 'p': // Spiel pausieren
-			a.PauseAnAus()
+			a.pauseAnAus()
 		case 'd': // Dunkle Umgebung
-			a.DarkmodeAnAus()
+			a.darkmodeAnAus()
 		case 'm': // Musik spielen, wenn man möchte
-			a.MusikAn() // go-Routine
+			a.musikAn() // go-Routine
 		case 's':
 			a.Quit()
 			// ######  Testzwecke ####################################
 		case 't': // Zeitlupe
-			a.ZeitlupeAnAus()
+			a.zeitlupeAnAus()
 		case 'l': // Fenster-Layout anzeigen
 			a.renderer.LayoutAnAus()
 		case 'e': // Spiel testen

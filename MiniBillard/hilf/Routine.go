@@ -2,7 +2,7 @@ package hilf
 
 import "time"
 
-// Ein Wrapper-Objekt für eine Funktion go-Routine mit Endlosschleife
+// Ein Wrapper-Objekt für eine anonyme Funktion
 // und einigen Methoden zur Steuerung. Jede Routine wrappt
 // eine Funktion, die als go-Routine in einer Endlosschleife
 // ausgeführt wird. Die Funktion wird zusätzlich zu einem Namen
@@ -10,8 +10,8 @@ import "time"
 // NewRoutine(name string, f_run func())
 type Routine interface {
 	// Optionale Funktion, die mit defer vor starten einer
-	// Endlosschleife gerufen wird. Kann ein recover enthalten
-	// zum Behandeln von panics.
+	// Endlosschleife gerufen wird. Die Funktion kann ein recover
+	// enthalten zum Behandeln von panics.
 	SetzeAusnahmeHandler(func())
 	// Starte die Funktion als go-Routine in einem Loop mit einem vorgegebenen Zeittakt.
 	StarteLoop(time.Duration)
