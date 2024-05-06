@@ -1,9 +1,5 @@
 package views_controls
 
-type KugelPalette interface {
-	GibFarbe(uint8) Farbe
-}
-
 // Farben der Kugeln
 type palette struct {
 	farben [16]Farbe

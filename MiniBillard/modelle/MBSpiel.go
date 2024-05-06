@@ -18,7 +18,7 @@ import (
 // Jede Kugel prüft, ob sie andere Kugeln oder den Rand des Tuches berührt und
 // ändert entsprechend ihre Bewegungsrichtung (elastischer Stoß).
 //
-// newPoolSpiel(br, hö uint16), bzw. NewMiniXBallSpiel(br, hö uint16) erzeugen
+// Konstruktoren: newPoolSpiel(br, hö uint16), bzw. NewMiniXBallSpiel(br, hö uint16) erzeugen
 // ein Objekt ohne bzw. mit X Kugeln und einer weißen Spielkugel.
 type MiniBillardSpiel interface {
 	// Startet die Spielschleife mit einer geregelten Frequenz.

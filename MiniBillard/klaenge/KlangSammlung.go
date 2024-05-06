@@ -50,7 +50,7 @@ func BillardPubAmbienceSOUND() *klang {
 	return &klang{
 		titel: "Billard Pub Ambience",
 		dauer: time.Minute + 13*time.Second,
-		autor: "",
+		autor: "unknown (directory.audio)",
 		play: func() {
 			for !gfx.FensterOffen() {
 				time.Sleep(100 * time.Millisecond)

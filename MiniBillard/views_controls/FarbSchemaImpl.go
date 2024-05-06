@@ -1,13 +1,5 @@
 package views_controls
 
-type FarbSchema interface {
-	// Getter für eine bestimmte Farbe aus einem Schema.
-	// Hinweis: Schema-Farben haben IDs. Wird eine unbekannte
-	// Farbe angefordert, so gibt die Methode rot zurück. Für die bekannten
-	// Farben der hier vorinstallierten Schemata gibt es die Konstanten F...
-	GibFarbe(FarbID) Farbe
-}
-
 type schema struct {
 	farben map[FarbID]Farbe
 }
