@@ -1,20 +1,23 @@
 // Autoren:
 //
-//	Thomas Schrader
-//	Bettina Chang
+//		Thomas Schrader
+//		Bettina Chang
 //
-//	Zweck:
-//		Das Spielprogramm BrainPool -
-//		ein Softwareprojekt im Rahmen der Lehrerweiterbildung Berlin
+//		Zweck:
+//			Das Spielprogramm BrainPool -
+//			ein Softwareprojekt im Rahmen der Lehrerweiterbildung Berlin
 //
-//	Notwendige Software: Linux, Go ab 1.18
-//		es läuft auch unter Windows, jedoch in verringerter Komplexität (Kugeln haben keine Nummern, Diamanten fehlen).
-//	verwendete Pakete:
-//		gfx, fmt, math, math/rand, strconv, strings, unicode/utf8, time, runtime, os, errors, path/filepath, encoding/csv
-//	Notwendige Hardware:
-//		PC, Bildschirm, Tastatur, Maus mit Scrollrad
+//		Notwendige Software: Linux, Go ab 1.18
+//			es läuft auch unter Windows, jedoch in verringerter Komplexität
+//	     (Kugeln haben keine Nummern, Diamanten fehlen) um den gfx-Server
+//			zu entlasten.
+//		verwendete Pakete:
+//			gfx, fmt, math, math/rand, strconv, strings, unicode/utf8, time,
+//			runtime, os, errors, path/filepath, encoding/csv
+//		Notwendige Hardware:
+//			PC, Bildschirm, Tastatur, Maus mit Scrollrad
 //
-//	Datum: 01.05.2024
+//		Datum: 01.05.2024
 package main
 
 import (
