@@ -26,17 +26,10 @@ func gibFragenDaten(dateipfad string) [][]string {
 	return rs
 }
 
-func BeispielFragenDateipfad() string {
-	return fragenDateipfad("BeispielQuiz.csv")
-}
-
 func BeispielFragen() [][]string {
-	return gibFragenDaten(BeispielFragenDateipfad())
+	return gibFragenDaten(fragenDateipfad("BeispielQuiz.csv"))
 }
 
-func InformatiksystemeFragenDateipfad() string {
-	return fragenDateipfad("InformatiksystemQuiz.csv")
-}
 func InformatiksystemeFragen() [][]string {
-	return gibFragenDaten(InformatiksystemeFragenDateipfad())
+	return gibFragenDaten(fragenDateipfad("InformatiksystemQuiz.csv"))
 }
