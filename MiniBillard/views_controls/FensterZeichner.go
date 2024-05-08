@@ -28,6 +28,7 @@ type FensterZeichner interface {
 	//	Vor.: keine
 	//	Eff.: Der Hintergrund ändert sich.
 	SetzeFensterHintergrund(Widget)
+	// Setzt den Titel-String des Fensters
 	SetzeFensterTitel(string)
 	// Setzt die Widgets, die gezeichnet werden sollen.
 	//
@@ -35,7 +36,7 @@ type FensterZeichner interface {
 	// Widgets lassen sich zur Laufzeit ein- und ausblenden, ohne sie auszutauschen.
 	SetzeWidgets(...Widget)
 	// darstellen:
-	// Manche Widgets sind sehr kompliziert und belasten den gfx-Server -
+	// Manche Widgets sind sehr kompliziert und belasten den gfx-Server (Windows) -
 	// hiermit kann man die Darstellung etwas vereinfachen, falls das Widget es unterstützt.
 	//	Vor.: keine
 	//	Eff.: Die Darstellung wird ggf. vereinfacht.

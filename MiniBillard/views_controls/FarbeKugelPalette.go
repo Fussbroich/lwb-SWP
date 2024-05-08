@@ -3,6 +3,7 @@ package views_controls
 // Eine Kugelpalette bietet 16 verschiedene
 // Farben für die Kugeln eines Billardspiels.
 // Siehe Implementierung für die verwendeten Farbwerte.
+//
 // Kein öffentlicher Konstruktor. Stattdessen kann mit den Paketfunktionen
 // StandardKugelPalette()
 // EnglishKugelPalette() Eine Palette gewählt werden, die dann global gilt.

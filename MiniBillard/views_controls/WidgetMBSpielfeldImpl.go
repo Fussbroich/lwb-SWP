@@ -126,14 +126,13 @@ func (f *miniBSpielfeld) Zeichne() {
 		pStärke := pK.Plus(f.billard.GibVStoss().Mal(ra * 3 / 4))
 		f.schreiber.Schreibe(f.startX+uint16(pStärke.X()), f.startY+uint16(pStärke.Y()-2*ra), fmt.Sprintf("Stärke: %d", uint16(stärke+0.5)))
 	}
-	// debugging
 	if !f.billard.Laeuft() {
 		// Pause
 		f.stiftfarbe(F(100, 100, 100))
 		f.schreiber.SetzeSchriftgroesse(int(f.billard.GibSpielkugel().GibRadius() + 0.5))
 		f.schreiber.Schreibe(4*breite/5, f.startY+5, "Pause")
 	} else if f.billard.IstZeitlupe() {
-		// zeichne Geschwindigkeiten
+		// zeichne Geschwindigkeits-Zeiger
 		for _, k := range f.billard.GibAktiveKugeln() {
 			if !k.GibV().IstNull() {
 				f.breiteLinie(k.GibPos(), k.GibPos().Plus(k.GibV().Mal(k.GibRadius())), ra/8, F(250, 175, 50))

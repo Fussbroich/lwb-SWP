@@ -6,6 +6,8 @@ import (
 	"../modelle"
 )
 
+// Schnell bewegte Objekte oder Objekte werden mit einem "Zeichner" innerhalb eines anderen Widgets dargestellt, statt mit eigenem Widget.
+// Dies trifft für die Billardkugeln zu.
 type kugelZeichner struct {
 	kugel     modelle.MBKugel
 	schreiber *schreiber

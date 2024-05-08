@@ -10,19 +10,19 @@ package views_controls
 //
 //	Die verschiedensten Konstruktoren erzeugen das jeweils passende Widget für eine Aufgabe.
 type Widget interface {
-	// Konstruktormethode/Setter zum Verändern der Anzeige-Details im Fenster
+	// Konstruktormethode/Setter zum Verändern der Anzeige-Position und -Größe im Grafik-Fenster
 	//	Vor.: keine
 	//	Eff.: die Einstellung ändern sich
 	SetzeKoordinaten(uint16, uint16, uint16, uint16)
-	// Konstruktormethode/Setter zum Verändern der Anzeige-Details im Fenster
+	// Konstruktormethode/Setter zum Verändern der Anzeige-Farben im Fenster
 	//	Vor.: keine
 	//	Eff.: die Einstellung ändern sich
 	SetzeFarben(FarbID, FarbID)
-	// Konstruktormethode/Setter zum Verändern der Anzeige-Details im Fenster
+	// Konstruktormethode/Setter zum Verändern der Anzeige-Transparenz im Fenster
 	//	Vor.: keine
 	//	Eff.: die Einstellung ändern sich
 	SetzeTransparenz(uint8)
-	// Konstruktormethode/Setter zum Verändern der Anzeige-Details im Fenster
+	// Konstruktormethode/Setter zum Verändern des Eckradius
 	//	Vor.: keine
 	//	Eff.: die Einstellung ändern sich
 	SetzeEckradius(uint16)
@@ -48,10 +48,10 @@ type Widget interface {
 	// Die Darstellungsmethode
 	//	Vor.: keine
 	//	Eff.: Das Widget stellt sich im gfx-Fenster dar, falls es aktiv ist.
-	// Die Oberklasse zeichnet den Hintergrund und ergänzende Klassen zeichnen neue Inhalte.
-	// Aufrufer (ergänzende Klassen) - die den Inhalt ergänzen wollen, müssen
-	// ihren Inhalt erst danach zeichnen, sonst wird
-	// dieser ggf. überdeckt. Transparenz wird beachtet.
+	//	Die Oberklasse zeichnet den Hintergrund und ergänzende Klassen zeichnen neue Inhalte.
+	//	Aufrufer (ergänzende Klassen) - die den Inhalt ergänzen wollen, müssen
+	//	ihren Inhalt erst danach zeichnen, sonst wird
+	//	dieser ggf. überdeckt. Transparenz wird beachtet.
 	//
 	//	Hinweise: Bei Widgets, die immer sichtbar sind, kann das Verhalten geändert werden,
 	//	so dass sie sich nur dann neu zeichnen, falls sich Daten geändert haben.
@@ -63,15 +63,16 @@ type Widget interface {
 	// für besondere Fälle
 	// (beispielsweise, wenn der Rand besser zu sehen sein soll)
 	ZeichneOffset(uint16)
-	// zeichnet einen Rand um das Widget - wird normalerweise nicht gemacht
+	// zeichnet einen Rand um das Widget
 	ZeichneRand()
 	// Testzwecke - zeichnet einen roten Rahmen um das Widget
 	ZeichneLayout()
 	// aktivieren und deaktivieren:
-	// Nur aktive Widgets zeichnen sich auch. Es lassen sich so im unmittelbaren Modus von gfx Fenster effektiv ein- und ausblenden.
+	// Nur aktive Widgets zeichnen sich auch. Es lassen sich so "Fenster" effektiv ein- und ausblenden.
 	//	Vor.: keine
 	//	Erg.: Liefert wahr, falls das Widget aktiv ist.
 	IstAktiv() bool
+	// Schalte Darstellung an bzw. aus.
 	DarstellenAnAus()
 	// Aktiviert das Widget. Nur aktive Widgets zeichnen sich auch.
 	//	Vor.: keine

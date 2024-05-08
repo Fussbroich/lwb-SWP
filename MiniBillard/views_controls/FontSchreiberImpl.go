@@ -6,6 +6,8 @@ import (
 	"../assets"
 )
 
+// Ein FontSchreiber ist ein Wrapper-Objekt für einen Schrifttyp und eine Schriftgröße und
+// integriert die Funktionen gfx.SetzeFont und SchreibeFont.
 type schreiber struct {
 	font           string
 	schriftgroesse int
