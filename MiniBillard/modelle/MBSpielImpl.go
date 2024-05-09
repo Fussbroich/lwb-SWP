@@ -263,7 +263,9 @@ func (s *mbspiel) Starte() {
 			})
 	}
 	// Starte den updater.
-	s.countdown.Weiter()
+	if !s.AlleEingelocht() {
+		s.countdown.Weiter()
+	}
 	// ein konstanter Takt regelt die "Geschwindigkeit"
 	if s.zeitlupe > 1 {
 		s.updater.StarteRate(s.sollRate / uint64(s.zeitlupe))
