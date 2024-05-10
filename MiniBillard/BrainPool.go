@@ -58,6 +58,7 @@ type bpapp struct {
 	// Größe des gesamten App-Fensters
 	breite uint16
 	hoehe  uint16
+	titel  string
 	// Klänge
 	musik      klaenge.Klang
 	geraeusche klaenge.Klang
@@ -69,8 +70,6 @@ type bpapp struct {
 	quizFenster     views_controls.Widget
 	hilfeFenster    views_controls.Widget
 	gameOverFenster views_controls.Widget
-	hintergrund     views_controls.Widget
-	quitButton      views_controls.Widget
 	buttonLeiste    []views_controls.Widget
 	// Verwalter für den Zeichen-Loop
 	renderer views_controls.FensterZeichner
@@ -96,7 +95,11 @@ func NewBPApp(b uint16) *bpapp {
 	var g uint16 = b / 32 // Rastermass für dieses App-Design
 
 	// Das Seitenverhältnis des App-Fensters ist B:H = 16:11
-	a := bpapp{breite: 32 * g, hoehe: 22 * g}
+	a := bpapp{
+		titel:  "BrainPool - Das MiniBillard für Schlaue.",
+		breite: 32 * g, hoehe: 22 * g}
+	a.renderer = views_controls.NewFensterZeichner()
+	a.renderer.SetzeFensterGroesse(32*g, 22*g)
 
 	a.musik = klaenge.CoolJazz2641SOUND()
 	a.geraeusche = klaenge.BillardPubAmbienceSOUND()
@@ -110,16 +113,27 @@ func NewBPApp(b uint16) *bpapp {
 	// Modelle erzeugen
 	a.billard = modelle.NewMini9BallSpiel(bS, hS)
 	a.quiz = modelle.NewQuizInformatiksysteme()
-	//a.quiz = modelle.NewBeispielQuiz()
 
 	// Views und Zeichner erzeugen
-	a.hintergrund = views_controls.NewFenster()
+	var hintergrund views_controls.Widget = views_controls.NewFenster()
 	var bande, punktezaehler, restzeit views_controls.Widget = views_controls.NewFenster(),
 		views_controls.NewMBPunkteAnzeiger(a.billard),
 		views_controls.NewMBRestzeitAnzeiger(a.billard)
 
 	a.spielFenster = views_controls.NewMBSpieltisch(a.billard)
-	a.quizFenster = views_controls.NewQuizFenster(a.quiz, func() { a.billard.ReduziereStrafpunkte(); a.quiz.NaechsteFrage() }, func() { a.quiz.NaechsteFrage() })
+	a.quizFenster = views_controls.NewQuizFenster(a.quiz,
+		func() { a.billard.ReduziereStrafpunkte(); a.quiz.NaechsteFrage() },
+		func() { a.quiz.NaechsteFrage() })
+
+	// Buttonleiste
+	a.buttonLeiste = []views_controls.Widget{
+		views_controls.NewButton("(h)ilfe", a.hilfeAnAus),
+		views_controls.NewButton("(n)eues Spiel", a.neuesSpielStarten),
+		views_controls.NewButton("(m)usik spielen", a.musikAn),
+		views_controls.NewButton("(d)unkel/hell", a.darkmodeAnAus),
+		views_controls.NewButton("(s)chließen", a.Quit)}
+
+	// Hilfe
 	var hilfetext string = "Hilfe\n\n" +
 		"Im Spielmodus (und nur, wenn alle Kugeln still stehen): " +
 		"Maus bewegen ändert die Zielrichtung. Stoß durch klicken mit der linken Maustaste. " +
@@ -132,15 +146,13 @@ func NewBPApp(b uint16) *bpapp {
 
 	a.hilfeFenster = views_controls.NewTextBox(hilfetext, views_controls.Regular, int(a.breite/56))
 	a.hilfeFenster.Ausblenden() // wäre standardmäßig eingeblendet
+
+	// GAME OVER
 	a.gameOverFenster = views_controls.NewTextBox(" \n  * GAME OVER *", views_controls.BoldItalic, int(a.breite/12))
 	a.gameOverFenster.Ausblenden() // wäre standardmäßig eingeblendet
 
-	a.renderer = views_controls.NewFensterZeichner()
-	a.renderer.SetzeFensterHintergrund(a.hintergrund)
-	a.renderer.SetzeFensterTitel("BrainPool - Das MiniBillard für Schlaue.")
-
 	//setze Layout
-	a.hintergrund.SetzeKoordinaten(0, 0, a.breite, a.hoehe)
+	hintergrund.SetzeKoordinaten(0, 0, a.breite, a.hoehe)
 	var xs, ys, xe, ye uint16 = 4 * g, 6 * g, 28 * g, 18 * g
 	var g3 uint16 = g + g/3
 	// oben links ist der Punktezähler
@@ -159,9 +171,15 @@ func NewBPApp(b uint16) *bpapp {
 	a.hilfeFenster.SetzeEckradius(g3 - 2)
 	a.gameOverFenster.SetzeKoordinaten(xs-g3+2, ys-g3+2, xe+g3-2, ye+g3-2)
 	a.gameOverFenster.SetzeEckradius(g3 - 2)
+	// Buttons unterhalb des Spielfelds gleichmäßig verteilt
+	zb := (a.breite - 2*g) / uint16(len(a.buttonLeiste))
+	for i, b := range a.buttonLeiste {
+		b.SetzeKoordinaten(g+uint16(i)*zb+zb/8, ye+5*g/2, g+uint16(i+1)*zb-zb/8, ye+13*g/4)
+		b.SetzeEckradius(g / 3)
+	}
 
 	//setzeFarben
-	a.hintergrund.SetzeFarben(views_controls.Fhintergrund, views_controls.Ftext)
+	hintergrund.SetzeFarben(views_controls.Fhintergrund, views_controls.Ftext)
 	a.spielFenster.SetzeFarben(views_controls.Fbillardtuch, views_controls.Fdiamanten)
 	bande.SetzeFarben(views_controls.Fbande, views_controls.Fanzeige)
 	punktezaehler.SetzeFarben(views_controls.Fanzeige, views_controls.Ftext)
@@ -170,26 +188,16 @@ func NewBPApp(b uint16) *bpapp {
 	a.quizFenster.SetzeFarben(views_controls.Fquiz, views_controls.Ftext)
 	a.hilfeFenster.SetzeFarben(views_controls.Fquiz, views_controls.Ftext)
 	a.gameOverFenster.SetzeFarben(views_controls.Fquiz, views_controls.Ftext)
-
-	// Buttonleiste
-	hilfeButton := views_controls.NewButton("(h)ilfe", a.hilfeAnAus)
-	neuesSpielButton := views_controls.NewButton("(n)eues Spiel", a.neuesSpielStarten)
-	pauseButton := views_controls.NewButton("(m)usik spielen", a.musikAn)
-	darkButton := views_controls.NewButton("(d)unkel/hell", a.darkmodeAnAus)
-	a.quitButton = views_controls.NewButton("(s)chließen", a.Quit)
-	a.buttonLeiste = []views_controls.Widget{hilfeButton, neuesSpielButton, pauseButton, darkButton, a.quitButton}
-
-	zb := (a.breite - 2*g) / uint16(len(a.buttonLeiste))
-	for i, b := range a.buttonLeiste {
-		b.SetzeKoordinaten(g+uint16(i)*zb+zb/8, ye+5*g/2, g+uint16(i+1)*zb-zb/8, ye+13*g/4)
-		b.SetzeEckradius(g / 3)
+	for _, b := range a.buttonLeiste {
 		b.SetzeFarben(views_controls.Fhintergrund, views_controls.Ftext)
 	}
 
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
-	a.renderer.SetzeWidgets(bande, a.spielFenster, a.quizFenster, punktezaehler, restzeit,
-		a.hilfeFenster, a.gameOverFenster,
-		hilfeButton, neuesSpielButton, pauseButton, darkButton, a.quitButton)
+	a.renderer.AddWidgets(hintergrund, bande, a.spielFenster, a.quizFenster, a.hilfeFenster, a.gameOverFenster)
+	a.renderer.AddWidgets(punktezaehler, restzeit)
+	a.renderer.AddWidgets(a.buttonLeiste...)
+	a.renderer.SetzeFensterGroesse(a.breite, a.hoehe)
+	a.renderer.SetzeFensterTitel(a.titel)
 
 	return &a
 }
@@ -414,7 +422,7 @@ func (a *bpapp) Run() {
 	// die Maus schreibt ggf. sehr häufig auf das Billard-Modell
 	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
 	if os == "windows" {
-		a.mausSteuerung.StarteRate(50) // go-Routine, begrenzte Rate -> gfx entlasten!
+		a.mausSteuerung.StarteRate(50) // go-Routine mit begrenzter Rate
 	} else {
 		a.mausSteuerung.Starte() // go-Routine
 	}
@@ -438,7 +446,7 @@ func (a *bpapp) Quit() {
 	a.quit = true
 	a.geraeusche.Stoppe()
 	a.musik.Stoppe()
-	a.renderer.UeberblendeText("Bye!", views_controls.Fanzeige, views_controls.Ftext, 20)
+	a.renderer.UeberblendeText("Bye!", views_controls.Fanzeige, views_controls.Ftext, int(a.hoehe/5))
 	go a.mausSteuerung.Stoppe()   // go-Routine, blockiert sonst
 	go a.tastenSteuerung.Stoppe() // go-Routine, blockiert sonst
 	a.umschalter.Stoppe()

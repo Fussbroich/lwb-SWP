@@ -21,20 +21,17 @@ type FensterZeichner interface {
 	//	Vor.: keine
 	//	Eff.: Das gfx-Fenster ist geschlossen.
 	Stoppe()
-	// Setzt den Hintergrund.
+	// Setzt die Größe (B*H) des Grafik-Fensters.
 	//
-	// Der Hintergrund ist auch nur ein Widget und wird immer zuerst (zuunterst) gezeichnet.
-	// Außerdem gibt er die Größe des gesamten Fensters vor.
 	//	Vor.: keine
-	//	Eff.: Der Hintergrund ändert sich.
-	SetzeFensterHintergrund(Widget)
+	SetzeFensterGroesse(uint16, uint16)
 	// Setzt den Titel-String des Fensters
 	SetzeFensterTitel(string)
 	// Setzt die Widgets, die gezeichnet werden sollen.
 	//
 	// Die Methode ruft man normalerweise nur beim Erzeugen einer App auf.
 	// Widgets lassen sich zur Laufzeit ein- und ausblenden, ohne sie auszutauschen.
-	SetzeWidgets(...Widget)
+	AddWidgets(...Widget)
 	// darstellen:
 	// Manche Widgets sind sehr kompliziert und belasten den gfx-Server (Windows) -
 	// hiermit kann man die Darstellung etwas vereinfachen, falls das Widget es unterstützt.

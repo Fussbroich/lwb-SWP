@@ -1,16 +1,16 @@
 package views_controls
 
 type text_overlay struct {
-	text string
-	//schriftgroesse int
+	text      string
 	schreiber *schreiber
 	widget
 }
 
 // TextOverlay zeigt den Hintergrund
-func NewTextOverlay(t string) *text_overlay {
+func NewTextOverlay(t string, sg int) *text_overlay {
 	w := text_overlay{text: t, widget: *NewFenster()}
 	w.schreiber = w.newSchreiber(BoldItalic)
+	w.schreiber.SetzeSchriftgroesse(sg)
 	return &w
 }
 
@@ -21,8 +21,6 @@ func (f *text_overlay) Zeichne() {
 	f.widget.Zeichne()
 	f.stiftfarbe(f.vg)
 	breite, höhe := f.GibGroesse()
-	sg := int(höhe) / 5
-	f.schreiber.SetzeSchriftgroesse(sg)
 	f.schreiber.Schreibe(f.startX+breite/3, f.startY+höhe/4, f.text)
 }
 

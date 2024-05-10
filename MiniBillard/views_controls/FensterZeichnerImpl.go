@@ -8,7 +8,8 @@ import (
 )
 
 type fzeichner struct {
-	hintergrund   Widget
+	breite        uint16
+	hoehe         uint16
 	fenstertitel  string
 	widgets       []Widget
 	overlay       Widget
@@ -23,14 +24,16 @@ type fzeichner struct {
 func NewFensterZeichner() *fzeichner {
 	hintergrund := NewFenster()
 	hintergrund.SetzeKoordinaten(0, 0, 640, 480)
-	return &fzeichner{rate: 80, hintergrund: hintergrund}
+	return &fzeichner{rate: 80}
 }
 
-func (r *fzeichner) SetzeFensterHintergrund(w Widget) { r.hintergrund = w }
+func (r *fzeichner) SetzeFensterGroesse(b, h uint16) { r.breite, r.hoehe = b, h }
 
 func (r *fzeichner) SetzeFensterTitel(t string) { r.fenstertitel = t }
 
-func (r *fzeichner) SetzeWidgets(w ...Widget) { r.widgets = w }
+func (r *fzeichner) AddWidgets(w ...Widget) {
+	r.widgets = append(r.widgets, w...)
+}
 
 // ######## die Start- und Stop-Methode ###########################################################
 
@@ -43,21 +46,15 @@ func (r *fzeichner) Starte() {
 			f.SetzeSchlicht()
 		}
 	}
-	b, h := r.hintergrund.GibGroesse()
-	println("Öffne Gfx-Fenster")
-	gfx.Fenster(b, h) //Fenster öffnen
-	gfx.Fenstertitel(r.fenstertitel)
 	r.updater = hilf.NewRoutine("Zeichner",
 		func() {
 			if !gfx.FensterOffen() {
-				return
+				println("Öffne Gfx-Fenster")
+				gfx.Fenster(r.breite, r.hoehe) //Fenster öffnen
+				gfx.Fenstertitel(r.fenstertitel)
 			}
 			gfx.UpdateAus()
 			gfx.Cls()
-			if r.hintergrund != nil {
-				r.hintergrund.Update()
-				r.hintergrund.Zeichne()
-			}
 			for _, f := range r.widgets {
 				f.Update()
 			}
@@ -69,19 +66,16 @@ func (r *fzeichner) Starte() {
 					f.ZeichneLayout()
 				}
 			}
-			if r.hintergrund != nil {
-				b, h := r.hintergrund.GibGroesse()
-				// zeige die frame rate
-				fps := NewInfoText(fmt.Sprintf("%04d fps", r.updater.GibRate()/10*10))
-				fps.SetzeKoordinaten(0, 0, b/2, h/30)
-				fps.SetzeFarben(Fanzeige, Finfos)
-				fps.Zeichne()
-				// zeige das copyright an
-				copy := NewInfoText("(c)2024 Bettina Chang, Thomas Schrader")
-				copy.SetzeKoordinaten(2*b/3, 0, b, h/30)
-				copy.SetzeFarben(Fanzeige, Finfos)
-				copy.Zeichne()
-			}
+			// zeige die frame rate
+			fps := NewInfoText(fmt.Sprintf("%04d fps", r.updater.GibRate()/10*10))
+			fps.SetzeKoordinaten(0, 0, r.breite/2, r.hoehe/30)
+			fps.SetzeFarben(Fanzeige, Finfos)
+			fps.Zeichne()
+			// zeige das copyright an
+			copy := NewInfoText("(c)2024 Bettina Chang, Thomas Schrader")
+			copy.SetzeKoordinaten(2*r.breite/3, 0, r.breite, r.hoehe/30)
+			copy.SetzeFarben(Fanzeige, Finfos)
+			copy.Zeichne()
 			if r.overlay != nil {
 				r.overlay.Zeichne()
 			}
@@ -114,9 +108,6 @@ func (r *fzeichner) DarkmodeAnAus() {
 	} else {
 		SetzeStandardFarbSchema()
 	}
-	if r.hintergrund != nil {
-		r.hintergrund.LadeFarben()
-	}
 	if r.overlay != nil {
 		r.overlay.LadeFarben()
 	}
@@ -131,11 +122,10 @@ func (r *fzeichner) Ueberblende(f Widget) {
 }
 
 func (r *fzeichner) UeberblendeText(t string, hg, vg FarbID, sg int) {
-	b, h := r.hintergrund.GibGroesse()
-	r.overlay = NewTextOverlay(t)
-	r.overlay.SetzeKoordinaten(0, 0, b, h)
+	r.overlay = NewTextOverlay(t, sg)
+	r.overlay.SetzeKoordinaten(0, 0, r.breite, r.hoehe)
 	r.overlay.SetzeFarben(hg, vg)
-	r.overlay.SetzeTransparenz(30)
+	r.overlay.SetzeTransparenz(20)
 }
 
 func (r *fzeichner) UeberblendeAus() {
