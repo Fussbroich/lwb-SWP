@@ -16,11 +16,11 @@ func newQuiz(daten [][]string) *quiz {
 	var fragen []QuizFrage
 	for _, r := range daten {
 		if len(r) != 6 {
-			panic("Falsches CSV-Format")
+			panic("Falsches Fragen-Format")
 		}
 		i, err := strconv.Atoi(r[5])
 		if err != nil || i < 0 || i > 3 {
-			panic("Falsches CSV-Format")
+			panic("Falsches Fragen-Format")
 		}
 		f := NewQuizFrage(
 			r[0], r[1], r[2], r[3], r[4],
