@@ -132,7 +132,7 @@ func NewBPApp(b uint16) *bpapp {
 
 	a.hilfeFenster = views_controls.NewTextBox(hilfetext, views_controls.Regular, int(a.breite/56))
 	a.hilfeFenster.Ausblenden() // wäre standardmäßig eingeblendet
-	a.gameOverFenster = views_controls.NewTextBox("GAME OVER", views_controls.BoldItalic, int(a.breite/12))
+	a.gameOverFenster = views_controls.NewTextBox(" \n  * GAME OVER *", views_controls.BoldItalic, int(a.breite/12))
 	a.gameOverFenster.Ausblenden() // wäre standardmäßig eingeblendet
 
 	a.renderer = views_controls.NewFensterZeichner()
