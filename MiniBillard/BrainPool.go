@@ -465,5 +465,6 @@ func (a *bpapp) Quit() {
 func main() {
 	// Die gewünschte Fensterbreite in Pixeln wird übergeben.
 	// Das Seitenverhältnis des Spiels ist B:H = 16:11
-	NewBPApp(1024).Run() // blockiert bis Quit() aufgerufen wird
+	var bp App = NewBPApp(1024)
+	bp.Run() // blockiert bis Quit() aufgerufen wird
 }
