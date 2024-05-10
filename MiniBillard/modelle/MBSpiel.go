@@ -21,11 +21,17 @@ import (
 // Konstruktoren: newPoolSpiel(br, hö uint16), bzw. NewMiniXBallSpiel(br, hö uint16) erzeugen
 // ein Objekt ohne bzw. mit X Kugeln und einer weißen Spielkugel.
 type MiniBillardSpiel interface {
-	// Startet die Spielschleife mit einer geregelten Frequenz.
+	// Die Update-Methode treibt die Simulation einen Tick voran.
 	//
 	//	Vor.: keine
-	//	Eff.: Jede enthaltene Kugel wird in konstanten Abständen bewegt;
-	//	die Spielregeln, sowie der Kugelstillstand werden laufen überwacht.
+	//	Eff.: Jede enthaltene Kugel wird einen Tick weiterbewegt;
+	//	die Spielregeln, sowie der Kugelstillstand werden anschließend geprüft.
+	Update()
+
+	// Startet eine eigene Schleife mit einer geregelten Frequenz.
+	//
+	//	Vor.: keine
+	//	Eff.: die Update-Methode wird in regelmäßigem Abstand aufgerufen.
 	Starte()
 
 	// Stoppt die Spielschleife (Pause-Modus) - lässt sich wieder starten.

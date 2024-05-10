@@ -205,68 +205,68 @@ func (s *mbspiel) ReduziereStrafpunkte() {
 // Testzewcke
 func (s *mbspiel) ErhoeheStrafpunkte() { s.strafPunkte++ }
 
-// ######## die Lebens- und Pause-Methode ###########################################################
-func (s *mbspiel) Starte() {
-	// Kann zwischendrin gestoppt (Pause) und wieder gestartet werden ...
-	if s.sollRate == 0 {
-		// Todo Simulation ist derzeit von der Auflösung und der Rate abhängig
-		s.sollRate = 83
-	}
+// ######## die Lebens-Methode ###########################################################
+func (s *mbspiel) Update() {
 	if s.countdown == nil {
 		if s.spielzeit == 0 {
 			s.spielzeit = 3 * time.Minute
 		}
 		s.countdown = NewCountdown(s.spielzeit)
 	}
+	// zähle Zeit herunter
+	vergangen := time.Since(s.startzeit)
+	if s.zeitlupe > 0 {
+		vergangen = vergangen / time.Duration(s.zeitlupe)
+	}
+	s.countdown.ZieheAb(vergangen)
+	// bewege jede Kugel
+	s.startzeit = time.Now()
+	for _, k := range s.kugeln {
+		k.BewegenIn(s)
+	}
+	// prüfe Stillstand
+	still := true
+	for _, k := range s.kugeln {
+		k.SetzeKollidiertZurueck()
+		if !k.GibV().IstNull() {
+			still = false
+			break
+		}
+	}
+	if still {
+		s.stillstand = true
+	}
+	// prüfe Fouls und Sieg nach Stillstand
+	if s.angestossen && s.stillstand {
+		s.angestossen = false
+		if s.foulPruefer != nil && s.foulPruefer() {
+			s.strafPunkte++
+		}
+		if s.spielkugel.IstEingelocht() {
+			s.StossWiederholen()
+		}
+		// Das Spiel ist gewonnen
+		if s.AlleEingelocht() {
+			s.countdown.Halt()
+		}
+	}
+}
+
+func (s *mbspiel) Starte() {
+	// Kann zwischendrin gestoppt (Pause) und wieder gestartet werden ...
 	s.startzeit = time.Now()
 	s.stosskraft = 5
 	if s.updater == nil {
-		s.updater = hilf.NewRoutine("Spiel-Logik",
-			func() {
-				// zähle Zeit herunter
-				vergangen := time.Since(s.startzeit)
-				if s.zeitlupe > 0 {
-					vergangen = vergangen / time.Duration(s.zeitlupe)
-				}
-				s.countdown.ZieheAb(vergangen)
-				// bewege jede Kugel
-				s.startzeit = time.Now()
-				for _, k := range s.kugeln {
-					k.BewegenIn(s)
-				}
-				// prüfe Stillstand
-				still := true
-				for _, k := range s.kugeln {
-					k.SetzeKollidiertZurueck()
-					if !k.GibV().IstNull() {
-						still = false
-						break
-					}
-				}
-				if still {
-					s.stillstand = true
-				}
-				// prüfe Fouls und Sieg nach Stillstand
-				if s.angestossen && s.stillstand {
-					s.angestossen = false
-					if s.foulPruefer != nil && s.foulPruefer() {
-						s.strafPunkte++
-					}
-					if s.spielkugel.IstEingelocht() {
-						s.StossWiederholen()
-					}
-					// Das Spiel ist gewonnen
-					if s.AlleEingelocht() {
-						s.countdown.Halt()
-					}
-				}
-			})
+		s.updater = hilf.NewRoutine("Spiel-Logik", s.Update)
 	}
 	// Starte den updater.
 	if !s.AlleEingelocht() {
 		s.countdown.Weiter()
 	}
 	// ein konstanter Takt regelt die "Geschwindigkeit"
+	if s.sollRate == 0 {
+		s.sollRate = 83
+	}
 	if s.zeitlupe > 1 {
 		s.updater.StarteRate(s.sollRate / uint64(s.zeitlupe))
 		//s.updater.StarteLoop(time.Duration(12*s.zeitlupe) * time.Millisecond)
