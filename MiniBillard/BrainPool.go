@@ -311,25 +311,25 @@ func (a *bpapp) quizUmschalterFunktion() {
 //	Sonst: keiner
 func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16) {
 	if taste == 1 && status == -1 { // es wurde links geklickt
-		// Buttonleiste abfragen
+		// wurde ein Button angeklickt?
 		for _, b := range a.buttonLeiste {
 			if b.IstAktiv() && b.ImFenster(mausX, mausY) {
 				b.MausklickBei(mausX, mausY)
 				return
 			}
 		}
-		// schauen, ob das Quiz angeklickt wurde
+		// wurde das Quiz angeklickt?
 		if a.quizFenster.IstAktiv() && a.quizFenster.ImFenster(mausX, mausY) {
 			a.quizFenster.MausklickBei(mausX, mausY)
 			return
 		}
-		// Falls bislang niemand den Klick wollte, gib ihn ans Spiel.
-		// (Zum Spielen kann man auch außerhalb des Spieltisches klicken, daher die Sonderbehandlung ...)
+		// sonst gib den Klick ans Spiel
+		// (zum Spielen kann man auch außerhalb des Spielfensters klicken)
 		if a.spielFenster.IstAktiv() {
 			// kann auch außerhalb des Tuchs klicken
 			a.spielFenster.MausklickBei(mausX, mausY)
 		}
-	} else { // es wurde gar nicht geklickt
+	} else { // es wurde nicht links geklickt
 		if a.spielFenster.IstAktiv() {
 			// zielen und Kraft aufbauen
 			switch taste {
@@ -341,6 +341,7 @@ func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16
 				a.spielFenster.MausBei(mausX, mausY)
 			}
 		}
+		// Sonst: tue gar nichts
 	}
 }
 
@@ -362,7 +363,7 @@ func (a *bpapp) tastenSteuerFunktion(taste uint16, gedrückt uint8, _ uint16) {
 			a.darkmodeAnAus()
 		case 'm': // Musik spielen, wenn man möchte
 			a.musikAn() // go-Routine
-		case 's':
+		case 's', 'q':
 			a.Quit()
 			// ######  Testzwecke ####################################
 		case 't': // Zeitlupe
