@@ -114,10 +114,10 @@ func NewBPApp(b uint16) *bpapp {
 
 	// Views und Zeichner erzeugen
 	a.hintergrund = views_controls.NewFenster()
-	punktezaehler := views_controls.NewMBPunkteAnzeiger(a.billard)
-	restzeit := views_controls.NewMBRestzeitAnzeiger(a.billard)
+	var bande, punktezaehler, restzeit views_controls.Widget = views_controls.NewFenster(),
+		views_controls.NewMBPunkteAnzeiger(a.billard),
+		views_controls.NewMBRestzeitAnzeiger(a.billard)
 
-	bande := views_controls.NewFenster()
 	a.spielFenster = views_controls.NewMBSpieltisch(a.billard)
 	a.quizFenster = views_controls.NewQuizFenster(a.quiz, func() { a.billard.ReduziereStrafpunkte(); a.quiz.NaechsteFrage() }, func() { a.quiz.NaechsteFrage() })
 	var hilfetext string = "Hilfe\n\n" +
@@ -188,8 +188,8 @@ func NewBPApp(b uint16) *bpapp {
 
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
 	a.renderer.SetzeWidgets(bande, a.spielFenster, a.quizFenster, punktezaehler, restzeit,
-		hilfeButton, a.hilfeFenster, neuesSpielButton, pauseButton, darkButton, a.quitButton,
-		a.gameOverFenster)
+		a.hilfeFenster, a.gameOverFenster,
+		hilfeButton, neuesSpielButton, pauseButton, darkButton, a.quitButton)
 
 	return &a
 }
