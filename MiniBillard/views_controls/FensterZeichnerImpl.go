@@ -31,8 +31,8 @@ func (r *fzeichner) SetzeFensterGroesse(b, h uint16) { r.breite, r.hoehe = b, h 
 
 func (r *fzeichner) SetzeFensterTitel(t string) { r.fenstertitel = t }
 
-func (r *fzeichner) AddWidgets(w ...Widget) {
-	r.widgets = append(r.widgets, w...)
+func (r *fzeichner) SetzeWidgets(w ...Widget) {
+	r.widgets = w
 }
 
 // ######## die Start- und Stop-Methode ###########################################################

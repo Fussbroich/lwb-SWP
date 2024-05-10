@@ -31,7 +31,7 @@ type FensterZeichner interface {
 	//
 	// Die Methode ruft man normalerweise nur beim Erzeugen einer App auf.
 	// Widgets lassen sich zur Laufzeit ein- und ausblenden, ohne sie auszutauschen.
-	AddWidgets(...Widget)
+	SetzeWidgets(...Widget)
 	// darstellen:
 	// Manche Widgets sind sehr kompliziert und belasten den gfx-Server (Windows) -
 	// hiermit kann man die Darstellung etwas vereinfachen, falls das Widget es unterstützt.

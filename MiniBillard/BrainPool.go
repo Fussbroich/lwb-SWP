@@ -52,9 +52,9 @@ type App interface {
 	Quit()
 }
 
+// Die Modelle, Views und Steuerelemente einer Brainpool-App
 type bpapp struct {
 	laeuft bool
-	quit   bool
 	// Größe des gesamten App-Fensters
 	breite uint16
 	hoehe  uint16
@@ -71,6 +71,7 @@ type bpapp struct {
 	hilfeFenster    views_controls.Widget
 	gameOverFenster views_controls.Widget
 	buttonLeiste    []views_controls.Widget
+	widgets         []views_controls.Widget
 	// Verwalter für den Zeichen-Loop
 	renderer views_controls.FensterZeichner
 	// separates Eingabe-Control
@@ -98,8 +99,6 @@ func NewBPApp(b uint16) *bpapp {
 	a := bpapp{
 		titel:  "BrainPool - Das MiniBillard für Schlaue.",
 		breite: 32 * g, hoehe: 22 * g}
-	a.renderer = views_controls.NewFensterZeichner()
-	a.renderer.SetzeFensterGroesse(32*g, 22*g)
 
 	a.musik = klaenge.CoolJazz2641SOUND()
 	a.geraeusche = klaenge.BillardPubAmbienceSOUND()
@@ -193,12 +192,10 @@ func NewBPApp(b uint16) *bpapp {
 	}
 
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
-	a.renderer.AddWidgets(hintergrund, bande, a.spielFenster, a.quizFenster, a.hilfeFenster, a.gameOverFenster)
-	a.renderer.AddWidgets(punktezaehler, restzeit)
-	a.renderer.AddWidgets(a.buttonLeiste...)
-	a.renderer.SetzeFensterGroesse(a.breite, a.hoehe)
-	a.renderer.SetzeFensterTitel(a.titel)
-
+	a.widgets = append(a.widgets, hintergrund)
+	a.widgets = append(a.widgets, bande, a.spielFenster, a.quizFenster, a.gameOverFenster, a.hilfeFenster)
+	a.widgets = append(a.widgets, punktezaehler, restzeit)
+	a.widgets = append(a.widgets, a.buttonLeiste...)
 	return &a
 }
 
@@ -349,7 +346,6 @@ func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16
 //
 //	Vor: keine
 //	Eff.: die zur Taste passende Spiel-Aktion ist ausgeführt.
-//	Erg.: Soll der Aufrufer die Abfrage beenden (Quit) true, sonst false.
 func (a *bpapp) tastenSteuerFunktion(taste uint16, gedrückt uint8, _ uint16) {
 	if gedrückt == 1 {
 		switch taste {
@@ -406,21 +402,27 @@ func (a *bpapp) Run() {
 		println("BrainPool läuft derzeit nur unter Windows oder Linux.")
 		return
 	}
-	a.billard.Starte() // Modell bereit zum Spielen
-	a.spielFenster.Einblenden()
-	a.quizFenster.Ausblenden()
-	a.hilfeFenster.Ausblenden()
-	a.gameOverFenster.Ausblenden()
-	a.geraeusche.StarteLoop() // go-Routine
+
+	// ####### Modell bereit machen zum Spielen #########
+	a.billard.Starte()
+
 	//  ####### der Zeichner läuft nebenher #############
-	if os == "windows" {
-		a.renderer.ZeichneSchlicht() // -> gfx entlasten!
+	if a.renderer == nil {
+		a.renderer = views_controls.NewFensterZeichner()
+		a.renderer.SetzeFensterGroesse(a.breite, a.hoehe)
+		a.renderer.SetzeFensterTitel(a.titel)
+		a.renderer.SetzeWidgets(a.widgets...)
+		if os == "windows" {
+			a.renderer.ZeichneSchlicht() // -> gfx entlasten!
+		}
 	}
 	a.renderer.Starte() // go-Routine, öffnet das gfx-Fenster
-	a.laeuft = true
+
+	// ####### schonmal ein wenig Atmo schaffen (gfx muss laufen)
+	a.geraeusche.StarteLoop() // go-Routine
 
 	// ####### die Maussteuerung läuft nebenher ################
-	// die Maus schreibt ggf. sehr häufig auf das Billard-Modell
+	// P.S. die Maus schreibt ggf. sehr häufig auf das Billard-Modell
 	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
 	if os == "windows" {
 		a.mausSteuerung.StarteRate(50) // go-Routine mit begrenzter Rate
@@ -430,6 +432,7 @@ func (a *bpapp) Run() {
 	// ### der eigentliche Spiel-Loop der App läuft nebenher ###
 	a.umschalter = hilf.NewRoutine("Umschalter", a.quizUmschalterFunktion)
 	a.umschalter.StarteRate(20) // go-Routine mit begrenzter Rate
+	a.laeuft = true
 
 	// ### Dafür darf der Tastatur-Loop hier existieren ########
 	a.tastenSteuerung = views_controls.NewTastenRoutine(a.tastenSteuerFunktion)
@@ -444,7 +447,6 @@ func (a *bpapp) Quit() {
 	if !a.laeuft {
 		return
 	}
-	a.quit = true
 	a.geraeusche.Stoppe()
 	a.musik.Stoppe()
 	a.renderer.UeberblendeText("Bye!", views_controls.Fanzeige, views_controls.Ftext, int(a.hoehe/5))
