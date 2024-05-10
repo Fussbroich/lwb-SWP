@@ -424,7 +424,7 @@ func (a *bpapp) Run() {
 
 	// ### Dafür darf der Tastatur-Loop hier existieren ########
 	a.tastenSteuerung = views_controls.NewTastenRoutine(a.tastenSteuerFunktion)
-	a.tastenSteuerung.StarteHier() // blockiert, bis Quit() aufgerufen wird
+	a.tastenSteuerung.LoopeHier() // blockiert, bis Quit() aufgerufen wird
 }
 
 // Stoppt die Laufzeit-Elemente der BrainPool App auf geregelte Art und Weise.

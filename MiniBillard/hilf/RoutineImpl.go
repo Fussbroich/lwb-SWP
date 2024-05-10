@@ -144,7 +144,7 @@ func (r *routine) Starte() {
 // Starte eine Funktion lokal in einer Endlosschleife.
 // Lasse sie so schnell wie möglich loopen und bestimme laufend die Rate je Sekunde.
 // Hinweis: blockiert, bis sie von außerhalb gestoppt wird.
-func (r *routine) StarteHier() {
+func (r *routine) LoopeHier() {
 	if r.stop != nil {
 		println("Fehler:", r.name, "läuft bereits.")
 		return
