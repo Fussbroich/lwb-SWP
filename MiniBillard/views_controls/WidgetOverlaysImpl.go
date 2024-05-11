@@ -25,15 +25,15 @@ func (f *text_overlay) Zeichne() {
 }
 
 type infotext struct {
-	text string
+	f_text func() string
 	//schriftgroesse int
 	schreiber *schreiber
 	widget
 }
 
 // InfoText hat immer einen transparenten Hintergrund.
-func NewInfoText(t string) *infotext {
-	w := infotext{text: t, widget: *NewFenster()}
+func NewInfoText(f_t func() string) *infotext {
+	w := infotext{f_text: f_t, widget: *NewFenster()}
 	w.schreiber = w.newSchreiber(Bold)
 	w.SetzeTransparenz(255)
 	return &w
@@ -47,5 +47,5 @@ func (f *infotext) Zeichne() {
 	sg := int(höhe) * 3 / 5
 	f.schreiber.SetzeSchriftgroesse(sg)
 	d := (höhe - uint16(sg)) / 2
-	f.schreiber.Schreibe(f.startX+d, f.startY+d, f.text)
+	f.schreiber.Schreibe(f.startX+d, f.startY+d, f.f_text())
 }

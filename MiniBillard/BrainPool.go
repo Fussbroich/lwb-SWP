@@ -21,6 +21,7 @@
 package main
 
 import (
+	"fmt"
 	"runtime" //stellt das Betriebssystem fest
 	"time"    //
 
@@ -96,8 +97,14 @@ func NewBPApp(b uint16) *bpapp {
 	a.quiz = modelle.NewQuizInformatiksysteme()
 
 	// Views und Zeichner erzeugen
-	var copy views_controls.Widget = views_controls.NewInfoText("(c)2024 Bettina Chang, Thomas Schrader")
 	var hintergrund views_controls.Widget = views_controls.NewFenster()
+
+	var cRight views_controls.Widget = views_controls.NewInfoText(
+		func() string { return "(c)2024 Bettina Chang, Thomas Schrader" })
+
+	var frames views_controls.Widget = views_controls.NewInfoText(
+		func() string { return fmt.Sprintf("%04d fps", a.zeichner.GibRate()/10*10) })
+
 	var bande, punktezaehler, restzeit views_controls.Widget = views_controls.NewFenster(),
 		views_controls.NewMBPunkteAnzeiger(a.billard),
 		views_controls.NewMBRestzeitAnzeiger(a.billard)
@@ -134,7 +141,8 @@ func NewBPApp(b uint16) *bpapp {
 	a.gameOverFenster.Ausblenden() // wäre standardmäßig eingeblendet
 
 	//setze Layout
-	copy.SetzeKoordinaten(2*a.breite/3, 0, a.breite, a.hoehe/30)
+	cRight.SetzeKoordinaten(2*a.breite/3, 0, a.breite, a.hoehe/30)
+	frames.SetzeKoordinaten(0, 0, a.breite/2, a.hoehe/30)
 	hintergrund.SetzeKoordinaten(0, 0, a.breite, a.hoehe)
 	var xs, ys, xe, ye uint16 = 4 * g, 6 * g, 28 * g, 18 * g
 	var g3 uint16 = g + g/3
@@ -162,7 +170,8 @@ func NewBPApp(b uint16) *bpapp {
 	}
 
 	//setzeFarben
-	copy.SetzeFarben(views_controls.Fanzeige, views_controls.Finfos)
+	cRight.SetzeFarben(views_controls.Fanzeige, views_controls.Finfos)
+	frames.SetzeFarben(views_controls.Fanzeige, views_controls.Finfos)
 	hintergrund.SetzeFarben(views_controls.Fhintergrund, views_controls.Ftext)
 	a.spielFenster.SetzeFarben(views_controls.Fbillardtuch, views_controls.Fdiamanten)
 	bande.SetzeFarben(views_controls.Fbande, views_controls.Fanzeige)
@@ -177,7 +186,7 @@ func NewBPApp(b uint16) *bpapp {
 	}
 
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
-	a.widgets = append(a.widgets, hintergrund, copy)
+	a.widgets = append(a.widgets, hintergrund, frames, cRight)
 	a.widgets = append(a.widgets, bande, a.spielFenster, a.quizFenster, a.gameOverFenster, a.hilfeFenster)
 	a.widgets = append(a.widgets, punktezaehler, restzeit)
 	a.widgets = append(a.widgets, a.buttonLeiste...)
@@ -189,10 +198,6 @@ func (a *bpapp) GibGroesse() (uint16, uint16) { return a.breite, a.hoehe }
 func (a *bpapp) GibTitel() string { return a.titel }
 
 func (a *bpapp) Zeichne() {
-	// zeige die frame rate
-	// fps := NewInfoText(fmt.Sprintf("%04d fps", r.GibRate()/10*10))
-	// fps.SetzeKoordinaten(0, 0, b/2, h/30)
-	// fps.SetzeFarben(Fanzeige, Finfos)
 	for _, f := range a.widgets {
 		f.Update()
 	}
@@ -295,6 +300,7 @@ func (a *bpapp) neuesSpielStarten() {
 //	Vor.: keine
 //	Eff.: die hinterlegte Musik startet im Loop
 func (a *bpapp) musikAn() {
+	a.geraeusche.StarteLoop()
 	a.musik.StarteLoop()
 }
 
@@ -315,22 +321,6 @@ func (a *bpapp) darkmodeAnAus() {
 		w.LadeFarben()
 	}
 	a.darkmode = !a.darkmode
-}
-
-// Aktion für einen klickbaren Button oder eine Taste
-//
-//	Vor.: keine
-//	Eff.: das Spiel (und der Countdown) hält an, bzw. läuft weiter
-func (a *bpapp) pauseAnAus() {
-	a.billard.PauseAnAus()
-}
-
-// Aktion für einen klickbaren Button oder eine Taste
-//
-//	Vor.: keine
-//	Eff.: das Spiel (und der Countdown) laufen in Zeitlupe.
-func (a *bpapp) zeitlupeAnAus() {
-	a.billard.ZeitlupeAnAus()
 }
 
 // Die Maussteuerung der App (kann als go-Routine in einem Loop laufen).
@@ -385,8 +375,6 @@ func (a *bpapp) tastenSteuerFunktion(taste uint16, gedrückt uint8, _ uint16) {
 			a.hilfeAnAus()
 		case 'n': // neues Spiel
 			a.neuesSpielStarten()
-		case 'p': // Spiel pausieren
-			a.pauseAnAus()
 		case 'd': // Dunkle Umgebung
 			a.darkmodeAnAus()
 		case 'm': // Musik spielen, wenn man möchte
@@ -394,8 +382,6 @@ func (a *bpapp) tastenSteuerFunktion(taste uint16, gedrückt uint8, _ uint16) {
 		case 's', 'q':
 			a.quit()
 			// ######  Testzwecke ####################################
-		case 't': // Zeitlupe
-			a.zeitlupeAnAus()
 		case 'l': // Fenster-Layout anzeigen
 			a.layoutAnAus()
 		case 'e': // Spiel testen
@@ -435,10 +421,12 @@ func (a *bpapp) run() {
 		return
 	}
 
-	// ####### Simulation nebenläufig starten ######
-	a.billard.Starte() // go-Routine
+	a.hilfeFenster.Ausblenden()
+	a.gameOverFenster.Ausblenden()
+	a.quizFenster.Ausblenden()
+	a.spielFenster.Einblenden()
 
-	//  ####### Zeichner nebenläufig starten########
+	//  ####### Zeichner nebenläufig starten ########
 	a.zeichner = views_controls.NewZeichenRoutine(a)
 	if os == "windows" {
 		// gfx entlasten!
@@ -450,25 +438,25 @@ func (a *bpapp) run() {
 		a.zeichner.StarteRate(100) // go-Routine, öffnet das gfx-Fenster
 	}
 
-	// ####### schonmal ein wenig Atmo schaffen (gfx muss laufen)
-	a.geraeusche.StarteLoop() // go-Routine
+	// ####### Simulation bringt eigenen Loop ######
+	a.billard.Starte() // go-Routine
 
-	// ####### die Maussteuerung läuft nebenher ################
-	// P.S. die Maus schreibt ggf. sehr häufig auf das Billard-Modell
+	// ### der eigentliche Spiel-Loop der App läuft auch nebenher ###
+	a.updater = hilf.NewRoutine("Umschalter", a.Update)
+	a.updater.StarteRate(20) // go-Routine mit begrenzter Rate
+	a.laeuft = true
+
+	// ####### die Maussteuerung läuft ebenfalls nebenher ################
 	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
 	if os == "windows" {
 		a.mausSteuerung.StarteRate(50) // go-Routine mit begrenzter Rate
 	} else {
 		a.mausSteuerung.Starte() // go-Routine
 	}
-	// ### der eigentliche Spiel-Loop der App läuft nebenher ###
-	a.updater = hilf.NewRoutine("Umschalter", a.Update)
-	a.updater.StarteRate(20) // go-Routine mit begrenzter Rate
-	a.laeuft = true
 
 	// ### Dafür darf der Tastatur-Loop hier existieren ########
 	a.tastenSteuerung = views_controls.NewTastenRoutine(a.tastenSteuerFunktion)
-	a.tastenSteuerung.LoopeHier() // blockiert, bis Quit() aufgerufen wird
+	a.tastenSteuerung.LoopeHier() // blockiert, bis quit() aufgerufen wird
 }
 
 // Stoppt die Laufzeit-Elemente der BrainPool App auf geregelte Art und Weise.

@@ -26,11 +26,9 @@ type mbspiel struct {
 	stillstand   bool // alle Kugeln stehen still
 	updater      hilf.Routine
 	sollRate     uint64 // die Wunschgeschwindigkeit der Simulation
-	foulPruefer  func() bool
-	startzeit    time.Time
+	vorigeZeit   time.Time
 	spielzeit    time.Duration // zum Spiel gegen die Zeit
 	countdown    Countdown
-	zeitlupe     uint64 // Testzwecke
 }
 
 // Ein Pool-Spiel ohne Kugeln
@@ -75,7 +73,6 @@ func NewMini9BallSpiel(br, hö uint16) *mbspiel {
 	sp.neusetzenSpielkugel()
 	sp.spielzeit = 4 * time.Minute
 	sp.countdown = NewCountdown(sp.spielzeit)
-	sp.foulPruefer = sp.isFoul9Ball
 	return sp
 }
 
@@ -108,30 +105,6 @@ func (s *mbspiel) kugelSatz9Ball() []MBKugel {
 	}
 }
 
-/*
-Vor. Ein Anstoß war erfolgt und jetzt stehen die Kugeln alle wieder still.
-Erg. True bedeutet, dass es ein Foul gibt.
-*/
-func (sp *mbspiel) isFoul9Ball() bool {
-	// Spielkugel einlochen ist ein Foul
-	if sp.spielkugel.IstEingelocht() {
-		return true
-	}
-	// gar keine Kugel anspielen ist ein Foul
-	if sp.angespielte == nil {
-		return true
-	}
-	// gar keine versenken ist ein Foul
-	var anzVor, anzNeu int
-	for _, k := range sp.vorigeKugeln {
-		if k.IstEingelocht() {
-			anzVor++
-		}
-	}
-	anzNeu = len(sp.eingelochte)
-	return !(anzVor < anzNeu)
-}
-
 // Ein Spiel mit 3 Kugeln
 func NewMini3BallSpiel(br, hö uint16) *mbspiel {
 	sp := newPoolSpiel(br, hö)
@@ -139,7 +112,6 @@ func NewMini3BallSpiel(br, hö uint16) *mbspiel {
 	sp.neusetzenSpielkugel()
 	sp.spielzeit = 90 * time.Second
 	sp.countdown = NewCountdown(sp.spielzeit)
-	sp.foulPruefer = sp.isFoul9Ball
 	return sp
 }
 
@@ -206,6 +178,30 @@ func (s *mbspiel) ReduziereStrafpunkte() {
 func (s *mbspiel) ErhoeheStrafpunkte() { s.strafPunkte++ }
 
 // ######## die Lebens-Methode ###########################################################
+/*
+Vor. Ein Anstoß war erfolgt und jetzt stehen die Kugeln alle wieder still.
+Erg. True bedeutet, dass es ein Foul gibt.
+*/
+func (sp *mbspiel) isFoul() bool {
+	// Spielkugel einlochen ist ein Foul
+	if sp.spielkugel.IstEingelocht() {
+		return true
+	}
+	// gar keine Kugel anspielen ist ein Foul
+	if sp.angespielte == nil {
+		return true
+	}
+	// gar keine versenken ist ein Foul
+	var anzVor, anzNeu int
+	for _, k := range sp.vorigeKugeln {
+		if k.IstEingelocht() {
+			anzVor++
+		}
+	}
+	anzNeu = len(sp.eingelochte)
+	return !(anzVor < anzNeu)
+}
+
 func (s *mbspiel) Update() {
 	if s.countdown == nil {
 		if s.spielzeit == 0 {
@@ -214,13 +210,9 @@ func (s *mbspiel) Update() {
 		s.countdown = NewCountdown(s.spielzeit)
 	}
 	// zähle Zeit herunter
-	vergangen := time.Since(s.startzeit)
-	if s.zeitlupe > 0 {
-		vergangen = vergangen / time.Duration(s.zeitlupe)
-	}
-	s.countdown.ZieheAb(vergangen)
+	s.countdown.ZieheAb(time.Since(s.vorigeZeit))
+	s.vorigeZeit = time.Now()
 	// bewege jede Kugel
-	s.startzeit = time.Now()
 	for _, k := range s.kugeln {
 		k.BewegenIn(s)
 	}
@@ -239,7 +231,7 @@ func (s *mbspiel) Update() {
 	// prüfe Fouls und Sieg nach Stillstand
 	if s.angestossen && s.stillstand {
 		s.angestossen = false
-		if s.foulPruefer != nil && s.foulPruefer() {
+		if s.isFoul() {
 			s.strafPunkte++
 		}
 		if s.spielkugel.IstEingelocht() {
@@ -254,7 +246,7 @@ func (s *mbspiel) Update() {
 
 func (s *mbspiel) Starte() {
 	// Kann zwischendrin gestoppt (Pause) und wieder gestartet werden ...
-	s.startzeit = time.Now()
+	s.vorigeZeit = time.Now()
 	s.stosskraft = 5
 	if s.updater == nil {
 		s.updater = hilf.NewRoutine("Spiel-Logik", s.Update)
@@ -267,13 +259,7 @@ func (s *mbspiel) Starte() {
 	if s.sollRate == 0 {
 		s.sollRate = 83
 	}
-	if s.zeitlupe > 1 {
-		s.updater.StarteRate(s.sollRate / uint64(s.zeitlupe))
-		//s.updater.StarteLoop(time.Duration(12*s.zeitlupe) * time.Millisecond)
-	} else {
-		s.updater.StarteRate(s.sollRate)
-		//s.updater.StarteLoop(12 * time.Millisecond)
-	}
+	s.updater.StarteRate(s.sollRate)
 }
 
 func (s *mbspiel) Laeuft() bool {
@@ -285,29 +271,6 @@ func (s *mbspiel) Stoppe() {
 		s.updater.Stoppe()
 	}
 }
-
-func (s *mbspiel) ZeitlupeAnAus() {
-	if s.zeitlupe > 1 {
-		s.zeitlupe = 1 // wieder normal schnell
-	} else {
-		s.zeitlupe = 5 // langsamer
-	}
-	if s.updater != nil && s.updater.Laeuft() {
-		s.Stoppe()
-		s.Starte()
-	}
-}
-
-func (s *mbspiel) PauseAnAus() {
-	if s.Laeuft() {
-		s.Stoppe()
-	} else {
-		s.zeitlupe = 1
-		s.Starte()
-	}
-}
-
-func (s *mbspiel) IstZeitlupe() bool { return s.zeitlupe > 1 }
 
 // ######## die Methoden zum Stoßen #################################################
 

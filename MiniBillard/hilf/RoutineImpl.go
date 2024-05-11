@@ -9,6 +9,7 @@ type routine struct {
 	rate         uint64 // Hertz
 	verzoegerung time.Duration
 	stop         chan bool
+	laeuft       bool
 }
 
 func NewRoutine(name string, f_run func()) *routine {
@@ -21,26 +22,29 @@ func NewRoutine(name string, f_run func()) *routine {
 func (r *routine) SetzeAusnahmeHandler(f func()) { r.fausnahme = f }
 
 // Prüfe, ob die Routine noch läuft
-func (r *routine) Laeuft() bool { return r.stop != nil }
+func (r *routine) Laeuft() bool { return r.laeuft }
 
 // Starte eine Funktion als goroutine.
 // Lasse sie in einem fest vorgegebenen Takt loopen (feste Rate je Sekunde).
 func (r *routine) StarteLoop(tick time.Duration) {
-	r.rate = 1e9 / uint64(tick.Nanoseconds())
-	if r.stop != nil {
+	if r.laeuft {
 		println("Fehler:", r.name, "läuft bereits.")
 		return
 	}
+	r.laeuft = true
 	println("Starte Takt für", r.name)
+	r.rate = 1e9 / uint64(tick.Nanoseconds())
 	takt := time.NewTicker(tick)
 	r.stop = make(chan bool)
 	runner := func() {
-		defer func() { takt.Stop(); println("Stoppe", r.name) }()
+		defer func() { takt.Stop() }()
 		defer r.fausnahme()
 		for {
 			r.frun() // Starte die Funktion sofort, ohne auf den ersten Tick zu warten.
 			select {
 			case <-r.stop:
+				println("Stoppe", r.name)
+				r.laeuft = false
 				return
 			case <-takt.C:
 				continue // Warte auf den nächsten Tick.
@@ -55,10 +59,12 @@ func (r *routine) StarteLoop(tick time.Duration) {
 // Lasse sie - falls möglich - mit einer bestimmten Rate je Sekunde loopen.
 // Die Rate wird laufend durch eine veränderliche Verzögerung nachgeführt.
 func (r *routine) StarteRate(sollRate uint64) {
-	if r.stop != nil {
+	if r.laeuft {
 		println("Fehler:", r.name, "läuft bereits.")
 		return
 	}
+	r.laeuft = true
+	println("Starte", r.name, "(soll:", sollRate, "Hz)")
 	r.rate = sollRate
 	r.verzoegerung = 0
 	maxVerzögerung := time.Second / 5
@@ -89,6 +95,7 @@ func (r *routine) StarteRate(sollRate uint64) {
 			select {
 			case <-r.stop:
 				println("Stoppe", r.name)
+				r.laeuft = false
 				return
 			default:
 				r.frun() // Starte Funktion, falls der loop nicht gestoppt wurde ...
@@ -100,17 +107,18 @@ func (r *routine) StarteRate(sollRate uint64) {
 		}
 	}
 	// starte loop
-	println("Starte", r.name, "(soll:", sollRate, "Hz)")
 	go runner()
 }
 
 // Starte eine Funktion als goroutine.
 // Lasse sie so schnell wie möglich loopen und bestimme laufend die Rate je Sekunde.
 func (r *routine) Starte() {
-	if r.stop != nil {
+	if r.laeuft {
 		println("Fehler:", r.name, "läuft bereits.")
 		return
 	}
+	r.laeuft = true
+	println("Starte", r.name)
 	r.rate = 1e9
 	r.verzoegerung = 0
 	r.stop = make(chan bool)
@@ -129,6 +137,7 @@ func (r *routine) Starte() {
 			select {
 			case <-r.stop:
 				println("Stoppe", r.name)
+				r.laeuft = false
 				return
 			default:
 				r.frun()
@@ -137,7 +146,6 @@ func (r *routine) Starte() {
 		}
 	}
 	// starte Prozess
-	println("Starte", r.name)
 	go runner()
 }
 
@@ -145,14 +153,15 @@ func (r *routine) Starte() {
 // Lasse sie so schnell wie möglich loopen und bestimme laufend die Rate je Sekunde.
 // Hinweis: blockiert, bis sie von außerhalb gestoppt wird.
 func (r *routine) LoopeHier() {
-	if r.stop != nil {
+	if r.laeuft {
 		println("Fehler:", r.name, "läuft bereits.")
 		return
 	}
+	r.laeuft = true
+	println("Starte lokal:", r.name)
 	r.rate = 1e9
 	r.verzoegerung = 0
 	r.stop = make(chan bool)
-	println("Starte lokal:", r.name)
 	defer r.fausnahme()
 	var startzeit time.Time = time.Now()
 	var laufzeit time.Duration
@@ -167,6 +176,7 @@ func (r *routine) LoopeHier() {
 		select {
 		case <-r.stop:
 			println("Stoppe", r.name)
+			r.laeuft = false
 			return
 		default:
 			r.frun()

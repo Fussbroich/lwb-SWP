@@ -42,17 +42,6 @@ type MiniBillardSpiel interface {
 	// Stelle fest, ob Spielschleife läuft.
 	Laeuft() bool
 
-	// Verringert den Betrag der Kugelbewegungen um einen festen Quotienten
-	//	Vor.: keine
-	//	Eff.: Kugeln bewegen sich langsamer
-	ZeitlupeAnAus()
-
-	// Friere Spielschleife ein oder taue sie wieder auf.
-	PauseAnAus()
-
-	// Stelle fest, ob Zeitlupe aktiv ist.
-	IstZeitlupe() bool
-
 	// Nur wenn alle Kugeln stillstehen, kann die weiße Spielkugel angestossen werden.
 	//
 	//	Vor.: Alle Kugeln stehen still.
