@@ -117,7 +117,7 @@ func NewBPApp(b uint16) *bpapp {
 	// Buttonleiste
 	a.buttonLeiste = []views_controls.Widget{
 		views_controls.NewButton("(h)ilfe", a.hilfeAnAus),
-		views_controls.NewButton("(n)eues Spiel", a.neuesSpielStarten),
+		views_controls.NewButton("(n)eues Spiel", a.Reset),
 		views_controls.NewButton("(m)usik spielen", a.musikAn),
 		views_controls.NewButton("(d)unkel/hell", a.darkmodeAnAus),
 		views_controls.NewButton("(s)chließen", a.quit)}
@@ -195,6 +195,9 @@ func (a *bpapp) GibGroesse() (uint16, uint16) { return a.breite, a.hoehe }
 
 func (a *bpapp) GibTitel() string { return a.titel }
 
+// Die Darstell-Funktion - wird vom Zeichen-Loop bei jedem Tick einmal aufgerufen.
+//
+//	Vor.: Gfx-Fenster ist offen.
 func (a *bpapp) Zeichne() {
 	for _, f := range a.widgets {
 		f.Update()
@@ -211,8 +214,6 @@ func (a *bpapp) Zeichne() {
 		a.overlay.Zeichne()
 	}
 }
-
-// #### Regele die Steuerung der App und die Umschaltung zwischen den App-Modi ##################
 
 // Der Spiel-Loop - bestimmt die Umschaltung zwischen Quiz und Spiel-Simulation.
 //
@@ -246,18 +247,23 @@ func (a *bpapp) Update() {
 	}
 }
 
-// Testzwecke: zeige Widget-Layout
-func (a *bpapp) layoutAnAus() { a.layoutModus = !a.layoutModus }
-
-// überblende eine kurze Nachricht: Begrüßungs- oder Abschieds-Bildschirm
-func (a *bpapp) ueberblendeText(t string, hg, vg views_controls.FarbID, sg int) {
-	a.overlay = views_controls.NewTextOverlay(t, sg)
-	a.overlay.SetzeKoordinaten(0, 0, a.breite, a.hoehe)
-	a.overlay.SetzeFarben(hg, vg)
-	a.overlay.SetzeTransparenz(20)
+// Aktion für einen klickbaren Button oder eine Taste
+//
+//	Vor.: keine
+//	Eff.: neues Spiel ist gestartet - alle anderen Fenster sind ausgeblendet
+func (a *bpapp) Reset() {
+	a.quizFenster.Ausblenden()
+	a.hilfeFenster.Ausblenden()
+	a.gameOverFenster.Ausblenden()
+	a.billard.Reset()
+	a.spielFenster.Einblenden()
+	if !a.billard.Laeuft() {
+		a.billard.Starte()
+	}
 }
 
-func (r *bpapp) ueberblendeAus() { r.overlay = nil }
+// Testzwecke: zeige Widget-Layout
+func (a *bpapp) layoutAnAus() { a.layoutModus = !a.layoutModus }
 
 // Aktion für einen klickbaren Button oder eine Taste
 //
@@ -274,22 +280,6 @@ func (a *bpapp) hilfeAnAus() {
 		if a.spielFenster.IstAktiv() {
 			a.billard.Stoppe()
 		}
-	}
-}
-
-// Aktion für einen klickbaren Button oder eine Taste
-//
-//	Vor.: keine
-//	Eff.: neues Spiel ist gestartet - alle anderen Fenster sind ausgeblendet
-func (a *bpapp) neuesSpielStarten() {
-	a.ueberblendeAus()
-	a.quizFenster.Ausblenden()
-	a.hilfeFenster.Ausblenden()
-	a.gameOverFenster.Ausblenden()
-	a.billard.Reset()
-	a.spielFenster.Einblenden()
-	if !a.billard.Laeuft() {
-		a.billard.Starte()
 	}
 }
 
@@ -326,7 +316,7 @@ func (a *bpapp) darkmodeAnAus() {
 //	Vor.: keine
 //	Eff.: Gibt einige der möglichen Mausaktionen an passende Widgets weiter.
 //	Sonst: keiner
-func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16) {
+func (a *bpapp) MausEingabe(taste uint8, status int8, mausX, mausY uint16) {
 	if taste == 1 && status == -1 { // es wurde links geklickt
 		// wurde ein Button angeklickt?
 		for _, b := range a.buttonLeiste {
@@ -366,13 +356,13 @@ func (a *bpapp) mausSteuerFunktion(taste uint8, status int8, mausX, mausY uint16
 //
 //	Vor: keine
 //	Eff.: die zur Taste passende Spiel-Aktion ist ausgeführt.
-func (a *bpapp) tastenSteuerFunktion(taste uint16, gedrückt uint8, _ uint16) {
+func (a *bpapp) TastaturEingabe(taste uint16, gedrückt uint8, _ uint16) {
 	if gedrückt == 1 {
 		switch taste {
 		case 'h': // Hilfe an-aus
 			a.hilfeAnAus()
 		case 'n': // neues Spiel
-			a.neuesSpielStarten()
+			a.Reset()
 		case 'd': // Dunkle Umgebung
 			a.darkmodeAnAus()
 		case 'm': // Musik spielen, wenn man möchte
@@ -419,11 +409,6 @@ func (a *bpapp) run() {
 		return
 	}
 
-	a.hilfeFenster.Ausblenden()
-	a.gameOverFenster.Ausblenden()
-	a.quizFenster.Ausblenden()
-	a.spielFenster.Einblenden()
-
 	//  ####### Zeichner nebenläufig starten ########
 	a.zeichner = views_controls.NewZeichenRoutine(a)
 	if os == "windows" {
@@ -437,7 +422,7 @@ func (a *bpapp) run() {
 	}
 
 	// ####### Simulation bringt eigenen Loop ######
-	a.billard.Starte() // go-Routine
+	a.Reset() // startet go-Routine
 
 	// ### der eigentliche Spiel-Loop der App läuft auch nebenher ###
 	a.updater = hilf.NewRoutine("Umschalter", a.Update)
@@ -445,7 +430,7 @@ func (a *bpapp) run() {
 	a.laeuft = true
 
 	// ####### die Maussteuerung läuft ebenfalls nebenher ################
-	a.mausSteuerung = views_controls.NewMausRoutine(a.mausSteuerFunktion)
+	a.mausSteuerung = views_controls.NewMausRoutine(a.MausEingabe)
 	if os == "windows" {
 		a.mausSteuerung.StarteRate(50) // go-Routine mit begrenzter Rate
 	} else {
@@ -453,7 +438,7 @@ func (a *bpapp) run() {
 	}
 
 	// ### Dafür darf der Tastatur-Loop hier existieren ########
-	a.tastenSteuerung = views_controls.NewTastenRoutine(a.tastenSteuerFunktion)
+	a.tastenSteuerung = views_controls.NewTastenRoutine(a.TastaturEingabe)
 	a.tastenSteuerung.LoopeHier() // blockiert, bis quit() aufgerufen wird
 }
 
@@ -465,9 +450,14 @@ func (a *bpapp) quit() {
 	if !a.laeuft {
 		return
 	}
+	a.laeuft = false
 	a.geraeusche.Stoppe()
 	a.musik.Stoppe()
-	a.ueberblendeText("Bye!", views_controls.Fanzeige, views_controls.Ftext, int(a.hoehe/5))
+	// flicke einen Abschiedsscreen ein
+	a.overlay = views_controls.NewTextOverlay("Bye!", int(a.hoehe/5))
+	a.overlay.SetzeKoordinaten(0, 0, a.breite, a.hoehe)
+	a.overlay.SetzeFarben(views_controls.Fanzeige, views_controls.Ftext)
+	a.overlay.SetzeTransparenz(20)
 	go a.mausSteuerung.Stoppe()   // go-Routine, blockiert sonst
 	go a.tastenSteuerung.Stoppe() // go-Routine, blockiert sonst
 	a.updater.Stoppe()
