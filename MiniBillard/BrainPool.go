@@ -134,11 +134,9 @@ func NewBPApp(b uint16) *bpapp {
 		"oder mit der angegebenen Taste auf der Tastatur."
 
 	a.hilfeFenster = views_controls.NewTextBox(hilfetext, views_controls.Regular, int(a.breite/56))
-	a.hilfeFenster.Ausblenden() // wäre standardmäßig eingeblendet
 
 	// GAME OVER
 	a.gameOverFenster = views_controls.NewTextBox(" \n  * GAME OVER *", views_controls.BoldItalic, int(a.breite/12))
-	a.gameOverFenster.Ausblenden() // wäre standardmäßig eingeblendet
 
 	//setze Layout
 	cRight.SetzeKoordinaten(2*a.breite/3, 0, a.breite, a.hoehe/30)
