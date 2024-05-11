@@ -28,12 +28,16 @@ func RunApp(a App) {
 	var mausSteuerung, tastenSteuerung EingabeRoutine
 
 	a.SetzeQuit(func() {
-		go mausSteuerung.Stoppe()   // go-Routine, blockiert sonst
-		go tastenSteuerung.Stoppe() // go-Routine, blockiert sonst
-		updater.Stoppe()
+		if !laeuft {
+			return
+		}
+		laeuft = false
 		println("*********************************************")
 		println("*** App wird beendet                      ***")
 		println("*********************************************")
+		go mausSteuerung.Stoppe()   // go-Routine, blockiert sonst
+		go tastenSteuerung.Stoppe() // go-Routine, blockiert sonst
+		updater.Stoppe()
 		time.Sleep(750 * time.Millisecond)
 		zeichner.Stoppe()
 	})

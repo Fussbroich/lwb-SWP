@@ -70,7 +70,7 @@ func NewBPApp(b uint16) *bpapp {
 
 	// Das Seitenverhältnis des App-Fensters ist B:H = 16:11
 	a := bpapp{
-		titel:  "BrainPool - Das MiniBillard für Schlaue.",
+		titel:  "BrainPool - Das Mini-Billard für Schlaue.",
 		breite: 32 * g, hoehe: 22 * g}
 
 	a.musik = klaenge.CoolJazz2641SOUND()
