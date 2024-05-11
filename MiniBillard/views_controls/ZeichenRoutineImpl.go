@@ -14,6 +14,7 @@ type bpZeichenRoutine struct {
 var (
 	renderer *bpZeichenRoutine
 	fpsInfo  Widget = NewInfoText(func() string { return fmt.Sprintf("%04d fps", renderer.GibRate()/10*10) })
+	cRight   Widget = NewInfoText(func() string { return "(c)2024 Bettina Chang, Thomas Schrader" })
 )
 
 func NewZeichenRoutine(a App) *bpZeichenRoutine {
@@ -23,6 +24,9 @@ func NewZeichenRoutine(a App) *bpZeichenRoutine {
 	b, h := a.GibGroesse()
 	fpsInfo.SetzeKoordinaten(0, 0, b/2, h/30)
 	fpsInfo.SetzeFarben(Fanzeige, Finfos)
+	cRight.SetzeKoordinaten(2*b/3, 0, b, h/30)
+	cRight.SetzeFarben(Fanzeige, Finfos)
+
 	routine := hilf.NewRoutine("Zeichner",
 		func() {
 			if !gfx.FensterOffen() {
@@ -34,6 +38,7 @@ func NewZeichenRoutine(a App) *bpZeichenRoutine {
 			gfx.Cls()
 			a.Zeichne()
 			fpsInfo.Zeichne()
+			cRight.Zeichne()
 			gfx.UpdateAn()
 		})
 

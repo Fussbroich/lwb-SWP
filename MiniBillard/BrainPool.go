@@ -88,10 +88,6 @@ func NewBPApp(b uint16) *bpapp {
 
 	// Views und Zeichner erzeugen
 	var hintergrund vc.Widget = vc.NewFenster()
-
-	var cRight vc.Widget = vc.NewInfoText(
-		func() string { return "(c)2024 Bettina Chang, Thomas Schrader" })
-
 	var bande, punktezaehler, restzeit vc.Widget = vc.NewFenster(),
 		vc.NewMBPunkteAnzeiger(a.billard),
 		vc.NewMBRestzeitAnzeiger(a.billard)
@@ -127,7 +123,6 @@ func NewBPApp(b uint16) *bpapp {
 
 	//setze Layout
 	hintergrund.SetzeKoordinaten(0, 0, a.breite, a.hoehe)
-	cRight.SetzeKoordinaten(2*a.breite/3, 0, a.breite, a.hoehe/30)
 	var xs, ys, xe, ye uint16 = 4 * g, 6 * g, 28 * g, 18 * g
 	var g3 uint16 = g + g/3
 	// oben links ist der Punktezähler
@@ -155,7 +150,6 @@ func NewBPApp(b uint16) *bpapp {
 
 	//setzeFarben
 	hintergrund.SetzeFarben(vc.Fhintergrund, vc.Ftext)
-	cRight.SetzeFarben(vc.Fanzeige, vc.Finfos)
 	a.spielFenster.SetzeFarben(vc.Fbillardtuch, vc.Fdiamanten)
 	bande.SetzeFarben(vc.Fbande, vc.Fanzeige)
 	punktezaehler.SetzeFarben(vc.Fanzeige, vc.Ftext)
@@ -169,7 +163,7 @@ func NewBPApp(b uint16) *bpapp {
 	}
 
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
-	a.widgets = append(a.widgets, hintergrund, cRight)
+	a.widgets = append(a.widgets, hintergrund)
 	a.widgets = append(a.widgets, bande, a.spielFenster, a.quizFenster, a.gameOverFenster, a.hilfeFenster)
 	a.widgets = append(a.widgets, punktezaehler, restzeit)
 	a.widgets = append(a.widgets, a.buttonLeiste...)
