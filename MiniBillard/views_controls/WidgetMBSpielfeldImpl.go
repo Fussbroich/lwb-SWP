@@ -87,16 +87,14 @@ func (f *miniBSpielfeld) Zeichne() {
 	ra := kS.GibRadius()
 
 	// zeichne Diamanten
-	if !f.schlicht {
-		f.stiftfarbe(f.vg)
-		for _, i := range []uint16{1, 2, 3, 5, 6, 7} {
-			f.zeichneDiamant(f.startX+i*breite/8, f.startY-uint16(ra+0.5), uint16(ra/3+0.5))
-			f.zeichneDiamant(f.startX+i*breite/8, f.startY+höhe+uint16(ra+0.5), uint16(ra/3+0.5))
-		}
-		for _, i := range []uint16{1, 2, 3} {
-			f.zeichneDiamant(f.startX-uint16(ra+0.5), f.startY+i*höhe/4, uint16(ra/3+0.5))
-			f.zeichneDiamant(f.startX+breite+uint16(ra+0.5), f.startY+i*höhe/4, uint16(ra/3+0.5))
-		}
+	f.stiftfarbe(f.vg)
+	for _, i := range []uint16{1, 2, 3, 5, 6, 7} {
+		f.zeichneDiamant(f.startX+i*breite/8, f.startY-uint16(ra+0.5), uint16(ra/3+0.5))
+		f.zeichneDiamant(f.startX+i*breite/8, f.startY+höhe+uint16(ra+0.5), uint16(ra/3+0.5))
+	}
+	for _, i := range []uint16{1, 2, 3} {
+		f.zeichneDiamant(f.startX-uint16(ra+0.5), f.startY+i*höhe/4, uint16(ra/3+0.5))
+		f.zeichneDiamant(f.startX+breite+uint16(ra+0.5), f.startY+i*höhe/4, uint16(ra/3+0.5))
 	}
 	// zeichne die Taschen
 	for _, t := range f.billard.GibTaschen() {

@@ -10,7 +10,6 @@ import (
 type widget struct {
 	aktiv              bool // wahr: muss gezeichnet werden
 	veraltet           bool // wahr: muss neu gezeichnet werden
-	schlicht           bool
 	hg, vg             Farbe
 	hgFarbID, vgFarbID FarbID
 	startX, startY     uint16
@@ -42,8 +41,6 @@ func (f *widget) LadeFarben() {
 	f.veraltet = true
 	f.hg, f.vg = gibFarbe(f.hgFarbID), gibFarbe(f.vgFarbID)
 }
-
-func (f *widget) SetzeSchlicht() { f.schlicht = true }
 
 func (f *widget) SetzeTransparenz(tr uint8) {
 	f.veraltet = true

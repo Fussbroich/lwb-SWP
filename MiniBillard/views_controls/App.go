@@ -9,7 +9,7 @@ package views_controls
 type App interface {
 	// Stellt den Startzustand her
 	Reset()
-
+	SetzeQuit(func())
 	// Der App-Loop ruft diese Funktion bei jedem Tick einmal auf.
 	Update()
 

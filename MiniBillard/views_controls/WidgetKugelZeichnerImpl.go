@@ -32,7 +32,7 @@ func (w *kugelZeichner) Zeichne() {
 	k := w.kugel
 	w.schreiber.SetzeSchriftgroesse(int(k.GibRadius()) - 3)
 	c := gibKugelFarbe(k.GibWert())
-	if k.GibWert() <= 8 || w.schlicht {
+	if k.GibWert() <= 8 {
 		w.vollKreis(k.GibPos(), k.GibRadius()-1, c)
 	} else {
 		w.vollKreis(k.GibPos(), k.GibRadius()-1, gibKugelFarbe(0))
@@ -46,7 +46,7 @@ func (w *kugelZeichner) Zeichne() {
 		w.vollKreissektor(k.GibPos(), k.GibRadius()-1, 145, 215, c)
 	}
 	// Die weiße erhält keine Nummer.
-	if k.GibWert() != 0 && !w.schlicht {
+	if k.GibWert() != 0 {
 		w.vollKreis(k.GibPos(), (k.GibRadius()-1)/2, gibKugelFarbe(0))
 		w.stiftfarbe(Schwarz())
 		if k.GibWert() < 10 {
