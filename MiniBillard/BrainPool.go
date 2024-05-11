@@ -57,6 +57,7 @@ type bpapp struct {
 //
 //	Vor.:  keine
 //	Eff.:  Ein App-Objekt steht zum Starten bereit.
+//	Hinweis: Man Startet eine App mit RunApp(App).
 func NewBPApp(b uint16) *bpapp {
 	if b > 1920 {
 		b = 1920 // größtmögliches gfx-Fenster ist 1920 Pixel breit
@@ -106,7 +107,7 @@ func NewBPApp(b uint16) *bpapp {
 	// Buttonleiste
 	a.buttonLeiste = []vc.Widget{
 		vc.NewButton("(h)ilfe", a.hilfeAnAus),
-		vc.NewButton("(n)eues Spiel", a.Reset),
+		vc.NewButton("(n)eues Spiel", a.neuesSpiel),
 		vc.NewButton("(m)usik spielen", a.musikAn),
 		vc.NewButton("(d)unkel/hell", a.darkmodeAnAus),
 		vc.NewButton("(s)chließen", a.quit)}
@@ -177,6 +178,14 @@ func NewBPApp(b uint16) *bpapp {
 	a.widgets = append(a.widgets, bande, a.spielFenster, a.quizFenster, a.gameOverFenster, a.hilfeFenster)
 	a.widgets = append(a.widgets, punktezaehler, restzeit)
 	a.widgets = append(a.widgets, a.buttonLeiste...)
+
+	// Setze App-Zustand
+	a.quizFenster.Ausblenden()
+	a.hilfeFenster.Ausblenden()
+	a.gameOverFenster.Ausblenden()
+	a.spielFenster.Einblenden()
+	// Starte Simulation
+	a.billard.Starte()
 	return &a
 }
 
@@ -242,7 +251,7 @@ func (a *bpapp) Update() {
 //
 //	Vor.: keine
 //	Eff.: neues Spiel ist gestartet - alle anderen Fenster sind ausgeblendet
-func (a *bpapp) Reset() {
+func (a *bpapp) neuesSpiel() {
 	a.quizFenster.Ausblenden()
 	a.hilfeFenster.Ausblenden()
 	a.gameOverFenster.Ausblenden()
@@ -372,7 +381,7 @@ func (a *bpapp) TastaturEingabe(taste uint16, gedrückt uint8, _ uint16) {
 		case 'h': // Hilfe an-aus
 			a.hilfeAnAus()
 		case 'n': // neues Spiel
-			a.Reset()
+			a.neuesSpiel()
 		case 'd': // Dunkle Umgebung
 			a.darkmodeAnAus()
 		case 'm': // Musik spielen, wenn man möchte

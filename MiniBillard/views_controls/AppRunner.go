@@ -12,7 +12,14 @@ import (
 //	Eff.: Die App wurde gestartet und ein gfx-Fenster geöffnet.
 //	Hinweis: Es ist ratsam, die Tastensteuerung
 //	lokal loopen zu lassen.
+var laeuft bool
+
 func RunApp(a App) {
+	if laeuft {
+		return
+	}
+	laeuft = true
+
 	// der Zeichen-Loop
 	var zeichner ZeichenRoutine
 	// der Spiel-Loop
@@ -39,11 +46,8 @@ func RunApp(a App) {
 	zeichner = NewZeichenRoutine(a)
 	zeichner.StarteRate(60) // go-Routine, öffnet das gfx-Fenster
 
-	// ####### Simulation bringt eigenen Loop ######
-	a.Reset() // startet go-Routine
-
 	// ### der eigentliche Spiel-Loop der App läuft auch nebenher ###
-	updater = hilf.NewRoutine("Umschalter", a.Update)
+	updater = hilf.NewRoutine("Updater", a.Update)
 	updater.StarteRate(20) // go-Routine mit begrenzter Rate
 
 	// ####### die Maussteuerung läuft ebenfalls nebenher ################

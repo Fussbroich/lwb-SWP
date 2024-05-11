@@ -7,21 +7,21 @@ package views_controls
 //
 //	Vor.: Das Grafikpaket gfx muss im GOPATH installiert sein.
 type App interface {
-	// Stellt den Startzustand her
-	Reset()
+	// Setzt den Quitter
 	SetzeQuit(func())
-	// Der App-Loop ruft diese Funktion bei jedem Tick einmal auf.
-	Update()
-
-	// Der Render-Loop ruft diese Funktion bei jedem Tick einmal auf.
-	// Vor: Gfx Fenster ist offen
-	Zeichne()
 
 	// Die Größe, die das Gfx-Fenster haben muss.
 	GibGroesse() (uint16, uint16)
 
 	// Der Titel, den das Gfx-Fenster haben soll.
 	GibTitel() string
+
+	// Der App-Loop ruft diese Funktion bei jedem Tick einmal auf.
+	Update()
+
+	// Der Zeichen-Loop ruft diese Funktion bei jedem Tick einmal auf.
+	// Vor: Gfx Fenster ist offen
+	Zeichne()
 
 	// Eine Methode für Mausevents - wird von einem Loop aufgerufen
 	MausEingabe(uint8, int8, uint16, uint16)
