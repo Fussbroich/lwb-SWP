@@ -92,9 +92,6 @@ func NewBPApp(b uint16) *bpapp {
 	var cRight vc.Widget = vc.NewInfoText(
 		func() string { return "(c)2024 Bettina Chang, Thomas Schrader" })
 
-	// var frames vc.Widget = NewInfoText(
-	// 	func() string { return fmt.Sprintf("%04d fps", zeichner.GibRate()/10*10) })
-
 	var bande, punktezaehler, restzeit vc.Widget = vc.NewFenster(),
 		vc.NewMBPunkteAnzeiger(a.billard),
 		vc.NewMBRestzeitAnzeiger(a.billard)
@@ -129,9 +126,8 @@ func NewBPApp(b uint16) *bpapp {
 	a.gameOverFenster = vc.NewTextBox(" \n  * GAME OVER *", vc.BoldItalic, int(a.breite/12))
 
 	//setze Layout
-	cRight.SetzeKoordinaten(2*a.breite/3, 0, a.breite, a.hoehe/30)
-	//frames.SetzeKoordinaten(0, 0, a.breite/2, a.hoehe/30)
 	hintergrund.SetzeKoordinaten(0, 0, a.breite, a.hoehe)
+	cRight.SetzeKoordinaten(2*a.breite/3, 0, a.breite, a.hoehe/30)
 	var xs, ys, xe, ye uint16 = 4 * g, 6 * g, 28 * g, 18 * g
 	var g3 uint16 = g + g/3
 	// oben links ist der Punktezähler
@@ -158,9 +154,8 @@ func NewBPApp(b uint16) *bpapp {
 	}
 
 	//setzeFarben
-	cRight.SetzeFarben(vc.Fanzeige, vc.Finfos)
-	//frames.SetzeFarben(vc.Fanzeige, vc.Finfos)
 	hintergrund.SetzeFarben(vc.Fhintergrund, vc.Ftext)
+	cRight.SetzeFarben(vc.Fanzeige, vc.Finfos)
 	a.spielFenster.SetzeFarben(vc.Fbillardtuch, vc.Fdiamanten)
 	bande.SetzeFarben(vc.Fbande, vc.Fanzeige)
 	punktezaehler.SetzeFarben(vc.Fanzeige, vc.Ftext)

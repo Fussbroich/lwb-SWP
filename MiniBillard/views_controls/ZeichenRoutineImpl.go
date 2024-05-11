@@ -24,6 +24,12 @@ func NewZeichenRoutine(a App) *bpZeichenRoutine {
 			a.Zeichne()
 			gfx.UpdateAn()
 		})
+
+	// fps := NewInfoText(
+	// 	func() string { return fmt.Sprintf("%04d fps", routine.GibRate()/10*10) })
+	// fps.SetzeKoordinaten(0, 0, b/2, h/30)
+	// fps.SetzeFarben(Fanzeige, Finfos)
+
 	return &bpZeichenRoutine{Routine: routine}
 }
 
