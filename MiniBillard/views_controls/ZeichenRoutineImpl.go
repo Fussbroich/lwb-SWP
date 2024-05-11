@@ -1,6 +1,7 @@
 package views_controls
 
 import (
+	"fmt"
 	"gfx"
 
 	"../hilf"
@@ -10,8 +11,18 @@ type bpZeichenRoutine struct {
 	hilf.Routine
 }
 
+var (
+	renderer *bpZeichenRoutine
+	fpsInfo  Widget = NewInfoText(func() string { return fmt.Sprintf("%04d fps", renderer.GibRate()/10*10) })
+)
+
 func NewZeichenRoutine(a App) *bpZeichenRoutine {
+	if renderer != nil {
+		return renderer
+	}
 	b, h := a.GibGroesse()
+	fpsInfo.SetzeKoordinaten(0, 0, b/2, h/30)
+	fpsInfo.SetzeFarben(Fanzeige, Finfos)
 	routine := hilf.NewRoutine("Zeichner",
 		func() {
 			if !gfx.FensterOffen() {
@@ -22,15 +33,12 @@ func NewZeichenRoutine(a App) *bpZeichenRoutine {
 			gfx.UpdateAus()
 			gfx.Cls()
 			a.Zeichne()
+			fpsInfo.Zeichne()
 			gfx.UpdateAn()
 		})
 
-	// fps := NewInfoText(
-	// 	func() string { return fmt.Sprintf("%04d fps", routine.GibRate()/10*10) })
-	// fps.SetzeKoordinaten(0, 0, b/2, h/30)
-	// fps.SetzeFarben(Fanzeige, Finfos)
-
-	return &bpZeichenRoutine{Routine: routine}
+	renderer = &bpZeichenRoutine{Routine: routine}
+	return renderer
 }
 
 // ######## die Stop-Methode schließt das Gfx-Fenster ###################################
