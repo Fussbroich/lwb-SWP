@@ -21,11 +21,11 @@ func RunApp(a App) {
 	laeuft = true
 
 	// der Zeichen-Loop
-	var zeichner ZeichenRoutine
+	var zeichner hilf.Routine
 	// der Spiel-Loop
 	var updater hilf.Routine
 	// die Eingabe-Loops
-	var mausSteuerung, tastenSteuerung EingabeRoutine
+	var mausSteuerung, tastenSteuerung hilf.Routine
 
 	a.SetzeQuit(func() {
 		if !laeuft {

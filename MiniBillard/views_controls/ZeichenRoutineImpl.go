@@ -7,6 +7,14 @@ import (
 	"../hilf"
 )
 
+// Eine spezialisierte Routine, die die Darstellungs-Methode einer App aufruft
+// und damit die Bildwiederholung steuert.
+// Im "unmittelbaren Modus" wird die App in einem regelmäßigen Takt in ein
+// einziges Fenster gezeichnet.
+//
+//	Vor.: Das Grafikpaket gfx muss im GOPATH installiert sein.
+//
+//	NewZeichenRoutine(App) erzeugt ein Objekt.
 type bpZeichenRoutine struct {
 	hilf.Routine
 }
@@ -49,9 +57,6 @@ func NewZeichenRoutine(a App) *bpZeichenRoutine {
 // ######## die Stop-Methode schließt das Gfx-Fenster ###################################
 
 func (r *bpZeichenRoutine) Stoppe() {
-	if !r.Routine.Laeuft() {
-		return
-	}
 	r.Routine.Stoppe()
 	if gfx.FensterOffen() {
 		println("Schließe Gfx-Fenster")

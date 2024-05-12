@@ -27,7 +27,7 @@ import (
 	vc "./views_controls"
 )
 
-// Die Modelle, Views und Steuerelemente einer Brainpool-App
+// Die Modelle und Views einer Brainpool-App
 type bpapp struct {
 	quitter func()
 	// Größe des gesamten App-Fensters
@@ -55,9 +55,9 @@ type bpapp struct {
 
 // Zweck: Konstruktor für BrainPool - baut eine App zusammen
 //
-//	Vor.:  keine
-//	Eff.:  Ein App-Objekt steht zum Starten bereit.
-//	Hinweis: Man Startet eine App mit RunApp(App).
+//	Vor.:  Klänge und Liberation-Fonts sind installiert.
+//	Eff.:  Ein App-Objekt steht zum Starten bereit. Die Billard-Simulation läuft bereits.
+//	Hinweis: Man startet eine App mit RunApp(App).
 func NewBPApp(b uint16) *bpapp {
 	if b > 1920 {
 		b = 1920 // größtmögliches gfx-Fenster ist 1920 Pixel breit
@@ -175,6 +175,7 @@ func NewBPApp(b uint16) *bpapp {
 	a.spielFenster.Einblenden()
 	// Starte Simulation
 	a.billard.Starte()
+	a.geraeusche.StarteLoop()
 	return &a
 }
 
@@ -189,14 +190,16 @@ func (a *bpapp) GibTitel() string { return a.titel }
 //	Vor.: Gfx-Fenster ist offen.
 func (a *bpapp) Zeichne() {
 	for _, f := range a.widgets {
-		f.Update()
-	}
-	for _, f := range a.widgets {
-		f.Zeichne()
+		if f.IstAktiv() {
+			f.Update()
+			f.Zeichne()
+		}
 	}
 	if a.layoutModus {
 		for _, f := range a.widgets {
-			f.ZeichneLayout()
+			if f.IstAktiv() {
+				f.ZeichneLayout()
+			}
 		}
 	}
 	if a.overlay != nil {
@@ -204,13 +207,16 @@ func (a *bpapp) Zeichne() {
 	}
 }
 
-// Der Spiel-Loop - bestimmt die Umschaltung zwischen Quiz und Spiel-Simulation.
+// Die Update-Funktion - wird vom Spiel-Loop bei jedem Tick einmal aufgerufen
 //
-//	Vor.: keine
+//	Vor.: Alle Modelle und die Fenster der App sind definiert.
 //	Eff.:
 //	Falls Spielzeit abgelaufen war: Spiel wird beendet.
 //	Falls Anzahl Fouls >> Anzahl Treffer: Quiz ist aktiviert.
 //	Falls Anzahl Fouls < Anzahl Treffer oder 0: Spiel ist aktiviert
+//
+//	Hinweis: Die Funktion hier bestimmt lediglich die Umschaltung zwischen Quiz und
+//	Spiel-Simulation. Die Simulation bringt einen eigenen Loop.
 func (a *bpapp) Update() {
 	tr, st, rz := a.billard.GibTreffer(), a.billard.GibStrafpunkte(), a.billard.GibRestzeit()
 	if a.spielFenster.IstAktiv() &&
@@ -238,7 +244,7 @@ func (a *bpapp) Update() {
 
 // Aktion für einen klickbaren Button oder eine Taste
 //
-//	Vor.: keine
+//	Vor.: Alle Modelle und die Fenster der App sind definiert.
 //	Eff.: neues Spiel ist gestartet - alle anderen Fenster sind ausgeblendet
 func (a *bpapp) neuesSpiel() {
 	a.quizFenster.Ausblenden()
@@ -251,12 +257,12 @@ func (a *bpapp) neuesSpiel() {
 	}
 }
 
-// Testzwecke: zeige vc.Widget-Layout
+// Testzwecke: zeige Widget-Layout
 func (a *bpapp) layoutAnAus() { a.layoutModus = !a.layoutModus }
 
 // Aktion für einen klickbaren Button oder eine Taste
 //
-//	Vor.: keine
+//	Vor.: Alle Modelle und die Fenster der App sind definiert.
 //	Eff.: zeigt das Hilfefenster an oder blendet es wieder aus. Das Spielmodell wird solang angehalten.
 func (a *bpapp) hilfeAnAus() {
 	if a.hilfeFenster.IstAktiv() {
@@ -274,10 +280,9 @@ func (a *bpapp) hilfeAnAus() {
 
 // Aktion für einen klickbaren Button oder eine Taste
 //
-//	Vor.: keine
+//	Vor.: Die Musik ist definiert.
 //	Eff.: die hinterlegte Musik startet im Loop
 func (a *bpapp) musikAn() {
-	a.geraeusche.StarteLoop()
 	a.musik.StarteLoop()
 }
 
@@ -313,7 +318,7 @@ func (a *bpapp) quit() {
 	a.overlay.SetzeFarben(vc.Fanzeige, vc.Ftext)
 	a.overlay.SetzeTransparenz(20)
 	a.billard.Stoppe()
-	// rufe quitter des main Pakets
+	// IMMER ZULETZT: rufe Quitter der AppRunner-Funktion
 	if a.quitter != nil {
 		a.quitter()
 	}
@@ -321,8 +326,8 @@ func (a *bpapp) quit() {
 
 // Die Maussteuerung der App (kann als go-Routine in einem Loop laufen).
 //
-//	Vor.: keine
-//	Eff.: Gibt einige der möglichen Mausaktionen an passende vc.Widgets weiter.
+//	Vor.: Alle Modelle und die Fenster der App sind definiert.
+//	Eff.: Gibt einige der möglichen Mausaktionen an passende Widgets weiter.
 //	Sonst: keiner
 func (a *bpapp) MausEingabe(taste uint8, status int8, mausX, mausY uint16) {
 	if taste == 1 && status == -1 { // es wurde links geklickt
@@ -362,7 +367,7 @@ func (a *bpapp) MausEingabe(taste uint8, status int8, mausX, mausY uint16) {
 
 // Die Tastatursteuerung der App.
 //
-//	Vor: keine
+//	Vor: Alle Modelle und die Fenster der App sind definiert.
 //	Eff.: die zur Taste passende Spiel-Aktion ist ausgeführt.
 func (a *bpapp) TastaturEingabe(taste uint16, gedrückt uint8, _ uint16) {
 	if gedrückt == 1 {
