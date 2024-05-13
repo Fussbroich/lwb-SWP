@@ -10,11 +10,6 @@ import (
 
 // Die Modelle und Views einer Brainpool-App
 type bpapp struct {
-	quitter func()
-	// Größe des gesamten App-Fensters
-	breite uint16
-	hoehe  uint16
-	titel  string
 	// Klänge
 	musik      klaenge.Klang
 	geraeusche klaenge.Klang
@@ -26,12 +21,7 @@ type bpapp struct {
 	quizFenster     vc.Widget
 	hilfeFenster    vc.Widget
 	gameOverFenster vc.Widget
-	buttonLeiste    []vc.Widget
-	widgets         []vc.Widget
-	overlay         vc.Widget
-	// Darstellungs-Variablen
-	layoutModus bool
-	darkmode    bool
+	app
 }
 
 // Zweck: Konstruktor für BrainPool - baut eine App zusammen
@@ -50,9 +40,8 @@ func NewBPApp(b uint16) *bpapp {
 	var g uint16 = b / 32 // Rastermass für dieses App-Design
 
 	// Das Seitenverhältnis des App-Fensters ist B:H = 16:11
-	a := bpapp{
-		titel:  "BrainPool - Das Mini-Billard für Schlaue.",
-		breite: 32 * g, hoehe: 22 * g}
+	a := bpapp{app: app{titel: "BrainPool - Das Mini-Billard für Schlaue.",
+		breite: 32 * g, hoehe: 22 * g}}
 
 	a.musik = klaenge.CoolJazz2641SOUND()
 	a.geraeusche = klaenge.BillardPubAmbienceSOUND()
@@ -160,33 +149,10 @@ func NewBPApp(b uint16) *bpapp {
 	return &a
 }
 
-func (a *bpapp) SetzeQuit(f func()) { a.quitter = f }
-
-func (a *bpapp) GibGroesse() (uint16, uint16) { return a.breite, a.hoehe }
-
-func (a *bpapp) GibTitel() string { return a.titel }
-
 // Die Darstell-Funktion - wird vom Zeichen-Loop bei jedem Tick einmal aufgerufen.
 //
 //	Vor.: Gfx-Fenster ist offen.
-func (a *bpapp) Zeichne() {
-	for _, f := range a.widgets {
-		if f.IstAktiv() {
-			f.Update()
-			f.Zeichne()
-		}
-	}
-	if a.layoutModus {
-		for _, f := range a.widgets {
-			if f.IstAktiv() {
-				f.ZeichneLayout()
-			}
-		}
-	}
-	if a.overlay != nil {
-		a.overlay.Zeichne()
-	}
-}
+func (a *bpapp) Zeichne() { a.app.Zeichne() }
 
 // Die Update-Funktion - wird vom Spiel-Loop bei jedem Tick einmal aufgerufen
 //
@@ -199,6 +165,7 @@ func (a *bpapp) Zeichne() {
 //	Hinweis: Die Funktion hier bestimmt lediglich die Umschaltung zwischen Quiz und
 //	Spiel-Simulation. Die Simulation bringt einen eigenen Loop.
 func (a *bpapp) Update() {
+	a.app.Update()
 	tr, st, rz := a.billard.GibTreffer(), a.billard.GibStrafpunkte(), a.billard.GibRestzeit()
 	if a.spielFenster.IstAktiv() &&
 		rz == 0 {
@@ -238,9 +205,6 @@ func (a *bpapp) neuesSpiel() {
 	}
 }
 
-// Testzwecke: zeige vc.Widget-Layout
-func (a *bpapp) layoutAnAus() { a.layoutModus = !a.layoutModus }
-
 // Aktion für einen klickbaren Button oder eine Taste
 //
 //	Vor.: Alle Modelle und die Fenster der App sind definiert.
@@ -267,25 +231,6 @@ func (a *bpapp) musikAn() {
 	a.musik.StarteLoop()
 }
 
-// Aktion für einen klickbaren Button oder eine Taste
-//
-//	Vor.: keine
-//	Eff.: die GUI wird zwischen hell und dunkel umgeschaltet
-func (a *bpapp) darkmodeAnAus() {
-	if !a.darkmode {
-		vc.SetzeDarkFarbSchema()
-	} else {
-		vc.SetzeStandardFarbSchema()
-	}
-	if a.overlay != nil {
-		a.overlay.LadeFarben()
-	}
-	for _, w := range a.widgets {
-		w.LadeFarben()
-	}
-	a.darkmode = !a.darkmode
-}
-
 // Aktion für einen klickbaren Button.
 //
 //	Vor.: die App läuft
@@ -299,10 +244,8 @@ func (a *bpapp) quit() {
 	a.overlay.SetzeFarben(vc.Fanzeige, vc.Ftext)
 	a.overlay.SetzeTransparenz(20)
 	a.billard.Stoppe()
-	// IMMER ZULETZT: rufe Quitter der AppRunner-Funktion
-	if a.quitter != nil {
-		a.quitter()
-	}
+	// IMMER ZULETZT: rufe quit der app
+	a.app.quit()
 }
 
 // Die Maussteuerung der App (kann als go-Routine in einem Loop laufen).

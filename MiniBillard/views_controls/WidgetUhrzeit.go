@@ -6,18 +6,14 @@ import (
 )
 
 type uhrzeit struct {
-	uhrzeit *time.Time
-	t_str   string
+	uhrzeit   *time.Time
+	schreiber *schreiber
 	widget
 }
 
 func NewDigitalUhrzeitAnzeiger(t *time.Time) *uhrzeit {
-	return &uhrzeit{uhrzeit: t, widget: *NewFenster()}
-}
-
-func (f *uhrzeit) Update() {
-	h, m, s := f.uhrzeit.Hour(), f.uhrzeit.Minute(), f.uhrzeit.Second()
-	f.t_str = fmt.Sprintf("%02d:%02d:%02d", h, m, s)
+	f := *NewFenster()
+	return &uhrzeit{uhrzeit: t, widget: f}
 }
 
 func (f *uhrzeit) Zeichne() {
@@ -26,10 +22,13 @@ func (f *uhrzeit) Zeichne() {
 	}
 	f.widget.Zeichne()
 	breite, höhe := f.GibGroesse()
-	schreiber := f.newSchreiber(Bold)
-	schreiber.SetzeSchriftgroesse(int(höhe) * 2 / 5)
-	dx := (breite - uint16(len(f.t_str)*schreiber.GibSchriftgroesse()*3/5)) / 2
-	dy := (höhe - uint16(schreiber.GibSchriftgroesse())) / 2
-	f.stiftfarbe(f.vg)
-	schreiber.Schreibe(f.startX+dx, f.startY+dy, f.t_str)
+	if f.schreiber == nil {
+		f.schreiber = f.newSchreiber(Bold)
+		f.schreiber.SetzeSchriftgroesse(int(höhe) * 3 / 5)
+	}
+	h, m, s := f.uhrzeit.Hour(), f.uhrzeit.Minute(), f.uhrzeit.Second()
+	t_str := fmt.Sprintf("%02d:%02d:%02d", h, m, s)
+	dx := (breite - uint16(len(t_str)*f.schreiber.GibSchriftgroesse()*3/5)) / 2
+	dy := (höhe - uint16(f.schreiber.GibSchriftgroesse())) / 2
+	f.schreiber.Schreibe(f.startX+dx, f.startY+dy, t_str)
 }
