@@ -20,6 +20,15 @@ type app struct {
 	layoutModus bool
 }
 
+func newApp(b uint16, titel string) *app {
+	if b > 1920 {
+		b = 1920 // größtmögliches gfx-Fenster ist 1920 Pixel breit
+	}
+
+	a := app{titel: titel, breite: b, hoehe: b / 2}
+	return &a
+}
+
 func (a *app) SetzeQuit(f func()) { a.quitter = f }
 
 func (a *app) GibGroesse() (uint16, uint16) { return a.breite, a.hoehe }
@@ -70,7 +79,7 @@ func (a *app) darkmodeAnAus() {
 }
 
 // Testzwecke: zeige vc.Widget-Layout
-func (a *bpapp) layoutAnAus() { a.layoutModus = !a.layoutModus }
+func (a *app) layoutAnAus() { a.layoutModus = !a.layoutModus }
 
 // Aktion für einen klickbaren Button.
 //
