@@ -1,10 +1,11 @@
-package views_controls
+package apps
 
 import (
 	"fmt"
 	"gfx"
 
 	"../hilf"
+	vc "../views_controls"
 )
 
 // Eine spezialisierte Routine, die die Darstellungs-Methode einer App aufruft
@@ -21,8 +22,8 @@ type bpZeichenRoutine struct {
 
 var (
 	renderer *bpZeichenRoutine
-	fpsInfo  Widget = NewInfoText(func() string { return fmt.Sprintf("%04d fps", renderer.GibRate()/10*10) })
-	cRight   Widget = NewInfoText(func() string { return "(c)2024 Bettina Chang, Thomas Schrader" })
+	fpsInfo  vc.Widget = vc.NewInfoText(func() string { return fmt.Sprintf("%04d fps", renderer.GibRate()/10*10) })
+	cRight   vc.Widget = vc.NewInfoText(func() string { return "(c)2024 Bettina Chang, Thomas Schrader" })
 )
 
 func NewZeichenRoutine(a App) *bpZeichenRoutine {
@@ -31,9 +32,9 @@ func NewZeichenRoutine(a App) *bpZeichenRoutine {
 	}
 	b, h := a.GibGroesse()
 	fpsInfo.SetzeKoordinaten(0, 0, b/2, h/30)
-	fpsInfo.SetzeFarben(Fanzeige, Finfos)
+	fpsInfo.SetzeFarben(vc.Fanzeige, vc.Finfos)
 	cRight.SetzeKoordinaten(2*b/3, 0, b, h/30)
-	cRight.SetzeFarben(Fanzeige, Finfos)
+	cRight.SetzeFarben(vc.Fanzeige, vc.Finfos)
 
 	routine := hilf.NewRoutine("Zeichner",
 		func() {

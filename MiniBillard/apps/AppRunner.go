@@ -1,4 +1,4 @@
-package views_controls
+package apps
 
 import (
 	"time"

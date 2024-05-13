@@ -1,4 +1,4 @@
-package views_controls
+package apps
 
 // Eine App ist eine grafische Anwendung, die im "unmittelbaren Modus" in einem einzigen
 // Fenster läuft. Das bedeutet, dass nach jedem zeitlichen "Tick" (Zeiteinheit) das gesamte
