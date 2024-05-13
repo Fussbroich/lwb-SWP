@@ -1,6 +1,8 @@
 package apps
 
 import (
+	"time"
+
 	vc "../views_controls"
 )
 
@@ -12,11 +14,12 @@ type app struct {
 	hoehe  uint16
 	titel  string
 	// Modelle
+	uhrzeit time.Time
 	// Views
-	spielFenster vc.Widget
-	hilfeFenster vc.Widget
-	buttonLeiste []vc.Widget
-	widgets      []vc.Widget
+	uhrzeitAnzeige vc.Widget
+	hilfeFenster   vc.Widget
+	buttonLeiste   []vc.Widget
+	widgets        []vc.Widget
 	//Darstellungsvariable
 	darkmode bool
 }
@@ -29,20 +32,14 @@ func NewBeispielApp(b uint16) *app {
 	if b > 1920 {
 		b = 1920 // größtmögliches gfx-Fenster ist 1920 Pixel breit
 	}
-	if b < 480 {
-		b = 480 // kleinere Bildschirme sind zum Spielen ungeeignet
-	}
+	var g uint16 = b / 8 // Rastermass für dieses App-Design
 
-	var g uint16 = b / 32 // Rastermass für dieses App-Design
+	// Das Seitenverhältnis des App-Fensters ist B:H = 2:1
+	a := app{titel: "Eine Uhr.", breite: 8 * g, hoehe: 4 * g}
 
-	// Das Seitenverhältnis des App-Fensters ist B:H = 16:11
-	a := app{titel: "Eine App.",
-		breite: 32 * g, hoehe: 22 * g}
-
-	// ######## Modelle und Views zusammenstellen #################################
 	// Views erzeugen
 	var hintergrund vc.Widget = vc.NewFenster()
-	a.spielFenster = vc.NewFenster()
+	a.uhrzeitAnzeige = vc.NewDigitalUhrzeitAnzeiger(&a.uhrzeit)
 	// Buttonleiste
 	a.buttonLeiste = []vc.Widget{
 		vc.NewButton("(h)ilfe", a.hilfeAnAus),
@@ -55,34 +52,35 @@ func NewBeispielApp(b uint16) *app {
 
 	//setze Layout
 	hintergrund.SetzeKoordinaten(0, 0, a.breite, a.hoehe)
-	var xs, ys, xe, ye uint16 = 4 * g, 6 * g, 28 * g, 18 * g
-	var g3 uint16 = g + g/3
-	// Spielfeld
-	a.spielFenster.SetzeKoordinaten(xs, ys, xe, ye)
-	// die übrigen Fenster stehen genau vor dem Spielfeld
-	a.hilfeFenster.SetzeKoordinaten(xs-g3+2, ys-g3+2, xe+g3-2, ye+g3-2)
+	var xs, ys, xe, ye uint16 = g, g, 7 * g, 2 * g
+	// Anzeige
+	a.uhrzeitAnzeige.SetzeKoordinaten(xs, ys, xe, ye)
+	// die Hilfe steht genau davor
+	a.hilfeFenster.SetzeKoordinaten(xs, ys, xe, ye)
 	// Buttons unterhalb des Spielfelds gleichmäßig verteilt
 	zb := (a.breite - 2*g) / uint16(len(a.buttonLeiste))
+	hButton := g / 4
 	for i, b := range a.buttonLeiste {
-		b.SetzeKoordinaten(g+uint16(i)*zb+zb/8, ye+5*g/2, g+uint16(i+1)*zb-zb/8, ye+13*g/4)
+		b.SetzeKoordinaten(
+			g+uint16(i)*zb+zb/8, ye+g-hButton/2,
+			g+uint16(i+1)*zb-zb/8, ye+g+hButton/2)
 	}
 
 	//setzeFarben
 	hintergrund.SetzeFarben(vc.Fhintergrund, vc.Ftext)
-	a.spielFenster.SetzeFarben(vc.Fbillardtuch, vc.Fdiamanten)
-	a.hilfeFenster.SetzeFarben(vc.Fquiz, vc.Ftext)
+	a.uhrzeitAnzeige.SetzeFarben(vc.Fanzeige, vc.Ftext)
+	a.hilfeFenster.SetzeFarben(vc.Fanzeige, vc.Ftext)
 	for _, b := range a.buttonLeiste {
 		b.SetzeFarben(vc.Fhintergrund, vc.Ftext)
 	}
 
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
-	a.widgets = append(a.widgets, hintergrund)
-	a.widgets = append(a.widgets, a.spielFenster, a.hilfeFenster)
+	a.widgets = append(a.widgets, hintergrund, a.uhrzeitAnzeige, a.hilfeFenster)
 	a.widgets = append(a.widgets, a.buttonLeiste...)
 
 	// Setze App-Zustand
 	a.hilfeFenster.Ausblenden()
-	a.spielFenster.Einblenden()
+	a.uhrzeitAnzeige.Einblenden()
 	return &a
 }
 
@@ -98,7 +96,6 @@ func (a *app) GibTitel() string { return a.titel }
 func (a *app) Zeichne() {
 	for _, f := range a.widgets {
 		if f.IstAktiv() {
-			f.Update()
 			f.Zeichne()
 		}
 	}
@@ -106,7 +103,12 @@ func (a *app) Zeichne() {
 
 // Die Update-Funktion - wird vom Spiel-Loop bei jedem Tick einmal aufgerufen
 func (a *app) Update() {
-	// hier kommt die Logik rein
+	a.uhrzeit = time.Now()
+	for _, f := range a.widgets {
+		if f.IstAktiv() {
+			f.Update()
+		}
+	}
 }
 
 // Aktion für einen klickbaren Button oder eine Taste
@@ -116,9 +118,9 @@ func (a *app) Update() {
 func (a *app) hilfeAnAus() {
 	if a.hilfeFenster.IstAktiv() {
 		a.hilfeFenster.Ausblenden()
-		a.spielFenster.Einblenden()
+		a.uhrzeitAnzeige.Einblenden()
 	} else {
-		a.spielFenster.Ausblenden()
+		a.uhrzeitAnzeige.Ausblenden()
 		a.hilfeFenster.Einblenden()
 	}
 }
@@ -165,12 +167,6 @@ func (a *app) MausEingabe(taste uint8, status int8, mausX, mausY uint16) {
 				b.MausklickBei(mausX, mausY)
 				return
 			}
-		}
-		// sonst gib den Klick ans Spiel
-		// (zum Spielen kann man auch außerhalb des Spielfensters klicken)
-		if a.spielFenster.IstAktiv() {
-			// kann auch außerhalb des Tuchs klicken
-			a.spielFenster.MausklickBei(mausX, mausY)
 		}
 	}
 }
