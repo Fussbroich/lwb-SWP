@@ -269,7 +269,7 @@ func (s *mbspiel) Starte() {
 	if s.sollRate == 0 {
 		s.sollRate = 83
 	}
-	s.updater.StarteRate(s.sollRate)
+	s.updater.StarteMitRate(s.sollRate)
 }
 
 func (s *mbspiel) Laeuft() bool {

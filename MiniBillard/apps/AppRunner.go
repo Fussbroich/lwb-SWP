@@ -48,15 +48,15 @@ func RunApp(a App) {
 
 	//  ####### Zeichen-Loop nebenläufig starten ########
 	zeichner = NewZeichenRoutine(a)
-	zeichner.StarteRate(60) // go-Routine, öffnet das gfx-Fenster
+	zeichner.StarteMitRate(60) // go-Routine, öffnet das gfx-Fenster
 
 	// ### der eigentliche Spiel-Loop der App läuft auch nebenher ###
 	updater = hilf.NewRoutine("Updater", a.Update)
-	updater.StarteRate(20) // go-Routine mit begrenzter Rate
+	updater.StarteMitRate(20) // go-Routine mit begrenzter Rate
 
 	// ####### die Maussteuerung läuft ebenfalls nebenher ################
 	mausSteuerung = NewMausRoutine(a.MausEingabe)
-	mausSteuerung.StarteRate(50) // go-Routine mit begrenzter Rate
+	mausSteuerung.StarteMitRate(50) // go-Routine mit begrenzter Rate
 
 	// ### Dafür darf der Tastatur-Loop hier existieren ########
 	tastenSteuerung = NewTastenRoutine(a.TastaturEingabe)
