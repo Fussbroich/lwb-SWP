@@ -171,11 +171,11 @@ func (s *mbspiel) GibTreffer() uint8 { return uint8(len(s.eingelochte)) }
 func (s *mbspiel) GibStrafpunkte() uint8 { return s.strafPunkte }
 
 func (s *mbspiel) ReduziereStrafpunkte() {
+	s.muStrafPunkte.Lock()
 	if s.strafPunkte > 0 {
-		s.muStrafPunkte.Lock()
 		s.strafPunkte--
-		s.muStrafPunkte.Unlock()
 	}
+	s.muStrafPunkte.Unlock()
 }
 
 // Testzewcke
