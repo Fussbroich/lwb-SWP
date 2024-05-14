@@ -2,6 +2,7 @@ package modelle
 
 import (
 	"math/rand"
+	"sync"
 	"time"
 
 	"../hilf"
@@ -9,26 +10,27 @@ import (
 )
 
 type mbspiel struct {
-	breite       float64 // Länge des Tuchs in der Simulation
-	hoehe        float64 // Breite des Tuchs in der Simulation
-	rk           float64 // der Radius aller Kugeln in der Simulation
-	kugeln       []MBKugel
-	origKugeln   []MBKugel // der ganze Kugelsatz vor dem Spielbeginn
-	vorigeKugeln []MBKugel // der Kugelsatz vor dem letzten Stoß
-	spielkugel   MBKugel   // die weiße Kugel
-	angespielte  MBKugel   // die zuerst berührte Kugel, falls überhaupt
-	angestossen  bool      // ein Stoß hat stattgefunden
-	stossricht   hilf.Vec2
-	stosskraft   float64
-	taschen      []MBTasche
-	eingelochte  []MBKugel // eine simple Buchhaltung der eingelochten
-	strafPunkte  uint8
-	stillstand   bool // alle Kugeln stehen still
-	updater      hilf.Routine
-	sollRate     uint64 // die Wunschgeschwindigkeit der Simulation
-	vorigeZeit   time.Time
-	spielzeit    time.Duration // zum Spiel gegen die Zeit
-	countdown    Countdown
+	breite        float64 // Länge des Tuchs in der Simulation
+	hoehe         float64 // Breite des Tuchs in der Simulation
+	rk            float64 // der Radius aller Kugeln in der Simulation
+	kugeln        []MBKugel
+	origKugeln    []MBKugel // der ganze Kugelsatz vor dem Spielbeginn
+	vorigeKugeln  []MBKugel // der Kugelsatz vor dem letzten Stoß
+	spielkugel    MBKugel   // die weiße Kugel
+	angespielte   MBKugel   // die zuerst berührte Kugel, falls überhaupt
+	angestossen   bool      // ein Stoß hat stattgefunden
+	stossricht    hilf.Vec2
+	stosskraft    float64
+	taschen       []MBTasche
+	eingelochte   []MBKugel // eine simple Buchhaltung der eingelochten
+	strafPunkte   uint8
+	muStrafPunkte sync.Mutex // braucht man nicht, aber Fouls *müssen* korrekt sein
+	stillstand    bool       // alle Kugeln stehen still
+	updater       hilf.Routine
+	sollRate      uint64 // die Wunschgeschwindigkeit der Simulation
+	vorigeZeit    time.Time
+	spielzeit     time.Duration // zum Spiel gegen die Zeit
+	countdown     Countdown
 }
 
 // Ein Pool-Spiel ohne Kugeln
@@ -170,12 +172,18 @@ func (s *mbspiel) GibStrafpunkte() uint8 { return s.strafPunkte }
 
 func (s *mbspiel) ReduziereStrafpunkte() {
 	if s.strafPunkte > 0 {
+		s.muStrafPunkte.Lock()
 		s.strafPunkte--
+		s.muStrafPunkte.Unlock()
 	}
 }
 
 // Testzewcke
-func (s *mbspiel) ErhoeheStrafpunkte() { s.strafPunkte++ }
+func (s *mbspiel) ErhoeheStrafpunkte() {
+	s.muStrafPunkte.Lock()
+	s.strafPunkte++
+	s.muStrafPunkte.Unlock()
+}
 
 // ######## die Lebens-Methode ###########################################################
 /*
@@ -205,7 +213,7 @@ func (sp *mbspiel) isFoul() bool {
 func (s *mbspiel) Update() {
 	if s.countdown == nil {
 		if s.spielzeit == 0 {
-			s.spielzeit = 3 * time.Minute
+			s.spielzeit = 4 * time.Minute
 		}
 		s.countdown = NewCountdown(s.spielzeit)
 	}
@@ -232,7 +240,9 @@ func (s *mbspiel) Update() {
 	if s.angestossen && s.stillstand {
 		s.angestossen = false
 		if s.isFoul() {
+			s.muStrafPunkte.Lock()
 			s.strafPunkte++
+			s.muStrafPunkte.Unlock()
 		}
 		if s.spielkugel.IstEingelocht() {
 			s.StossWiederholen()
