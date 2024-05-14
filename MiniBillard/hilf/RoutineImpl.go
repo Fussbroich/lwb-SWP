@@ -26,7 +26,7 @@ func (r *routine) Laeuft() bool { return r.laeuft }
 
 // Starte eine Funktion als goroutine.
 // Lasse sie in einem fest vorgegebenen Takt loopen (feste Rate je Sekunde).
-func (r *routine) StarteLoop(tick time.Duration) {
+func (r *routine) StarteMitTakt(tick time.Duration) {
 	if r.laeuft {
 		println("Fehler:", r.name, "läuft bereits.")
 		return
@@ -58,7 +58,7 @@ func (r *routine) StarteLoop(tick time.Duration) {
 // Starte eine Funktion als goroutine.
 // Lasse sie - falls möglich - mit einer bestimmten Rate je Sekunde loopen.
 // Die Rate wird laufend durch eine veränderliche Verzögerung nachgeführt.
-func (r *routine) StarteRate(sollRate uint64) {
+func (r *routine) StarteMitRate(sollRate uint64) {
 	if r.laeuft {
 		println("Fehler:", r.name, "läuft bereits.")
 		return

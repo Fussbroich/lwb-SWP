@@ -26,7 +26,7 @@ func (s *klang) StarteLoop() {
 	if s.player == nil {
 		s.player = hilf.NewRoutine(s.titel, s.play)
 	}
-	s.player.StarteLoop(s.dauer)
+	s.player.StarteMitTakt(s.dauer)
 }
 
 func (s *klang) Stoppe() {

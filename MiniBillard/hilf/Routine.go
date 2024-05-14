@@ -16,12 +16,12 @@ type Routine interface {
 	SetzeAusnahmeHandler(func())
 
 	// Starte die Funktion als go-Routine in einem Loop mit einem vorgegebenen Zeittakt.
-	StarteLoop(time.Duration)
+	StarteMitTakt(time.Duration)
 
 	// Starte die Funktion als go-Routine in einem Loop mit einer vorgegebenen Soll-Frequenz.
 	// Die Sollfrequenz wird nur durch eine geregelte Verzögerung angepasst, so
 	// dass sie gar nicht erreicht werden kann, falls die Funktion zu lange braucht.
-	StarteRate(uint64)
+	StarteMitRate(uint64)
 
 	// Starte die Funktion als go-Routine in einem Loop. Die Funktion wird so schnell
 	// wie möglich wiederholt aufgerufen.
