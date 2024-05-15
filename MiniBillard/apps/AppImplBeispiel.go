@@ -6,7 +6,7 @@ import (
 	vc "../views_controls"
 )
 
-// Das zusätzliche Modell einer Uhr
+// Das Modell einer Uhr
 type appUhr struct {
 	uhrzeit time.Time
 	app
@@ -63,19 +63,24 @@ func (a *appUhr) Update() {
 	a.uhrzeit = time.Now()
 }
 
-// Die Tastatursteuerung der App.
+// Die Darstell-Funktion - wird vom Zeichen-Loop bei jedem Tick einmal aufgerufen.
+//
+//	Vor.: Gfx-Fenster ist offen.
+func (a *appUhr) Zeichne() { a.app.Zeichne() }
+
+// Die Tastatursteuerung der App (wird standardmäßig lokal geloopt).
 //
 //	Vor: Alle Modelle und die Fenster der App sind definiert.
-//	Eff.: die zur Taste passende Spiel-Aktion ist ausgeführt.
-func (a *appUhr) TastaturEingabe(taste uint16, gedrückt uint8, _ uint16) {
-	if gedrückt == 1 {
-		switch taste {
-		case 'd': // Dunkle Umgebung
-			a.darkmodeAnAus()
-		case 'l':
-			a.layoutAnAus()
-		case 's', 'q':
-			a.quit()
-		}
-	}
+//	Eff.: die zur Taste passende Aktion ist ausgeführt.
+func (a *appUhr) TastaturEingabe(taste uint16, gedrückt uint8, tiefe uint16) {
+	a.app.TastaturEingabe(taste, gedrückt, tiefe)
+}
+
+// Die Maussteuerung der App (wird als go-Routine in einem Loop gestartet).
+//
+//	Vor.: Alle Modelle und die Fenster der App sind definiert.
+//	Eff.: Gibt einige der möglichen Mausaktionen an passende Widgets weiter.
+//	Sonst: keiner
+func (a *appUhr) MausEingabe(taste uint8, status int8, mausX, mausY uint16) {
+	a.app.MausEingabe(taste, status, mausX, mausY)
 }
