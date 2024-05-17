@@ -15,9 +15,10 @@ type app struct {
 	buttonLeiste []vc.Widget
 	widgets      []vc.Widget
 	overlay      vc.Widget
+	testInfo     vc.Widget
 	//Darstellungsvariable
-	darkmode    bool
-	layoutModus bool
+	darkmode  bool
+	testModus bool
 }
 
 func (a *app) SetzeQuit(f func()) { a.quitter = f }
@@ -36,16 +37,18 @@ func (a *app) Zeichne() {
 			f.Zeichne()
 		}
 	}
-	if a.layoutModus {
+	if a.testModus {
 		for _, f := range a.widgets {
 			if f.IstAktiv() {
 				f.ZeichneLayout()
 			}
 		}
+		a.testInfo.Zeichne()
 	}
 	if a.overlay != nil {
 		a.overlay.Zeichne()
 	}
+
 }
 
 // Die Update-Funktion - wird vom Spiel-Loop bei jedem Tick einmal aufgerufen
@@ -69,8 +72,17 @@ func (a *app) darkmodeAnAus() {
 	a.darkmode = !a.darkmode
 }
 
-// Testzwecke: zeige vc.Widget-Layout
-func (a *app) layoutAnAus() { a.layoutModus = !a.layoutModus }
+// Testzwecke: zeige Widget-Layout und Infos
+func (a *app) testAnAus() {
+	if a.testInfo == nil {
+		b, h := a.GibGroesse()
+		a.testInfo = vc.NewInfoText(func() string { return "Test" })
+		a.testInfo.SetzeKoordinaten(2*b/5, 2*h/5, 3*b/5, 3*h/5)
+		a.testInfo.SetzeFarben(vc.Fhintergrund, vc.Frot)
+	}
+	a.testInfo.LadeFarben()
+	a.testModus = !a.testModus
+}
 
 // Aktion für einen klickbaren Button.
 //
@@ -108,10 +120,11 @@ func (a *app) TastaturEingabe(taste uint16, gedrückt uint8, _ uint16) {
 		switch taste {
 		case 'd': // Dunkle Umgebung
 			a.darkmodeAnAus()
-		case 'l':
-			a.layoutAnAus()
 		case 's', 'q':
 			a.quit()
+			// ################ Testzwecke #####################
+		case 't': // schalte in den Testmodus
+			a.testAnAus()
 		}
 	}
 }

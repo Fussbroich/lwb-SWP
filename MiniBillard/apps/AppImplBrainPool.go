@@ -307,21 +307,31 @@ func (a *bpapp) TastaturEingabe(taste uint16, gedrückt uint8, _ uint16) {
 		case 's', 'q':
 			a.quit()
 		// ######  Testzwecke ####################################
-		case 'l': // Fenster-Layout anzeigen
-			a.layoutAnAus()
-		// case 'e': // Spiel testen
-		// 	a.billard.ErhoeheStrafpunkte()
-		// case 'r': // Spiel testen
-		// 	a.billard.ReduziereStrafpunkte()
-		// case '1': // Spiel testen
-		// 	a.billard.SetzeRestzeit(5 * time.Second)
-		// 	a.billard.SetzeKugeln1BallTest()
+		case 't': // Test-Modus
+			a.testAnAus()
+		case 'e': // Spiel testen
+			if a.testModus {
+				a.billard.ErhoeheStrafpunkte()
+			}
+		case 'r': // Spiel testen
+			if a.testModus {
+				a.billard.ReduziereStrafpunkte()
+			}
+		case '1': // Spiel testen
+			if a.testModus {
+				a.billard.SetzeRestzeit(5 * time.Second)
+				a.billard.SetzeKugeln1BallTest()
+			}
 		case '3': // Spiel testen
-			a.billard.SetzeSpielzeit(90 * time.Second)
-			a.billard.SetzeKugeln3Ball()
+			if a.testModus {
+				a.billard.SetzeSpielzeit(90 * time.Second)
+				a.billard.SetzeKugeln3Ball()
+			}
 		case '9': // Spiel testen
-			a.billard.SetzeSpielzeit(4 * time.Minute)
-			a.billard.SetzeKugeln9Ball()
+			if a.testModus {
+				a.billard.SetzeSpielzeit(4 * time.Minute)
+				a.billard.SetzeKugeln9Ball()
+			}
 		}
 	}
 }
