@@ -1,6 +1,8 @@
 package apps
 
 import (
+	"time"
+
 	"../klaenge"
 	"../modelle"
 	vc "../views_controls"
@@ -304,22 +306,22 @@ func (a *bpapp) TastaturEingabe(taste uint16, gedrückt uint8, _ uint16) {
 			a.musikAn() // go-Routine
 		case 's', 'q':
 			a.quit()
-			// ######  Testzwecke ####################################
-			// case 'l': // Fenster-Layout anzeigen
-			// 	a.layoutAnAus()
-			// case 'e': // Spiel testen
-			// 	a.billard.ErhoeheStrafpunkte()
-			// case 'r': // Spiel testen
-			// 	a.billard.ReduziereStrafpunkte()
-			// case '1': // Spiel testen
-			// 	a.billard.SetzeRestzeit(5 * time.Second)
-			// 	a.billard.SetzeKugeln1BallTest()
-			// case '3': // Spiel testen
-			// 	a.billard.SetzeSpielzeit(90 * time.Second)
-			// 	a.billard.SetzeKugeln3Ball()
-			// case '9': // Spiel testen
-			// 	a.billard.SetzeSpielzeit(4 * time.Minute)
-			// 	a.billard.SetzeKugeln9Ball()
+		// ######  Testzwecke ####################################
+		case 'l': // Fenster-Layout anzeigen
+			a.layoutAnAus()
+		// case 'e': // Spiel testen
+		// 	a.billard.ErhoeheStrafpunkte()
+		// case 'r': // Spiel testen
+		// 	a.billard.ReduziereStrafpunkte()
+		// case '1': // Spiel testen
+		// 	a.billard.SetzeRestzeit(5 * time.Second)
+		// 	a.billard.SetzeKugeln1BallTest()
+		case '3': // Spiel testen
+			a.billard.SetzeSpielzeit(90 * time.Second)
+			a.billard.SetzeKugeln3Ball()
+		case '9': // Spiel testen
+			a.billard.SetzeSpielzeit(4 * time.Minute)
+			a.billard.SetzeKugeln9Ball()
 		}
 	}
 }

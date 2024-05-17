@@ -34,6 +34,9 @@ type MiniBillardSpiel interface {
 	//	Eff.: die Update-Methode wird in regelmäßigem Abstand aufgerufen.
 	Starte()
 
+	// Getter für die aktuelle Tick-Frequenz.
+	GetTicksPS() uint64
+
 	// Stoppt die Spielschleife (Pause-Modus) - lässt sich wieder starten.
 	//	Vor.: Spielschleife läuft
 	//	Eff.: Spielschleife läuft nicht

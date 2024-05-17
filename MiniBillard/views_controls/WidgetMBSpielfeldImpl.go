@@ -11,6 +11,7 @@ import (
 type miniBSpielfeld struct {
 	billard       modelle.MiniBillardSpiel
 	kugelZeichner *kugelZeichner
+	tpsInfo       Widget
 	schreiber     *schreiber
 	widget
 }
@@ -18,6 +19,7 @@ type miniBSpielfeld struct {
 func NewMBSpieltisch(billard modelle.MiniBillardSpiel) *miniBSpielfeld {
 	f := miniBSpielfeld{billard: billard, widget: *NewFenster()}
 	f.schreiber = f.newSchreiber(Regular)
+	f.tpsInfo = NewInfoText(func() string { return fmt.Sprintf("%04d TPS", billard.GetTicksPS()*10/10) })
 	return &f
 }
 
@@ -73,6 +75,18 @@ func (f *miniBSpielfeld) zeichneDiamant(x, y, d uint16) {
 	gfx.Volldreieck(x-d/2, y, x+d/2, y, x, y+d/2)
 }
 
+func (f *miniBSpielfeld) ZeichneLayout() {
+	if !f.IstAktiv() {
+		return
+	}
+	f.widget.ZeichneLayout()
+	// Ticks je Sekunde
+	breite, höhe := f.GibGroesse()
+	f.tpsInfo.SetzeKoordinaten(f.startX+breite/20, f.startY, f.startX+breite/10, f.startY+höhe/10)
+	f.tpsInfo.SetzeFarben(Fbillardtuch, Frot)
+	f.tpsInfo.Zeichne()
+}
+
 func (f *miniBSpielfeld) Zeichne() {
 	if !f.IstAktiv() {
 		return
@@ -100,6 +114,7 @@ func (f *miniBSpielfeld) Zeichne() {
 	for _, t := range f.billard.GibTaschen() {
 		f.vollKreis(t.GibPos(), ra*1.3, Schwarz())
 	}
+
 	// zeichne die Kugeln
 	for _, k := range f.billard.GibAktiveKugeln() {
 		f.kugelZeichner.SetzeKugel(k)

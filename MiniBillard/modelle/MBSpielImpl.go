@@ -282,6 +282,14 @@ func (s *mbspiel) Stoppe() {
 	}
 }
 
+func (s *mbspiel) GetTicksPS() uint64 {
+	if s.updater != nil {
+		return s.updater.GibRate()
+	} else {
+		return 0
+	}
+}
+
 // ######## die Methoden zum Stoßen #################################################
 
 func (s *mbspiel) GibVStoss() hilf.Vec2 {
