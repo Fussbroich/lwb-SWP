@@ -85,6 +85,12 @@ func (f *miniBSpielfeld) ZeichneLayout() {
 	f.tpsInfo.SetzeKoordinaten(f.startX+breite/20, f.startY, f.startX+breite/10, f.startY+höhe/10)
 	f.tpsInfo.SetzeFarben(Fbillardtuch, Frot)
 	f.tpsInfo.Zeichne()
+	// zeichne Geschwindigkeiten
+	for _, k := range f.billard.GibAktiveKugeln() {
+		if !k.GibV().IstNull() {
+			f.breiteLinie(k.GibPos(), k.GibPos().Plus(k.GibV().Mal(k.GibRadius())), 2, F(250, 175, 50))
+		}
+	}
 }
 
 func (f *miniBSpielfeld) Zeichne() {
