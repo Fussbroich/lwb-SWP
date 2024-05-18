@@ -24,7 +24,7 @@ type mbspiel struct {
 	taschen       []MBTasche
 	eingelochte   []MBKugel // eine simple Buchhaltung der eingelochten
 	strafPunkte   uint8
-	muStrafPunkte sync.Mutex // braucht man nicht, aber Fouls *müssen* korrekt sein
+	muStrafPunkte sync.Mutex // Fouls *müssen* korrekt gezählt sein
 	stillstand    bool       // alle Kugeln stehen still
 	updater       hilf.Routine
 	sollRate      uint64 // die Wunschgeschwindigkeit der Simulation
