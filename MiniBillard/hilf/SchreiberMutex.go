@@ -7,7 +7,8 @@ type SchreiberMutex interface {
 	LeserAus()
 	GibAnzLeser() uint // Testzwecke
 
-	// nur *Ein* Schreiber darf rein, selbst wenn Leser drin sind
+	// TODO nur *Ein* Schreiber darf rein, selbst wenn Leser drin sind
+	// brauchbar?
 	SchreiberEin()
 	SchreiberAus()
 }
