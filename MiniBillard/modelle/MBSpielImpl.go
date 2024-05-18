@@ -2,7 +2,6 @@ package modelle
 
 import (
 	"math/rand"
-	"sync"
 	"time"
 
 	"../hilf"
@@ -24,8 +23,8 @@ type mbspiel struct {
 	taschen       []MBTasche
 	eingelochte   []MBKugel // eine simple Buchhaltung der eingelochten
 	strafPunkte   uint8
-	muStrafPunkte sync.Mutex // Fouls *müssen* korrekt gezählt sein
-	stillstand    bool       // alle Kugeln stehen still
+	muStrafPunkte hilf.SchreiberMutex // Fouls *müssen* korrekt gezählt sein
+	stillstand    bool                // alle Kugeln stehen still
 	updater       hilf.Routine
 	sollRate      uint64 // die Wunschgeschwindigkeit der Simulation
 	vorigeZeit    time.Time
@@ -41,7 +40,8 @@ func newPoolSpiel(br, hö uint16) *mbspiel {
 	// Radius der Kugeln
 	var breite, höhe float64 = float64(br), float64(hö)
 	var rK float64 = breite * 57.2 / 2540
-	sp := &mbspiel{breite: breite, hoehe: höhe, rk: rK, stossricht: hilf.V2null()}
+	sp := &mbspiel{breite: breite, hoehe: höhe, rk: rK,
+		stossricht: hilf.V2null(), muStrafPunkte: hilf.NewSchreiberMutex()}
 
 	// Radien der Taschen sind groß, damit die Kugeln auch reingehen
 	rt, rtm := 1.9*sp.rk, 1.5*sp.rk
@@ -171,18 +171,18 @@ func (s *mbspiel) GibTreffer() uint8 { return uint8(len(s.eingelochte)) }
 func (s *mbspiel) GibStrafpunkte() uint8 { return s.strafPunkte }
 
 func (s *mbspiel) ReduziereStrafpunkte() {
-	s.muStrafPunkte.Lock()
+	s.muStrafPunkte.SchreiberEin()
 	if s.strafPunkte > 0 {
 		s.strafPunkte--
 	}
-	s.muStrafPunkte.Unlock()
+	s.muStrafPunkte.SchreiberAus()
 }
 
 // Testzewcke
 func (s *mbspiel) ErhoeheStrafpunkte() {
-	s.muStrafPunkte.Lock()
+	s.muStrafPunkte.SchreiberEin()
 	s.strafPunkte++
-	s.muStrafPunkte.Unlock()
+	s.muStrafPunkte.SchreiberAus()
 }
 
 // ######## die Lebens-Methode ###########################################################
@@ -240,9 +240,9 @@ func (s *mbspiel) Update() {
 	if s.angestossen && s.stillstand {
 		s.angestossen = false
 		if s.isFoul() {
-			s.muStrafPunkte.Lock()
+			s.muStrafPunkte.SchreiberEin()
 			s.strafPunkte++
-			s.muStrafPunkte.Unlock()
+			s.muStrafPunkte.SchreiberAus()
 		}
 		if s.spielkugel.IstEingelocht() {
 			s.StossWiederholen()
