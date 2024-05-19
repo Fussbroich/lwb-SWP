@@ -72,8 +72,8 @@ func (a *appUhr) Zeichne() { a.app.Zeichne() }
 //
 //	Vor: Alle Modelle und die Fenster der App sind definiert.
 //	Eff.: die zur Taste passende Aktion ist ausgeführt.
-func (a *appUhr) TastaturEingabe(taste uint16, gedrückt uint8, tiefe uint16) {
-	a.app.TastaturEingabe(taste, gedrückt, tiefe)
+func (a *appUhr) TastaturEreignis(taste uint16, gedrückt uint8, tiefe uint16) {
+	a.app.TastaturEreignis(taste, gedrückt, tiefe)
 }
 
 // Die Maussteuerung der App (wird als go-Routine in einem Loop gestartet).
@@ -81,6 +81,6 @@ func (a *appUhr) TastaturEingabe(taste uint16, gedrückt uint8, tiefe uint16) {
 //	Vor.: Alle Modelle und die Fenster der App sind definiert.
 //	Eff.: Gibt einige der möglichen Mausaktionen an passende Widgets weiter.
 //	Sonst: keiner
-func (a *appUhr) MausEingabe(taste uint8, status int8, mausX, mausY uint16) {
-	a.app.MausEingabe(taste, status, mausX, mausY)
+func (a *appUhr) MausEreignis(taste uint8, status int8, mausX, mausY uint16) {
+	a.app.MausEreignis(taste, status, mausX, mausY)
 }

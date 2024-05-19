@@ -55,10 +55,10 @@ func RunApp(a App) {
 	updater.StarteMitRate(20) // go-Routine mit begrenzter Rate
 
 	// ####### die Maussteuerung läuft ebenfalls nebenher ################
-	mausSteuerung = NewMausRoutine(a.MausEingabe)
+	mausSteuerung = NewMausRoutine(a.MausEreignis)
 	mausSteuerung.StarteMitRate(50) // go-Routine mit begrenzter Rate
 
 	// ### Dafür darf der Tastatur-Loop hier existieren ########
-	tastenSteuerung = NewTastenRoutine(a.TastaturEingabe)
+	tastenSteuerung = NewTastenRoutine(a.TastaturEreignis)
 	tastenSteuerung.LoopeHier() // blockiert, bis quit() aufgerufen wird
 }

@@ -253,7 +253,7 @@ func (a *bpapp) quit() {
 //	Vor.: Alle Modelle und die Fenster der App sind definiert.
 //	Eff.: Gibt einige der möglichen Mausaktionen an passende vc.Widgets weiter.
 //	Sonst: keiner
-func (a *bpapp) MausEingabe(taste uint8, status int8, mausX, mausY uint16) {
+func (a *bpapp) MausEreignis(taste uint8, status int8, mausX, mausY uint16) {
 	if taste == 1 && status == -1 { // es wurde links geklickt
 		// wurde ein Button angeklickt?
 		for _, b := range a.buttonLeiste {
@@ -293,7 +293,7 @@ func (a *bpapp) MausEingabe(taste uint8, status int8, mausX, mausY uint16) {
 //
 //	Vor: Alle Modelle und die Fenster der App sind definiert.
 //	Eff.: die zur Taste passende Spiel-Aktion ist ausgeführt.
-func (a *bpapp) TastaturEingabe(taste uint16, gedrückt uint8, _ uint16) {
+func (a *bpapp) TastaturEreignis(taste uint16, gedrückt uint8, _ uint16) {
 	if gedrückt == 1 {
 		switch taste {
 		case 'h': // Hilfe an-aus

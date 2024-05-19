@@ -23,9 +23,9 @@ type App interface {
 	// Vor: Gfx Fenster ist offen
 	Zeichne()
 
-	// Eine Methode für Mausevents - wird von einem Loop aufgerufen
-	MausEingabe(uint8, int8, uint16, uint16)
+	// Ein zentraler callback für Maus-Ereignisse
+	MausEreignis(uint8, int8, uint16, uint16)
 
-	// Eine Methode für Tastaturevents - wird von einem Loop aufgerufen
-	TastaturEingabe(uint16, uint8, uint16)
+	// Ein zentraler callback für Tastatur-Ereignisse
+	TastaturEreignis(uint16, uint8, uint16)
 }
