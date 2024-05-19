@@ -167,7 +167,6 @@ func (a *bpapp) Zeichne() { a.app.Zeichne() }
 //	Hinweis: Die Funktion hier bestimmt lediglich die Umschaltung zwischen Quiz und
 //	Spiel-Simulation. Die Simulation bringt einen eigenen Loop.
 func (a *bpapp) Update() {
-	a.app.Update()
 	tr, st, rz := a.billard.GibTreffer(), a.billard.GibStrafpunkte(), a.billard.GibRestzeit()
 	if a.spielFenster.IstAktiv() &&
 		rz == 0 {
@@ -190,6 +189,7 @@ func (a *bpapp) Update() {
 		a.billard.Starte()
 		a.spielFenster.Einblenden()
 	}
+	a.app.Update()
 }
 
 // Aktion für einen klickbaren Button oder eine Taste

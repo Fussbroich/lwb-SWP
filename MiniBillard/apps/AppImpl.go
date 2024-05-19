@@ -33,7 +33,6 @@ func (a *app) GibTitel() string { return a.titel }
 func (a *app) Zeichne() {
 	for _, f := range a.widgets {
 		if f.IstAktiv() {
-			f.Update()
 			f.Zeichne()
 		}
 	}
@@ -47,13 +46,18 @@ func (a *app) Zeichne() {
 	}
 	if a.overlay != nil {
 		a.overlay.Zeichne()
+		if a.testModus {
+			a.overlay.ZeichneLayout()
+		}
 	}
 
 }
 
 // Die Update-Funktion - wird vom Spiel-Loop bei jedem Tick einmal aufgerufen
 func (a *app) Update() {
-	// tue etwas
+	for _, f := range a.widgets {
+		f.Update()
+	}
 }
 
 // Aktion für einen klickbaren Button oder eine Taste

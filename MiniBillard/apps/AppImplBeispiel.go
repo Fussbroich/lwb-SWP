@@ -62,6 +62,7 @@ func NewBeispielApp(b uint16) *appUhr {
 // Die Update-Funktion - wird vom Spiel-Loop bei jedem Tick einmal aufgerufen
 func (a *appUhr) Update() {
 	a.uhrzeit = time.Now()
+	a.app.Update()
 }
 
 // Die Darstell-Funktion - wird vom Zeichen-Loop bei jedem Tick einmal aufgerufen.
