@@ -28,8 +28,8 @@ func NewBeispielApp(b uint16) *appUhr {
 	// Views erzeugen
 	var hintergrund vc.Widget = vc.NewFenster()
 	var uhrzeitAnzeige vc.Widget = vc.NewDigitalUhrzeitAnzeiger(&a.uhrzeit)
-	// Buttonleiste
-	a.buttonLeiste = []vc.Widget{
+	// Buttons
+	buttons := []vc.Widget{
 		vc.NewButton("(d)unkel/hell", a.darkmodeAnAus),
 		vc.NewButton("(s)chließen", a.quit)}
 
@@ -41,19 +41,20 @@ func NewBeispielApp(b uint16) *appUhr {
 	// Buttons unterhalb der Anzeige gleichmäßig verteilt
 	zb := a.breite / 5
 	hButton := 2 * g / 3
-	a.buttonLeiste[0].SetzeKoordinaten(zb, ye+3*hButton/2, 2*zb, ye+5*hButton/2)
-	a.buttonLeiste[1].SetzeKoordinaten(3*zb, ye+3*hButton/2, 4*zb, ye+5*hButton/2)
+	buttons[0].SetzeKoordinaten(zb, ye+3*hButton/2, 2*zb, ye+5*hButton/2)
+	buttons[1].SetzeKoordinaten(3*zb, ye+3*hButton/2, 4*zb, ye+5*hButton/2)
 
 	//setzeFarben
 	hintergrund.SetzeFarben(vc.Fhintergrund, vc.Ftext)
 	uhrzeitAnzeige.SetzeFarben(vc.Fhintergrund, vc.Ftext)
-	for _, b := range a.buttonLeiste {
+	for _, b := range buttons {
 		b.SetzeFarben(vc.Fhintergrund, vc.Ftext)
 	}
 
 	// Reihenfolge der Views ist teilweise wichtig (obere decken untere ab)
 	a.widgets = append(a.widgets, hintergrund, uhrzeitAnzeige)
-	a.widgets = append(a.widgets, a.buttonLeiste...)
+	a.widgets = append(a.widgets, buttons...)
+	a.klickbare = append(a.klickbare, buttons...)
 
 	return &a
 }
@@ -81,6 +82,6 @@ func (a *appUhr) TastaturEreignis(taste uint16, gedrückt uint8, tiefe uint16) {
 //	Vor.: Alle Modelle und die Fenster der App sind definiert.
 //	Eff.: Gibt einige der möglichen Mausaktionen an passende Widgets weiter.
 //	Sonst: keiner
-func (a *appUhr) MausEreignis(taste uint8, status int8, mausX, mausY uint16) {
-	a.app.MausEreignis(taste, status, mausX, mausY)
+func (a *appUhr) MausEreignis(taste uint8, status int8, x, y uint16) {
+	a.app.MausEreignis(taste, status, x, y)
 }

@@ -67,8 +67,8 @@ func NewBPApp(b uint16) *bpapp {
 		func() { a.billard.ReduziereStrafpunkte(); a.quiz.NaechsteFrage() },
 		func() { a.quiz.NaechsteFrage() })
 
-	// Buttonleiste
-	a.buttonLeiste = []vc.Widget{
+	// Buttons
+	buttons := []vc.Widget{
 		vc.NewButton("(h)ilfe", a.hilfeAnAus),
 		vc.NewButton("(n)eues Spiel", a.neuesSpiel),
 		vc.NewButton("(m)usik spielen", a.musikAn),
@@ -112,8 +112,8 @@ func NewBPApp(b uint16) *bpapp {
 	a.gameOverFenster.SetzeKoordinaten(xs-g3+2, ys-g3+2, xe+g3-2, ye+g3-2)
 	a.gameOverFenster.SetzeEckradius(g3 - 2)
 	// Buttons unterhalb des Spielfelds gleichmäßig verteilt
-	zb := (a.breite - 2*g) / uint16(len(a.buttonLeiste))
-	for i, b := range a.buttonLeiste {
+	zb := (a.breite - 2*g) / uint16(len(buttons))
+	for i, b := range buttons {
 		b.SetzeKoordinaten(g+uint16(i)*zb+zb/8, ye+5*g/2, g+uint16(i+1)*zb-zb/8, ye+13*g/4)
 		b.SetzeEckradius(g / 3)
 	}
@@ -128,7 +128,7 @@ func NewBPApp(b uint16) *bpapp {
 	a.quizFenster.SetzeFarben(vc.Fquiz, vc.Ftext)
 	a.hilfeFenster.SetzeFarben(vc.Fquiz, vc.Ftext)
 	a.gameOverFenster.SetzeFarben(vc.Fquiz, vc.Ftext)
-	for _, b := range a.buttonLeiste {
+	for _, b := range buttons {
 		b.SetzeFarben(vc.Fhintergrund, vc.Ftext)
 	}
 
@@ -136,9 +136,11 @@ func NewBPApp(b uint16) *bpapp {
 	a.widgets = append(a.widgets, hintergrund)
 	a.widgets = append(a.widgets, bande, a.spielFenster, a.quizFenster, a.gameOverFenster, a.hilfeFenster)
 	a.widgets = append(a.widgets, punktezaehler, restzeit)
-	a.widgets = append(a.widgets, a.buttonLeiste...)
+	a.widgets = append(a.widgets, buttons...)
+	a.klickbare = append(a.klickbare, a.spielFenster, a.quizFenster)
+	a.klickbare = append(a.klickbare, buttons...)
 
-	// Setze App-Zustand
+	// Setze Start-Zustand
 	a.quizFenster.Ausblenden()
 	a.hilfeFenster.Ausblenden()
 	a.gameOverFenster.Ausblenden()
@@ -253,36 +255,31 @@ func (a *bpapp) quit() {
 //	Vor.: Alle Modelle und die Fenster der App sind definiert.
 //	Eff.: Gibt einige der möglichen Mausaktionen an passende vc.Widgets weiter.
 //	Sonst: keiner
-func (a *bpapp) MausEreignis(taste uint8, status int8, mausX, mausY uint16) {
+func (a *bpapp) MausEreignis(taste uint8, status int8, x, y uint16) {
 	if taste == 1 && status == -1 { // es wurde links geklickt
-		// wurde ein Button angeklickt?
-		for _, b := range a.buttonLeiste {
-			if b.IstAktiv() && b.ImFenster(mausX, mausY) {
-				b.MausklickBei(mausX, mausY)
+		// wurde etwas angeklickt?
+		for _, b := range a.klickbare {
+			if b.IstAktiv() && b.ImFenster(x, y) {
+				b.MausklickBei(x, y)
 				return
 			}
-		}
-		// wurde das Quiz angeklickt?
-		if a.quizFenster.IstAktiv() && a.quizFenster.ImFenster(mausX, mausY) {
-			a.quizFenster.MausklickBei(mausX, mausY)
-			return
 		}
 		// sonst gib den Klick ans Spiel
 		// (zum Spielen kann man auch außerhalb des Spielfensters klicken)
 		if a.spielFenster.IstAktiv() {
-			// kann auch außerhalb des Tuchs klicken
-			a.spielFenster.MausklickBei(mausX, mausY)
+			a.spielFenster.MausklickBei(x, y)
+			return
 		}
 	} else { // es wurde nicht links geklickt
+		// zielen und Kraft aufbauen
 		if a.spielFenster.IstAktiv() {
-			// zielen und Kraft aufbauen
 			switch taste {
 			case 4: // vorwärts scrollen
 				a.spielFenster.MausScrolltHoch()
 			case 5: // rückwärts scrollen
 				a.spielFenster.MausScrolltRunter()
 			default: // bewegen
-				a.spielFenster.MausBei(mausX, mausY)
+				a.spielFenster.MausBei(x, y)
 			}
 		}
 		// Sonst: tue gar nichts

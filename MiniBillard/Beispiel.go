@@ -20,13 +20,12 @@
 package main
 
 import (
-	"./apps"
+	. "./apps"
 )
 
 // ####### der Startpunkt ##################################################
 func main() {
 	// Die gewünschte Fensterbreite in Pixeln wird übergeben.
 	// Das Seitenverhältnis ist B:H = 2:1
-	app := apps.NewBeispielApp(600)
-	apps.RunApp(app)
+	RunApp(NewBeispielApp(600))
 }

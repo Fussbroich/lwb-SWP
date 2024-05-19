@@ -12,10 +12,10 @@ type app struct {
 	hoehe  uint16
 	titel  string
 	// Views
-	buttonLeiste []vc.Widget
-	widgets      []vc.Widget
-	overlay      vc.Widget
-	testInfo     vc.Widget
+	widgets   []vc.Widget
+	klickbare []vc.Widget
+	overlay   vc.Widget
+	testInfo  vc.Widget
 	//Darstellungsvariable
 	darkmode  bool
 	testModus bool
@@ -101,8 +101,8 @@ func (a *app) quit() {
 //	Sonst: keiner
 func (a *app) MausEreignis(taste uint8, status int8, mausX, mausY uint16) {
 	if taste == 1 && status == -1 { // es wurde links geklickt
-		// wurde ein Button angeklickt?
-		for _, b := range a.buttonLeiste {
+		// wurde etwas angeklickt?
+		for _, b := range a.klickbare {
 			if b.IstAktiv() && b.ImFenster(mausX, mausY) {
 				b.MausklickBei(mausX, mausY)
 				return
