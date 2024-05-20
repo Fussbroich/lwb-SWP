@@ -2,6 +2,7 @@ package modelle
 
 import (
 	"math/rand"
+	"sync"
 	"time"
 
 	"../hilf"
@@ -9,27 +10,27 @@ import (
 )
 
 type mbspiel struct {
-	breite        float64 // Länge des Tuchs in der Simulation
-	hoehe         float64 // Breite des Tuchs in der Simulation
-	rk            float64 // der Radius aller Kugeln in der Simulation
-	kugeln        []MBKugel
-	origKugeln    []MBKugel // der ganze Kugelsatz vor dem Spielbeginn
-	vorigeKugeln  []MBKugel // der Kugelsatz vor dem letzten Stoß
-	spielkugel    MBKugel   // die weiße Kugel
-	angespielte   MBKugel   // die zuerst berührte Kugel, falls überhaupt
-	angestossen   bool      // ein Stoß hat stattgefunden
-	stossricht    hilf.Vec2
-	stosskraft    float64
-	taschen       []MBTasche
-	eingelochte   []MBKugel // eine simple Buchhaltung der eingelochten
-	strafPunkte   uint8
-	muStrafPunkte hilf.SchreiberMutex // Fouls *müssen* korrekt gezählt sein
-	stillstand    bool                // alle Kugeln stehen still
-	updater       hilf.Routine
-	sollRate      uint64 // die Wunschgeschwindigkeit der Simulation
-	vorigeZeit    time.Time
-	spielzeit     time.Duration // zum Spiel gegen die Zeit
-	countdown     Countdown
+	breite       float64 // Länge des Tuchs in der Simulation
+	hoehe        float64 // Breite des Tuchs in der Simulation
+	rk           float64 // der Radius aller Kugeln in der Simulation
+	kugeln       []MBKugel
+	origKugeln   []MBKugel // der ganze Kugelsatz vor dem Spielbeginn
+	vorigeKugeln []MBKugel // der Kugelsatz vor dem letzten Stoß
+	spielkugel   MBKugel   // die weiße Kugel
+	angespielte  MBKugel   // die zuerst berührte Kugel, falls überhaupt
+	angestossen  bool      // ein Stoß hat stattgefunden
+	stossricht   hilf.Vec2
+	stosskraft   float64
+	taschen      []MBTasche
+	eingelochte  []MBKugel // eine simple Buchhaltung der eingelochten
+	strafPunkte  uint8
+	stillstand   bool // alle Kugeln stehen still
+	updater      hilf.Routine
+	sollRate     uint64 // die Wunschgeschwindigkeit der Simulation
+	vorigeZeit   time.Time
+	spielzeit    time.Duration // zum Spiel gegen die Zeit
+	countdown    Countdown
+	rwZustand    sync.RWMutex // insbesondere Fouls *müssen* korrekt gezählt sein
 }
 
 // Ein Pool-Spiel ohne Kugeln
@@ -40,8 +41,7 @@ func newPoolSpiel(br, hö uint16) *mbspiel {
 	// Radius der Kugeln
 	var breite, höhe float64 = float64(br), float64(hö)
 	var rK float64 = breite * 57.2 / 2540
-	sp := &mbspiel{breite: breite, hoehe: höhe, rk: rK,
-		stossricht: hilf.V2null(), muStrafPunkte: hilf.NewSchreiberMutex()}
+	sp := &mbspiel{breite: breite, hoehe: höhe, rk: rK, stossricht: hilf.V2null()}
 
 	// Radien der Taschen sind groß, damit die Kugeln auch reingehen
 	rt, rtm := 1.9*sp.rk, 1.5*sp.rk
@@ -134,11 +134,17 @@ func (s *mbspiel) kugelSatz3er() []MBKugel {
 
 // ######## ein paar Hilfsfunktionen #########################################
 func (s *mbspiel) setzeTaschen(t ...MBTasche) {
+	//s.rwZustand.Lock()
+	//defer s.rwZustand.Unlock()
+
 	s.taschen = []MBTasche{}
 	s.taschen = append(s.taschen, t...)
 }
 
 func (s *mbspiel) setzeKugeln(k ...MBKugel) {
+	s.rwZustand.Lock()
+	defer s.rwZustand.Unlock()
+
 	s.kugeln = []MBKugel{}
 	for _, k := range k {
 		s.kugeln = append(s.kugeln, k.GibKopie())
@@ -159,30 +165,50 @@ func (s *mbspiel) neusetzenSpielkugel() {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	pStoß := hilf.V2(s.breite-s.rk-r.Float64()*(s.breite/4-2*s.rk),
 		r.Float64()*(s.hoehe-2*s.rk)+s.rk)
+
+	s.rwZustand.Lock()
+	defer s.rwZustand.Unlock()
+
 	s.spielkugel.SetzePos(pStoß)
 }
 
-func (s *mbspiel) GibGroesse() (float64, float64) { return s.breite, s.hoehe }
+func (s *mbspiel) GibGroesse() (float64, float64) {
+	return s.breite, s.hoehe
+}
 
-func (s *mbspiel) GibTaschen() []MBTasche { return s.taschen }
+func (s *mbspiel) GibTaschen() []MBTasche {
+	return s.taschen
+}
 
-func (s *mbspiel) GibTreffer() uint8 { return uint8(len(s.eingelochte)) }
+func (s *mbspiel) GibTreffer() uint8 {
+	s.rwZustand.RLock()
+	defer s.rwZustand.RUnlock()
 
-func (s *mbspiel) GibStrafpunkte() uint8 { return s.strafPunkte }
+	return uint8(len(s.eingelochte))
+
+}
+
+func (s *mbspiel) GibStrafpunkte() uint8 {
+	s.rwZustand.RLock()
+	defer s.rwZustand.RUnlock()
+
+	return s.strafPunkte
+}
 
 func (s *mbspiel) ReduziereStrafpunkte() {
-	s.muStrafPunkte.SchreiberEin()
+	s.rwZustand.Lock()
+	defer s.rwZustand.Unlock()
+
 	if s.strafPunkte > 0 {
 		s.strafPunkte--
 	}
-	s.muStrafPunkte.SchreiberAus()
 }
 
-// Testzewcke
 func (s *mbspiel) ErhoeheStrafpunkte() {
-	s.muStrafPunkte.SchreiberEin()
+	s.rwZustand.Lock()
+	defer s.rwZustand.Unlock()
+
 	s.strafPunkte++
-	s.muStrafPunkte.SchreiberAus()
 }
 
 // ######## die Lebens-Methode ###########################################################
@@ -191,6 +217,9 @@ Vor. Ein Anstoß war erfolgt und jetzt stehen die Kugeln alle wieder still.
 Erg. True bedeutet, dass es ein Foul gibt.
 */
 func (sp *mbspiel) isFoul() bool {
+	sp.rwZustand.RLock()
+	defer sp.rwZustand.RUnlock()
+
 	// Spielkugel einlochen ist ein Foul
 	if sp.spielkugel.IstEingelocht() {
 		return true
@@ -240,9 +269,7 @@ func (s *mbspiel) Update() {
 	if s.angestossen && s.stillstand {
 		s.angestossen = false
 		if s.isFoul() {
-			s.muStrafPunkte.SchreiberEin()
-			s.strafPunkte++
-			s.muStrafPunkte.SchreiberAus()
+			s.ErhoeheStrafpunkte()
 		}
 		if s.spielkugel.IstEingelocht() {
 			s.StossWiederholen()
@@ -293,6 +320,9 @@ func (s *mbspiel) GetTicksPS() uint64 {
 // ######## die Methoden zum Stoßen #################################################
 
 func (s *mbspiel) GibVStoss() hilf.Vec2 {
+	s.rwZustand.RLock()
+	defer s.rwZustand.RUnlock()
+
 	if s.stossricht == nil {
 		s.stossricht = hilf.V2null()
 	}
@@ -300,10 +330,16 @@ func (s *mbspiel) GibVStoss() hilf.Vec2 {
 }
 
 func (s *mbspiel) SetzeStossRichtung(v hilf.Vec2) {
+	s.rwZustand.Lock()
+	defer s.rwZustand.Unlock()
+
 	s.stossricht = v.Normiert()
 }
 
 func (s *mbspiel) SetzeStosskraft(v float64) {
+	s.rwZustand.Lock()
+	defer s.rwZustand.Unlock()
+
 	// Die "Geschwindigkeit/Stärke" ist auf 14 (m/s) begrenzt
 	if v > 14 {
 		v = 14
@@ -314,6 +350,9 @@ func (s *mbspiel) SetzeStosskraft(v float64) {
 }
 
 func (s *mbspiel) Stosse() {
+	s.rwZustand.Lock()
+	defer s.rwZustand.Unlock()
+
 	if !s.stillstand {
 		println("Fehler: Stoßen während laufender Bewegungen ist verboten!")
 		return
@@ -339,33 +378,64 @@ func (s *mbspiel) Stosse() {
 
 // ######## die übrigen Methoden ####################################################
 
-func (s *mbspiel) SetzeSpielzeit(t time.Duration) { s.spielzeit = t; s.countdown.Setze(t) }
+func (s *mbspiel) SetzeSpielzeit(t time.Duration) {
+	s.rwZustand.Lock()
+	defer s.rwZustand.Unlock()
+
+	s.spielzeit = t
+	s.countdown.Setze(t)
+}
 
 // Testzwecke
-func (s *mbspiel) SetzeRestzeit(t time.Duration) { s.countdown.Setze(t) }
+func (s *mbspiel) SetzeRestzeit(t time.Duration) {
+	s.rwZustand.Lock()
+	defer s.rwZustand.Unlock()
 
-func (s *mbspiel) StoppeCountdown() { s.countdown.Halt() }
+	s.countdown.Setze(t)
+}
 
-func (s *mbspiel) StarteCountdown() { s.countdown.Weiter() }
+func (s *mbspiel) StoppeCountdown() {
+	s.rwZustand.Lock()
+	defer s.rwZustand.Unlock()
 
-func (s *mbspiel) GibRestzeit() time.Duration { return s.countdown.GibRestzeit() }
+	s.countdown.Halt()
+}
+
+func (s *mbspiel) StarteCountdown() {
+	s.rwZustand.Lock()
+	defer s.rwZustand.Unlock()
+
+	s.countdown.Weiter()
+}
+
+func (s *mbspiel) GibRestzeit() time.Duration {
+	s.rwZustand.RLock()
+	defer s.rwZustand.RUnlock()
+
+	return s.countdown.GibRestzeit()
+}
 
 func (s *mbspiel) Reset() {
+	s.rwZustand.Lock()
 	s.kugeln = []MBKugel{}
 	for _, k := range s.origKugeln {
 		s.kugeln = append(s.kugeln, k.GibKopie()) // Kopien stehen still
 	}
 	s.spielkugel = s.kugeln[0]
-	s.neusetzenSpielkugel()
 	s.eingelochte = []MBKugel{}
 	s.angestossen = false
 	s.strafPunkte = 0
 	s.stillstand = true
 	s.countdown.Setze(s.spielzeit)
 	s.countdown.Weiter()
+	s.rwZustand.Unlock()
+	s.neusetzenSpielkugel()
 }
 
 func (s *mbspiel) StossWiederholen() {
+	s.rwZustand.Lock()
+	defer s.rwZustand.Unlock()
+
 	if s.vorigeKugeln == nil {
 		return
 	}
@@ -379,11 +449,24 @@ func (s *mbspiel) StossWiederholen() {
 	s.stillstand = true
 }
 
-func (s *mbspiel) GibKugeln() []MBKugel { return s.kugeln }
+func (s *mbspiel) GibKugeln() []MBKugel {
+	s.rwZustand.RLock()
+	defer s.rwZustand.RUnlock()
 
-func (s *mbspiel) GibSpielkugel() MBKugel { return s.spielkugel }
+	return s.kugeln
+}
+
+func (s *mbspiel) GibSpielkugel() MBKugel {
+	s.rwZustand.RLock()
+	defer s.rwZustand.RUnlock()
+
+	return s.spielkugel
+}
 
 func (s *mbspiel) GibAktiveKugeln() []MBKugel {
+	s.rwZustand.RLock()
+	defer s.rwZustand.RUnlock()
+
 	ks := []MBKugel{}
 	for _, k := range s.kugeln {
 		if !k.IstEingelocht() {
@@ -395,19 +478,30 @@ func (s *mbspiel) GibAktiveKugeln() []MBKugel {
 }
 
 func (s *mbspiel) AlleEingelocht() bool {
-	aktive := []MBKugel{}
+	s.rwZustand.RLock()
+	defer s.rwZustand.RUnlock()
+
+	var aktive uint8
 	for _, k := range s.kugeln {
-		if !k.IstEingelocht() {
-			aktive = append(aktive, k)
+		if !k.IstEingelocht() && !(k == s.spielkugel) {
+			aktive++
 		}
 	}
-	return len(aktive) == 0 || (len(aktive) == 1 && aktive[0].GibWert() == 0)
+	return aktive == 0
 }
 
-func (s *mbspiel) IstStillstand() bool { return s.stillstand }
+func (s *mbspiel) IstStillstand() bool {
+	s.rwZustand.RLock()
+	defer s.rwZustand.RUnlock()
+
+	return s.stillstand
+}
 
 // eine kleine Buchhaltung für Berührungen (z.B. die angespielte Kugel)
 func (s *mbspiel) NotiereBerührt(k1 MBKugel, k2 MBKugel) {
+	s.rwZustand.Lock()
+	defer s.rwZustand.Unlock()
+
 	if s.angespielte == nil {
 		if k1 == s.spielkugel {
 			s.angespielte = k2
@@ -419,6 +513,9 @@ func (s *mbspiel) NotiereBerührt(k1 MBKugel, k2 MBKugel) {
 
 // eine kleine Buchhaltung für eingelochte Kugeln
 func (s *mbspiel) NotiereEingelocht(k MBKugel) {
+	s.rwZustand.Lock()
+	defer s.rwZustand.Unlock()
+
 	if k == s.spielkugel {
 		return
 	}
@@ -432,4 +529,9 @@ func (s *mbspiel) NotiereEingelocht(k MBKugel) {
 	s.eingelochte = append(s.eingelochte, k)
 }
 
-func (s *mbspiel) GibEingelochteKugeln() []MBKugel { return s.eingelochte }
+func (s *mbspiel) GibEingelochteKugeln() []MBKugel {
+	s.rwZustand.RLock()
+	defer s.rwZustand.RUnlock()
+
+	return s.eingelochte
+}
