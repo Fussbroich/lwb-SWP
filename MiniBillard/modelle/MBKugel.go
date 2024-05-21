@@ -27,6 +27,7 @@ type MBKugel interface {
 
 	// Getter, ob in einer Tasche.
 	IstEingelocht() bool
+	SetzeEingelocht()
 
 	// Getter für die vektorielle (2D) Bewegungsgeschwindigkeit.
 	GibV() hilf.Vec2

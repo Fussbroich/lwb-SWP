@@ -51,16 +51,6 @@ func (k *mbkugel) BewegenIn(s MiniBillardSpiel) {
 	} else {
 		k.v = hilf.V2(0, 0)
 	}
-	// Prüfe, ob Kugel eingelocht wurde.
-	for _, t := range s.GibTaschen() {
-		if t.GibPos().Minus(k.GibPos()).Betrag() < t.GibRadius() {
-			klaenge.BallInPocketSound().Play()
-			k.eingelocht = true
-			s.NotiereEingelocht(k)
-			k.SetzeV(hilf.V2(0, 0))
-			break
-		}
-	}
 }
 
 func (k *mbkugel) pruefeBandenKollision(laenge, breite float64) {
@@ -154,6 +144,8 @@ func (k1 *mbkugel) SetzeKollidiertZurueck() {
 }
 
 func (k *mbkugel) IstEingelocht() bool { return k.eingelocht }
+
+func (k *mbkugel) SetzeEingelocht() { k.eingelocht = true }
 
 func (k *mbkugel) GibV() hilf.Vec2 {
 	return k.v

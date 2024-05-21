@@ -240,6 +240,7 @@ func (sp *mbspiel) isFoul() bool {
 }
 
 func (s *mbspiel) Update() {
+	s.rwZustand.Lock()
 	if s.countdown == nil {
 		if s.spielzeit == 0 {
 			s.spielzeit = 4 * time.Minute
@@ -249,12 +250,30 @@ func (s *mbspiel) Update() {
 	// zähle Zeit herunter
 	s.countdown.ZieheAb(time.Since(s.vorigeZeit))
 	s.vorigeZeit = time.Now()
+	s.rwZustand.Unlock()
+
+	still := true
+
 	// bewege jede Kugel
 	for _, k := range s.kugeln {
-		k.BewegenIn(s)
+		if !k.IstEingelocht() {
+			k.BewegenIn(s) //TODO das alles umbauen ;-)
+			// Zusammenarbeit zwischen Spiel und Kugeln überarbeiten
+			// Prüfe, ob Kugel eingelocht wurde.
+			for _, t := range s.GibTaschen() {
+				if t.GibPos().Minus(k.GibPos()).Betrag() < t.GibRadius() {
+					klaenge.BallInPocketSound().Play()
+					k.SetzeEingelocht()
+					k.Stop()
+					s.notiereEingelocht(k)
+					break
+				}
+			}
+		}
 	}
+
 	// prüfe Stillstand
-	still := true
+	s.rwZustand.RLock()
 	for _, k := range s.kugeln {
 		k.SetzeKollidiertZurueck()
 		if !k.GibV().IstNull() {
@@ -262,9 +281,14 @@ func (s *mbspiel) Update() {
 			break
 		}
 	}
+	s.rwZustand.RUnlock()
+
 	if still {
+		s.rwZustand.Lock()
 		s.stillstand = true
+		s.rwZustand.Unlock()
 	}
+
 	// prüfe Fouls und Sieg nach Stillstand
 	if s.angestossen && s.stillstand {
 		s.angestossen = false
@@ -512,17 +536,16 @@ func (s *mbspiel) NotiereBerührt(k1 MBKugel, k2 MBKugel) {
 }
 
 // eine kleine Buchhaltung für eingelochte Kugeln
-func (s *mbspiel) NotiereEingelocht(k MBKugel) {
+func (s *mbspiel) notiereEingelocht(k MBKugel) {
 	s.rwZustand.Lock()
 	defer s.rwZustand.Unlock()
 
 	if k == s.spielkugel {
 		return
 	}
-	// eingelochte ein Mal der Reihe nach speichern
-	// Todo: Hier eine Menge nehmen
+	// eingelochte der Reihe nach merken
 	for _, ke := range s.eingelochte {
-		if k.GibWert() == ke.GibWert() {
+		if k.GibWert() == ke.GibWert() { // TODO Hier eine Menge nehmen
 			return
 		}
 	}
