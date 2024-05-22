@@ -70,12 +70,6 @@ type MiniBillardSpiel interface {
 	// Getter nur für diejenigen Kugeln, die noch nicht eingelocht sind.
 	GibAktiveKugeln() []MBKugel
 
-	// Notifier für die Berührung zwischen zwei Kugeln.
-	NotiereBerührt(MBKugel, MBKugel)
-
-	// Notifier für das Einlochen einer Kugel.
-	// NotiereEingelocht(MBKugel)
-
 	// Getter nur für diejenigen Kugeln, die bereits eingelocht sind in der Reihenfolge des Einlochens.
 	GibEingelochteKugeln() []MBKugel
 

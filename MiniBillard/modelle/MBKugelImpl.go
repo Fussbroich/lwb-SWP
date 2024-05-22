@@ -2,7 +2,6 @@ package modelle
 
 import (
 	"../hilf"
-	"../klaenge"
 )
 
 type mbkugel struct {
@@ -28,21 +27,8 @@ func (k *mbkugel) GibKopie() MBKugel {
 		eingelocht: k.eingelocht}
 }
 
-func (k *mbkugel) BewegenIn(s MiniBillardSpiel) {
-	if k.eingelocht {
-		return
-	}
-	// prüfe Kollisionen
-	for _, k2 := range s.GibKugeln() {
-		if (k != k2) && !k2.IstEingelocht() {
-			k.pruefeKugelKollisionIn(s, k2)
-		}
-	}
-	// setze kollidierte zurück
-	k.istKollMit = nil
-	// Prüfe Berührung mit der Bande.
-	k.pruefeBandenKollision(s.GibGroesse())
-	// Bewege Kugel einen Tick weiter.
+// Bewege Kugel einen Tick weiter.
+func (k *mbkugel) Bewegen() {
 	k.pos = k.pos.Plus(k.v)
 	vabs := k.v.Betrag()
 	// Bremse die Kugel etwas ab.
@@ -51,9 +37,10 @@ func (k *mbkugel) BewegenIn(s MiniBillardSpiel) {
 	} else {
 		k.v = hilf.V2(0, 0)
 	}
+
 }
 
-func (k *mbkugel) pruefeBandenKollision(laenge, breite float64) {
+func (k *mbkugel) PruefeBandenKollision(breite, hoehe float64, notiereKollision func(MBKugel)) {
 	if k.eingelocht {
 		return
 	}
@@ -63,12 +50,12 @@ func (k *mbkugel) pruefeBandenKollision(laenge, breite float64) {
 
 	var willHit bool
 	// reflektiere die Kugel
-	var berührt bool = !((xK >= k.r) && (xK <= laenge-k.r) && (yK >= k.r) && (yK <= breite-k.r))
+	var berührt bool = !((xK >= k.r) && (xK <= breite-k.r) && (yK >= k.r) && (yK <= hoehe-k.r))
 	if !berührt && xK+vx < k.r {
 		vx *= -1
 		willHit = true
 	}
-	if !berührt && xK+vx > laenge-k.r {
+	if !berührt && xK+vx > breite-k.r {
 		vx *= -1
 		willHit = true
 	}
@@ -76,18 +63,20 @@ func (k *mbkugel) pruefeBandenKollision(laenge, breite float64) {
 		vy *= -1
 		willHit = true
 	}
-	if !berührt && yK+vy > breite-k.r {
+	if !berührt && yK+vy > hoehe-k.r {
 		vy *= -1
 		willHit = true
 	}
 
 	if willHit {
-		klaenge.BallHitsRailSound().Play()
+		notiereKollision(k)
 		k.v = hilf.V2(vx, vy)
 	}
 }
 
-func (k1 *mbkugel) pruefeKugelKollisionIn(s MiniBillardSpiel, k2 MBKugel) {
+// Vor.: Kugeln dürfen *nicht* still stehen
+// und gleichzeitig übereinander liegen (überlappen)
+func (k1 *mbkugel) PruefeKollisionMit(k2 MBKugel, notiereKollision func(MBKugel)) {
 	if k1.istKollMit == k2 {
 		return
 	}
@@ -115,7 +104,7 @@ func (k1 *mbkugel) pruefeKugelKollisionIn(s MiniBillardSpiel, k2 MBKugel) {
 	// Tausche Geschwindigkeiten parallel zur Normalen aus
 	var u1, u2 hilf.Vec2
 	if überlappen {
-		// Überlappung lösen, sonst rattern die Kugeln zusammen
+		// Überlappung lösen
 		if distPre.Betrag() < distAkt.Betrag() {
 			u1 = v2p.Plus(v1o)
 			u2 = v1p.Plus(v2o)
@@ -124,14 +113,13 @@ func (k1 *mbkugel) pruefeKugelKollisionIn(s MiniBillardSpiel, k2 MBKugel) {
 			u2 = v2
 		}
 	} else {
-		klaenge.BallHitsBallSound().Play()
 		u1 = v2p.Plus(v1o)
 		u2 = v1p.Plus(v2o)
+		notiereKollision(k2)
 	}
 	k1.SetzeV(u1)
 	k2.SetzeV(u2)
 	k1.istKollMit = k2
-	s.NotiereBerührt(k1, k2)
 	k2.SetzeKollidiertMit(k1)
 }
 

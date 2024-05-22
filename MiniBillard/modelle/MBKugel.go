@@ -8,16 +8,28 @@ import "../hilf"
 //
 //	NewKugel(pos hilf.Vec2, r float64, wert uint8) erzeugt ein Objekt
 type MBKugel interface {
-	// Die Bewegungsmethode; wird in der Simulation von einem Billard-Spiel-Modell (MBSpiel)
-	// in der Spielschleife aufgerufen.
+	// Die Bewegungsmethoden; wird in der Simulation von einem Billard-Spiel-Modell (MBSpiel)
+	// in der Simulationsschleife aufgerufen.
 	//
 	//	Vor.: keine
-	//	Eff.: Die Kugel bewegt sich voran und ändert bei Kollisionen mit dem Rand des Spieltuches
-	//	oder mit einer anderen Kugel ihre Richtung.
+	//	Eff.: Die Kugel bewegt sich voran.
 	//
 	//	Hinweis: Bei der derzeitigen Implementierung wird die eigentliche Bewegungsgeschwindigkeit durch
 	//	erhöhen oder vermindern der Aufruf-Frequenz beeinflusst.
-	BewegenIn(MiniBillardSpiel)
+	Bewegen()
+	// Kollisionsprüfung; wird in der Simulation von einem Billard-Spiel-Modell (MBSpiel)
+	// in der Simulationsschleife aufgerufen.
+	//
+	//	Vor.: keine
+	//	Eff.: Die Kugel ändert bei Kollisionen mit dem Rand des Spieltuches ihre Richtung.
+	PruefeBandenKollision(laenge, breite float64, notifier func(MBKugel))
+
+	// Kollisionsprüfung; wird in der Simulation von einem Billard-Spiel-Modell (MBSpiel)
+	// in der Simulationsschleife aufgerufen.
+	//
+	//	Vor.: keine
+	//	Eff.: Die Kugel ändert bei Kollisionen mit einer anderen Kugel ihre Richtung.
+	PruefeKollisionMit(k2 MBKugel, notifier func(MBKugel))
 
 	// Notifier einer anderen Kugel über die Kollision mit ihr.
 	SetzeKollidiertMit(MBKugel)

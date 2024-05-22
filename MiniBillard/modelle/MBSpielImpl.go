@@ -239,6 +239,34 @@ func (sp *mbspiel) isFoul() bool {
 	return !(anzVor < anzNeu)
 }
 
+// eine kleine Buchhaltung für (Erst-)Berührungen
+func (s *mbspiel) notiereBerührt(k1 MBKugel, k2 MBKugel) {
+	// nur das Anspielen einer Kugel durch die weiße
+	// merken und alle weiteren Berührungen ignorieren
+	if s.angespielte == nil {
+		if k1 == s.spielkugel {
+			s.angespielte = k2
+		} else if k2 == s.spielkugel {
+			s.angespielte = k1
+		}
+	}
+}
+
+// eine kleine Buchhaltung für eingelochte Kugeln
+func (s *mbspiel) notiereEingelocht(k MBKugel) {
+	if k == s.spielkugel {
+		return
+	}
+	// eingelochte der Reihe nach merken
+	for _, ke := range s.eingelochte {
+		if k.GibWert() == ke.GibWert() { // TODO Hier eine Menge nehmen
+			return
+		}
+	}
+	s.eingelochte = append(s.eingelochte, k)
+}
+
+// Die Lebensmethode - wird bei jedem Tick einmal aufgerufen
 func (s *mbspiel) Update() {
 	s.rwZustand.Lock()
 	if s.countdown == nil {
@@ -252,13 +280,27 @@ func (s *mbspiel) Update() {
 	s.vorigeZeit = time.Now()
 	s.rwZustand.Unlock()
 
-	still := true
-
-	// bewege jede Kugel
+	// update jede Kugel
 	for _, k := range s.kugeln {
 		if !k.IstEingelocht() {
-			k.BewegenIn(s) //TODO das alles umbauen ;-)
-			// Zusammenarbeit zwischen Spiel und Kugeln überarbeiten
+			for _, k2 := range s.kugeln {
+				if (k == k2) || k2.IstEingelocht() {
+					continue
+				}
+				k.PruefeKollisionMit(k2,
+					func(n MBKugel) {
+						klaenge.BallHitsBallSound().Play()
+						s.notiereBerührt(k, n)
+					})
+			}
+			k.SetzeKollidiertZurueck()
+			l, b := s.GibGroesse()
+			k.PruefeBandenKollision(l, b,
+				func(MBKugel) {
+					klaenge.BallHitsRailSound().Play()
+				})
+			// Kugel einen Tick weiter bewegen
+			k.Bewegen()
 			// Prüfe, ob Kugel eingelocht wurde.
 			for _, t := range s.GibTaschen() {
 				if t.GibPos().Minus(k.GibPos()).Betrag() < t.GibRadius() {
@@ -274,11 +316,11 @@ func (s *mbspiel) Update() {
 
 	// prüfe Stillstand
 	s.rwZustand.RLock()
+	still := true
 	for _, k := range s.kugeln {
 		k.SetzeKollidiertZurueck()
 		if !k.GibV().IstNull() {
 			still = false
-			break
 		}
 	}
 	s.rwZustand.RUnlock()
@@ -381,9 +423,16 @@ func (s *mbspiel) Stosse() {
 		println("Fehler: Stoßen während laufender Bewegungen ist verboten!")
 		return
 	}
-	if s.stossricht == nil {
-		s.stossricht = hilf.V2null()
+	if s.stosskraft <= 0.15 {
+		return
 	}
+
+	if s.stossricht == nil || s.stossricht.IstNull() {
+		return
+	}
+
+	klaenge.CueHitsBallSound().Play()
+
 	// sichere den Zustand vor dem Stoß
 	s.vorigeKugeln = []MBKugel{}
 	for _, k := range s.kugeln {
@@ -392,12 +441,9 @@ func (s *mbspiel) Stosse() {
 	// stoßen
 	s.angestossen = true
 	s.angespielte = nil
-	if s.stosskraft != 0 {
-		s.spielkugel.SetzeV(s.stossricht.Mal(s.stosskraft))
-		s.stosskraft = 5
-		s.stillstand = false
-		klaenge.CueHitsBallSound()
-	}
+	s.spielkugel.SetzeV(s.stossricht.Mal(s.stosskraft))
+	s.stosskraft = 5
+	s.stillstand = false
 }
 
 // ######## die übrigen Methoden ####################################################
@@ -519,37 +565,6 @@ func (s *mbspiel) IstStillstand() bool {
 	defer s.rwZustand.RUnlock()
 
 	return s.stillstand
-}
-
-// eine kleine Buchhaltung für Berührungen (z.B. die angespielte Kugel)
-func (s *mbspiel) NotiereBerührt(k1 MBKugel, k2 MBKugel) {
-	s.rwZustand.Lock()
-	defer s.rwZustand.Unlock()
-
-	if s.angespielte == nil {
-		if k1 == s.spielkugel {
-			s.angespielte = k2
-		} else if k2 == s.spielkugel {
-			s.angespielte = k1
-		}
-	}
-}
-
-// eine kleine Buchhaltung für eingelochte Kugeln
-func (s *mbspiel) notiereEingelocht(k MBKugel) {
-	s.rwZustand.Lock()
-	defer s.rwZustand.Unlock()
-
-	if k == s.spielkugel {
-		return
-	}
-	// eingelochte der Reihe nach merken
-	for _, ke := range s.eingelochte {
-		if k.GibWert() == ke.GibWert() { // TODO Hier eine Menge nehmen
-			return
-		}
-	}
-	s.eingelochte = append(s.eingelochte, k)
 }
 
 func (s *mbspiel) GibEingelochteKugeln() []MBKugel {
