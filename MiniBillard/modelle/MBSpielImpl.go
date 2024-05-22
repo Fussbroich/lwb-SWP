@@ -266,6 +266,16 @@ func (s *mbspiel) notiereEingelocht(k MBKugel) {
 	s.eingelochte = append(s.eingelochte, k)
 }
 
+func (s *mbspiel) alleEingelocht() bool {
+	var aktive uint8
+	for _, k := range s.kugeln {
+		if !k.IstEingelocht() && !(k == s.spielkugel) {
+			aktive++
+		}
+	}
+	return aktive == 0
+}
+
 // Die Lebensmethode - wird bei jedem Tick einmal aufgerufen
 func (s *mbspiel) Update() {
 	s.rwZustand.Lock()
@@ -278,7 +288,6 @@ func (s *mbspiel) Update() {
 	// zähle Zeit herunter
 	s.countdown.ZieheAb(time.Since(s.vorigeZeit))
 	s.vorigeZeit = time.Now()
-	s.rwZustand.Unlock()
 
 	// update jede Kugel
 	for _, k := range s.kugeln {
@@ -315,7 +324,6 @@ func (s *mbspiel) Update() {
 	}
 
 	// prüfe Stillstand
-	s.rwZustand.RLock()
 	still := true
 	for _, k := range s.kugeln {
 		k.SetzeKollidiertZurueck()
@@ -323,17 +331,16 @@ func (s *mbspiel) Update() {
 			still = false
 		}
 	}
-	s.rwZustand.RUnlock()
 
 	if still {
-		s.rwZustand.Lock()
 		s.stillstand = true
-		s.rwZustand.Unlock()
 	}
+	s.rwZustand.Unlock()
 
 	// prüfe Fouls und Sieg nach Stillstand
 	if s.angestossen && s.stillstand {
 		s.angestossen = false
+
 		if s.isFoul() {
 			s.ErhoeheStrafpunkte()
 		}
@@ -341,7 +348,7 @@ func (s *mbspiel) Update() {
 			s.StossWiederholen()
 		}
 		// Das Spiel ist gewonnen
-		if s.AlleEingelocht() {
+		if s.alleEingelocht() {
 			s.countdown.Halt()
 		}
 	}
@@ -355,7 +362,7 @@ func (s *mbspiel) Starte() {
 		s.updater = hilf.NewRoutine("Spiel-Logik", s.Update)
 	}
 	// Starte den updater.
-	if !s.AlleEingelocht() {
+	if !s.alleEingelocht() {
 		s.countdown.Weiter()
 	}
 	// ein konstanter Takt regelt die "Geschwindigkeit"
@@ -545,19 +552,6 @@ func (s *mbspiel) GibAktiveKugeln() []MBKugel {
 		}
 	}
 	return ks
-}
-
-func (s *mbspiel) AlleEingelocht() bool {
-	s.rwZustand.RLock()
-	defer s.rwZustand.RUnlock()
-
-	var aktive uint8
-	for _, k := range s.kugeln {
-		if !k.IstEingelocht() && !(k == s.spielkugel) {
-			aktive++
-		}
-	}
-	return aktive == 0
 }
 
 func (s *mbspiel) IstStillstand() bool {

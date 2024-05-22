@@ -61,7 +61,11 @@ type MiniBillardSpiel interface {
 	//	Eff.: Alle Kugeln wie zu Beginn des Spiels, Spielkugel in der Küche an einer
 	//	zufälligen Position gesetzt. Zeit beginnt neu. Punkte stehen bei 0.
 	Reset()
+
+	// Prüft, ob alle Kugeln stehen
 	IstStillstand() bool
+
+	// Getter für alle Taschen des Spiels.
 	GibTaschen() []MBTasche
 
 	// Getter für alle Kugeln, die im Spiel sind.
@@ -76,7 +80,7 @@ type MiniBillardSpiel interface {
 	// Getter nur für die weiße Spielkugel.
 	GibSpielkugel() MBKugel
 
-	// Setter für bestimmte Kugelkonstellationen
+	// Aktiviere bestimmte Kugelkonstellationen
 	SetzeKugeln1BallTest() // Testzwecke
 	SetzeKugeln3Ball()     // Testzwecke
 	SetzeKugeln9Ball()     // Testzwecke
@@ -104,9 +108,6 @@ type MiniBillardSpiel interface {
 
 	// Getter für die Anzahl der Fouls in diesem Spiel.
 	GibStrafpunkte() uint8
-
-	// Prüft, ob alle Kugeln, bis auf die weiße Spielgkugel, bereits eingelocht sind.
-	AlleEingelocht() bool
 
 	// Reduziere künstlich die Anzahl der Fouls in diesem Spiel um 1.
 	ReduziereStrafpunkte()
