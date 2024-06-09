@@ -6,7 +6,7 @@ import (
 )
 
 func fragenDateipfad(filename string) string {
-	dir := "MiniBillard/assets/quizfragen"
+	dir := "04_Implementierung/assets/quizfragen"
 	return assetDateipfad(dir, filename)
 }
 

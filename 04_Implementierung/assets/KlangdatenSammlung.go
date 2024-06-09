@@ -1,7 +1,7 @@
 package assets
 
 func klangDateipfad(filename string) string {
-	dir := "MiniBillard/assets/soundfiles"
+	dir := "04_Implementierung/assets/soundfiles"
 	return assetDateipfad(dir, filename)
 }
 

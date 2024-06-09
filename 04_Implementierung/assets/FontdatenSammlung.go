@@ -1,7 +1,7 @@
 package assets
 
 func fontDateipfad(filename string) string {
-	dir := "MiniBillard/assets/fontfiles"
+	dir := "04_Implementierung/assets/fontfiles"
 	return assetDateipfad(dir, filename)
 }
 
