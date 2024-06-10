@@ -293,24 +293,24 @@ func (a *bpapp) MausEreignis(taste uint8, status int8, x, y uint16) {
 func (a *bpapp) TastaturEreignis(taste uint16, gedrückt uint8, _ uint16) {
 	if gedrückt == 1 {
 		switch taste {
-		case 'h': // Hilfe an-aus
+		case 'h', 'H': // Hilfe an-aus
 			a.hilfeAnAus()
-		case 'n': // neues Spiel
+		case 'n', 'N': // neues Spiel
 			a.neuesSpiel()
-		case 'd': // Dunkle Umgebung
+		case 'd', 'D': // Dunkle Umgebung
 			a.darkmodeAnAus()
-		case 'm': // Musik spielen, wenn man möchte
+		case 'm', 'M': // Musik spielen, wenn man möchte
 			a.musikAn() // go-Routine
-		case 's', 'q':
+		case 's', 'S', 'q', 'Q':
 			a.quit()
 		// ######  Testzwecke ####################################
-		case 't': // Test-Modus
+		case 't', 'T': // Test-Modus
 			a.testAnAus()
-		case 'e': // Spiel testen
+		case 'e', 'E': // Spiel testen
 			if a.testModus {
 				a.billard.ErhoeheStrafpunkte()
 			}
-		case 'r': // Spiel testen
+		case 'r', 'R': // Spiel testen
 			if a.testModus {
 				a.billard.ReduziereStrafpunkte()
 			}
