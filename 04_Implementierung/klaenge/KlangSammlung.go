@@ -6,8 +6,9 @@ import (
 	"time"
 )
 
+// Musik-Sounds: werden gestreamt (kein PCM-Cache, kein Heap-Alloc).
+
 func MassivePulseSound() *klang {
-	daten := assets.MassivePulseDaten()
 	return &klang{
 		titel: "Massive Pulse",
 		dauer: 16 * time.Second,
@@ -16,12 +17,11 @@ func MassivePulseSound() *klang {
 			for !gfx.FensterOffen() {
 				time.Sleep(100 * time.Millisecond)
 			}
-			gfx.SpieleSoundDaten(daten, "massivePulse")
+			gfx.SpieleSoundStream(assets.OeffneAsset("soundfiles/massivePulseLoop.wav"))
 		}}
 }
 
 func CoolJazz2641SOUND() *klang {
-	daten := assets.CoolJazz2641Daten()
 	return &klang{
 		titel: "Cool Jazz 2641",
 		dauer: 2*time.Minute + 8*time.Second,
@@ -30,12 +30,11 @@ func CoolJazz2641SOUND() *klang {
 			for !gfx.FensterOffen() {
 				time.Sleep(100 * time.Millisecond)
 			}
-			gfx.SpieleSoundDaten(daten, "coolJazz2641")
+			gfx.SpieleSoundStream(assets.OeffneAsset("soundfiles/coolJazzLoop2641.wav"))
 		}}
 }
 
 func BillardPubAmbienceSOUND() *klang {
-	daten := assets.BillardPubAmbienceDaten()
 	return &klang{
 		titel: "Billard Pub Ambience",
 		dauer: time.Minute + 13*time.Second,
@@ -44,9 +43,11 @@ func BillardPubAmbienceSOUND() *klang {
 			for !gfx.FensterOffen() {
 				time.Sleep(100 * time.Millisecond)
 			}
-			gfx.SpieleSoundDaten(daten, "billardPubAmbience")
+			gfx.SpieleSoundStream(assets.OeffneAsset("soundfiles/billardPubAmbience.wav"))
 		}}
 }
+
+// Effekt-Sounds: klein, werden einmal dekodiert und gecacht.
 
 func CueHitsBallSound() *klang {
 	daten := assets.CueHitsBallDaten()

@@ -1,6 +1,8 @@
 package gfx
 
-// zeichnen.go — Zeichenprimitiven: Linien, Kreise, Rechtecke, Sektoren, Dreiecke.
+// zeichnen.go — Zeichenprimitiven mit wiederverwendbaren Puffern.
+// ALLE Primitiven nutzen einen gemeinsamen vector.Path und Vertex/Index-Puffer,
+// um pro Frame keine Heap-Allokationen zu erzeugen.
 
 import (
 	"image/color"
@@ -10,7 +12,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
-// whitePixel dient als Quellbild für DrawTriangles (Ebitengine-Pflicht).
 var whitePixel *ebiten.Image
 
 func init() {
@@ -18,52 +19,95 @@ func init() {
 	whitePixel.Fill(color.White)
 }
 
+// Wiederverwendbare Puffer — einmal allokiert, dann recycled.
+var (
+	sp vector.Path
+	sv []ebiten.Vertex
+	si []uint16
+)
+
+// pfadFuellen zeichnet den aktuellen sharedPath gefüllt.
+func pfadFuellen(clr color.NRGBA) {
+	sv, si = sp.AppendVerticesAndIndicesForFilling(sv[:0], si[:0])
+	farbeAufVertices(sv, clr)
+	drawTarget.DrawTriangles(sv, si, whitePixel, nil)
+}
+
+// pfadUmriss zeichnet den aktuellen sharedPath als Umriss.
+func pfadUmriss(clr color.NRGBA, breite float32) {
+	sv, si = sp.AppendVerticesAndIndicesForStroke(sv[:0], si[:0], &vector.StrokeOptions{Width: breite})
+	farbeAufVertices(sv, clr)
+	drawTarget.DrawTriangles(sv, si, whitePixel, nil)
+}
+
+// ===================== Linien =====================
+
 func linie(x1, y1, x2, y2 uint16) {
-	vector.StrokeLine(drawTarget,
-		float32(x1), float32(y1), float32(x2), float32(y2),
-		1, gibStiftfarbe(), false)
+	sp.Reset()
+	sp.MoveTo(float32(x1), float32(y1))
+	sp.LineTo(float32(x2), float32(y2))
+	pfadUmriss(gibStiftfarbe(), 1)
+}
+
+// ===================== Kreise =====================
+
+const kreisSegmente = 32
+
+func kreispfad(cx, cy, r float32) {
+	sp.Reset()
+	for i := 0; i <= kreisSegmente; i++ {
+		a := float64(i) * 2 * math.Pi / kreisSegmente
+		px := cx + r*float32(math.Cos(a))
+		py := cy + r*float32(math.Sin(a))
+		if i == 0 {
+			sp.MoveTo(px, py)
+		} else {
+			sp.LineTo(px, py)
+		}
+	}
+	sp.Close()
 }
 
 func kreis(x, y, r uint16) {
-	vector.StrokeCircle(drawTarget,
-		float32(x), float32(y), float32(r),
-		1, gibStiftfarbe(), true)
+	kreispfad(float32(x), float32(y), float32(r))
+	pfadUmriss(gibStiftfarbe(), 1)
 }
 
 func vollkreis(x, y, r uint16) {
-	vector.DrawFilledCircle(drawTarget,
-		float32(x), float32(y), float32(r),
-		gibStiftfarbe(), true)
+	kreispfad(float32(x), float32(y), float32(r))
+	pfadFuellen(gibStiftfarbe())
+}
+
+// ===================== Rechtecke =====================
+
+func rechteckpfad(x, y, b, h float32) {
+	sp.Reset()
+	sp.MoveTo(x, y)
+	sp.LineTo(x+b, y)
+	sp.LineTo(x+b, y+h)
+	sp.LineTo(x, y+h)
+	sp.Close()
 }
 
 func rechteck(x1, y1, b, h uint16) {
-	vector.StrokeRect(drawTarget,
-		float32(x1), float32(y1), float32(b), float32(h),
-		1, gibStiftfarbe(), false)
+	rechteckpfad(float32(x1), float32(y1), float32(b), float32(h))
+	pfadUmriss(gibStiftfarbe(), 1)
 }
 
 func vollrechteck(x1, y1, b, h uint16) {
-	vector.DrawFilledRect(drawTarget,
-		float32(x1), float32(y1), float32(b), float32(h),
-		gibStiftfarbe(), false)
+	rechteckpfad(float32(x1), float32(y1), float32(b), float32(h))
+	pfadFuellen(gibStiftfarbe())
 }
 
 // ===================== Kreissektoren =====================
-//
-// Die alte gfx-Konvention: Winkelangaben in Grad, 0° = Osten,
-// Winkel wachsen entgegen dem Uhrzeigersinn (mathematisch positiv).
-// In Bildschirmkoordinaten (Y nach unten) wird Y gespiegelt.
+// Konvention: Winkel in Grad, 0° = Osten, gegen Uhrzeigersinn.
 
-// gradZuBildschirm rechnet einen gfx-Winkel (Grad, 0=Ost, CCW)
-// in Bildschirmkoordinaten um und liefert (cos, sin) für diesen Winkel.
 func gradAufBildschirm(grad float64) (float64, float64) {
 	rad := grad * math.Pi / 180.0
-	return math.Cos(rad), -math.Sin(rad) // Y-Achse gespiegelt
+	return math.Cos(rad), -math.Sin(rad)
 }
 
-// sektorPfad baut einen vector.Path für einen Kreissektor.
-// Segmente bestimmen die Glattheit des Bogens.
-func sektorPfad(cx, cy, r float32, w1, w2 uint16) vector.Path {
+func sektorpfad(cx, cy, r float32, w1, w2 uint16) {
 	start := float64(w1)
 	end := float64(w2)
 	if end <= start {
@@ -74,44 +118,39 @@ func sektorPfad(cx, cy, r float32, w1, w2 uint16) vector.Path {
 		segments = 4
 	}
 
-	var p vector.Path
-	p.MoveTo(cx, cy)
+	sp.Reset()
+	sp.MoveTo(cx, cy)
 	for i := 0; i <= segments; i++ {
 		t := start + (end-start)*float64(i)/float64(segments)
 		cosT, sinT := gradAufBildschirm(t)
-		p.LineTo(cx+r*float32(cosT), cy+r*float32(sinT))
+		sp.LineTo(cx+r*float32(cosT), cy+r*float32(sinT))
 	}
-	p.Close()
-	return p
+	sp.Close()
 }
 
 func kreissektor(x, y, r, w1, w2 uint16) {
-	p := sektorPfad(float32(x), float32(y), float32(r), w1, w2)
-	strokeOpts := &vector.StrokeOptions{Width: 1}
-	vs, is := p.AppendVerticesAndIndicesForStroke(nil, nil, strokeOpts)
-	farbeAufVertices(vs, gibStiftfarbe())
-	drawTarget.DrawTriangles(vs, is, whitePixel, nil)
+	sektorpfad(float32(x), float32(y), float32(r), w1, w2)
+	pfadUmriss(gibStiftfarbe(), 1)
 }
 
 func vollkreissektor(x, y, r, w1, w2 uint16) {
-	p := sektorPfad(float32(x), float32(y), float32(r), w1, w2)
-	vs, is := p.AppendVerticesAndIndicesForFilling(nil, nil)
-	farbeAufVertices(vs, gibStiftfarbe())
-	drawTarget.DrawTriangles(vs, is, whitePixel, nil)
+	sektorpfad(float32(x), float32(y), float32(r), w1, w2)
+	pfadFuellen(gibStiftfarbe())
 }
+
+// ===================== Dreiecke =====================
 
 func volldreieck(x1, y1, x2, y2, x3, y3 uint16) {
-	var p vector.Path
-	p.MoveTo(float32(x1), float32(y1))
-	p.LineTo(float32(x2), float32(y2))
-	p.LineTo(float32(x3), float32(y3))
-	p.Close()
-	vs, is := p.AppendVerticesAndIndicesForFilling(nil, nil)
-	farbeAufVertices(vs, gibStiftfarbe())
-	drawTarget.DrawTriangles(vs, is, whitePixel, nil)
+	sp.Reset()
+	sp.MoveTo(float32(x1), float32(y1))
+	sp.LineTo(float32(x2), float32(y2))
+	sp.LineTo(float32(x3), float32(y3))
+	sp.Close()
+	pfadFuellen(gibStiftfarbe())
 }
 
-// farbeAufVertices setzt die Farbe aller Vertices auf clr.
+// ===================== Hilfsfunktion =====================
+
 func farbeAufVertices(vs []ebiten.Vertex, clr color.NRGBA) {
 	cr := float32(clr.R) / 255
 	cg := float32(clr.G) / 255

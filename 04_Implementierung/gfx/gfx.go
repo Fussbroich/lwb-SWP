@@ -6,6 +6,8 @@
 // Alle Zeichenoperationen sind nebenläufig sicher.
 package gfx
 
+import "io"
+
 // ===================== Fensterverwaltung =====================
 
 // Fenster öffnet ein Grafikfenster mit breite x hoehe Pixeln.
@@ -120,3 +122,7 @@ func SpieleSound(s string) { spieleSound(s) }
 // SpieleSoundDaten spielt WAV-Daten aus dem Speicher ab.
 // name dient als Cache-Schlüssel.
 func SpieleSoundDaten(daten []byte, name string) { spieleSoundDaten(daten, name) }
+
+// SpieleSoundStream streamt eine WAV-Datei direkt aus einem Reader.
+// Kein PCM-Cache, minimaler RAM-Verbrauch. Ideal für Musik.
+func SpieleSoundStream(r io.ReadSeeker) { spieleSoundStream(r) }

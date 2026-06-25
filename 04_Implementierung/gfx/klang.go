@@ -67,6 +67,21 @@ func spieleSoundDaten(daten []byte, name string) {
 	audioCtx.NewPlayerFromBytes(pcm).Play()
 }
 
+// spieleSoundStream streamt WAV direkt aus einem Reader.
+// Kein Heap-Alloc für PCM — ideal für große Musikdateien.
+func spieleSoundStream(r io.ReadSeeker) {
+	initAudio()
+	stream, err := wav.DecodeWithSampleRate(audioSampleRate, r)
+	if err != nil {
+		return
+	}
+	player, err := audioCtx.NewPlayer(stream)
+	if err != nil {
+		return
+	}
+	player.Play()
+}
+
 func dekodiereWAV(r io.ReadSeeker) []byte {
 	stream, err := wav.DecodeWithSampleRate(audioSampleRate, r)
 	if err != nil {

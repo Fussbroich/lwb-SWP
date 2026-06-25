@@ -43,7 +43,6 @@ var (
 // ===================== ebiten.Game =====================
 
 func (g *gfxGame) Update() error {
-	// Prüfe, ob FensterAus() aufgerufen wurde
 	if !offen.Load() {
 		return ebiten.Termination
 	}
