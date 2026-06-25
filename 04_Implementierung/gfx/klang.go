@@ -5,6 +5,7 @@ package gfx
 // desselben Sounds ohne Disk-I/O auskommt.
 
 import (
+	"bytes"
 	"io"
 	"os"
 
@@ -34,30 +35,46 @@ func setzeKlangparameter(_ uint32, _, _, _ uint8, _ float64) {
 }
 
 // spieleSound spielt eine WAV-Datei im Hintergrund ab.
-// Beim ersten Aufruf wird die Datei geladen und gecacht.
 func spieleSound(pfad string) {
 	initAudio()
-
-	daten, ok := soundCache[pfad]
+	pcm, ok := soundCache[pfad]
 	if !ok {
-		// Erstmaliges Laden und Dekodieren
 		f, err := os.Open(pfad)
 		if err != nil {
 			return
 		}
-		stream, err := wav.DecodeWithSampleRate(audioSampleRate, f)
-		if err != nil {
-			f.Close()
-			return
-		}
-		daten, err = io.ReadAll(stream)
+		pcm = dekodiereWAV(f)
 		f.Close()
-		if err != nil {
+		if pcm == nil {
 			return
 		}
-		soundCache[pfad] = daten
+		soundCache[pfad] = pcm
 	}
+	audioCtx.NewPlayerFromBytes(pcm).Play()
+}
 
-	player := audioCtx.NewPlayerFromBytes(daten)
-	player.Play()
+// spieleSoundDaten spielt WAV-Daten aus dem Speicher ab.
+func spieleSoundDaten(daten []byte, name string) {
+	initAudio()
+	pcm, ok := soundCache[name]
+	if !ok {
+		pcm = dekodiereWAV(bytes.NewReader(daten))
+		if pcm == nil {
+			return
+		}
+		soundCache[name] = pcm
+	}
+	audioCtx.NewPlayerFromBytes(pcm).Play()
+}
+
+func dekodiereWAV(r io.ReadSeeker) []byte {
+	stream, err := wav.DecodeWithSampleRate(audioSampleRate, r)
+	if err != nil {
+		return nil
+	}
+	daten, err := io.ReadAll(stream)
+	if err != nil {
+		return nil
+	}
+	return daten
 }

@@ -2,23 +2,12 @@ package assets
 
 import (
 	"encoding/csv"
-	"os"
+	"strings"
 )
 
-func fragenDateipfad(filename string) string {
-	dir := "04_Implementierung/assets/quizfragen"
-	return assetDateipfad(dir, filename)
-}
-
-func gibFragenDaten(dateipfad string) [][]string {
-	file, err := os.Open(dateipfad)
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-	reader := csv.NewReader(file)
+func leseCSV(name string) [][]string {
+	reader := csv.NewReader(strings.NewReader(string(lese(name))))
 	reader.Comma = ';'
-
 	rs, err := reader.ReadAll()
 	if err != nil {
 		panic(err)
@@ -26,10 +15,5 @@ func gibFragenDaten(dateipfad string) [][]string {
 	return rs
 }
 
-func BeispielFragen() [][]string {
-	return gibFragenDaten(fragenDateipfad("BeispielQuiz.csv"))
-}
-
-func InformatiksystemeFragen() [][]string {
-	return gibFragenDaten(fragenDateipfad("InformatiksystemQuiz.csv"))
-}
+func BeispielFragen() [][]string         { return leseCSV("quizfragen/BeispielQuiz.csv") }
+func InformatiksystemeFragen() [][]string { return leseCSV("quizfragen/InformatiksystemQuiz.csv") }

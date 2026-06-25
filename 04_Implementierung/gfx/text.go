@@ -22,8 +22,6 @@ var (
 
 func setzeFont(pfad string, groesse int) bool {
 	fontGroesse = float64(groesse)
-
-	// Prüfe, ob dieser Font bereits geladen ist
 	if pfad == fontPfad && fontQuelle != nil {
 		return true
 	}
@@ -32,19 +30,34 @@ func setzeFont(pfad string, groesse int) bool {
 		fontPfad = pfad
 		return true
 	}
-
-	// Erstmaliges Laden von der Festplatte
 	daten, err := os.ReadFile(pfad)
 	if err != nil {
 		return false
 	}
+	return setzeFontAusDaten(daten, pfad)
+}
+
+func setzeFontDaten(daten []byte, name string, groesse int) bool {
+	fontGroesse = float64(groesse)
+	if name == fontPfad && fontQuelle != nil {
+		return true
+	}
+	if cached, ok := fontCache[name]; ok {
+		fontQuelle = cached
+		fontPfad = name
+		return true
+	}
+	return setzeFontAusDaten(daten, name)
+}
+
+func setzeFontAusDaten(daten []byte, name string) bool {
 	quelle, err := text.NewGoTextFaceSource(bytes.NewReader(daten))
 	if err != nil {
 		return false
 	}
-	fontCache[pfad] = quelle
+	fontCache[name] = quelle
 	fontQuelle = quelle
-	fontPfad = pfad
+	fontPfad = name
 	return true
 }
 

@@ -81,6 +81,12 @@ func SetzeFont(s string, groesse int) bool { return setzeFont(s, groesse) }
 // SchreibeFont schreibt Text an Position (x,y) mit dem zuletzt gesetzten Font.
 func SchreibeFont(x, y uint16, s string) { schreibeFont(x, y, s) }
 
+// SetzeFontDaten lädt einen Font aus bereits gelesenen TTF-Daten.
+// name dient als Cache-Schlüssel (z.B. "MonoBold").
+func SetzeFontDaten(daten []byte, name string, groesse int) bool {
+	return setzeFontDaten(daten, name, groesse)
+}
+
 // GibTextBreite liefert die Breite des Textes in Pixeln
 // mit dem aktuell gesetzten Font und Schriftgröße.
 func GibTextBreite(s string) float64 { return gibTextBreite(s) }
@@ -110,3 +116,7 @@ func SetzeKlangparameter(rate uint32, aufloesung, kanaele, signal uint8, p float
 
 // SpieleSound spielt eine WAV-Datei im Hintergrund ab.
 func SpieleSound(s string) { spieleSound(s) }
+
+// SpieleSoundDaten spielt WAV-Daten aus dem Speicher ab.
+// name dient als Cache-Schlüssel.
+func SpieleSoundDaten(daten []byte, name string) { spieleSoundDaten(daten, name) }

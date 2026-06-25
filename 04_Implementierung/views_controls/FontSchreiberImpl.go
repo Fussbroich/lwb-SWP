@@ -1,15 +1,13 @@
 package views_controls
 
 import (
-	"brainpool/gfx"
-
 	"brainpool/assets"
+	"brainpool/gfx"
 )
 
-// Ein FontSchreiber ist ein Wrapper-Objekt für einen Schrifttyp und eine Schriftgröße und
-// integriert die Funktionen gfx.SetzeFont und SchreibeFont.
 type schreiber struct {
-	font           string
+	fontDaten      []byte
+	fontName       string
 	schriftgroesse int
 }
 
@@ -21,17 +19,24 @@ const (
 	BoldItalic
 )
 
+type fontInfo struct {
+	daten []byte
+	name  string
+}
+
 var (
-	standardFonts = map[FontStyle]string{
-		Bold:       assets.MonoBoldFontDateipfad(),
-		Regular:    assets.MonoRegularFontDateipfad(),
-		BoldItalic: assets.MonoBoldItalicFontDateipfad()}
+	standardFonts = map[FontStyle]fontInfo{
+		Bold:       {assets.MonoBoldFontDaten(), "MonoBold"},
+		Regular:    {assets.MonoRegularFontDaten(), "MonoRegular"},
+		BoldItalic: {assets.MonoBoldItalicFontDaten(), "MonoBoldItalic"}}
 	standardSchriftgroesse int = 12
 )
 
 func (f *widget) newSchreiber(style FontStyle) *schreiber {
+	fi := standardFonts[style]
 	return &schreiber{
-		font:           standardFonts[style],
+		fontDaten:      fi.daten,
+		fontName:       fi.name,
 		schriftgroesse: standardSchriftgroesse}
 }
 
@@ -44,6 +49,6 @@ func (s *schreiber) GibSchriftgroesse() int {
 }
 
 func (s *schreiber) Schreibe(x, y uint16, text string) {
-	gfx.SetzeFont(s.font, s.schriftgroesse)
+	gfx.SetzeFontDaten(s.fontDaten, s.fontName, s.schriftgroesse)
 	gfx.SchreibeFont(x, y, text)
 }

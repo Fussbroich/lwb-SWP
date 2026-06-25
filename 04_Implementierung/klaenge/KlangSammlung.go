@@ -1,22 +1,13 @@
 package klaenge
 
 import (
+	"brainpool/assets"
 	"brainpool/gfx"
 	"time"
-
-	"brainpool/assets"
 )
 
-// gfx.SetzeKlangparameter(rate uint32, aufloesung, kanaele, signal uint8, p float64)
-//
-//	rate      ist die Abtastrate, z.B. 11025, 22050 oder 44100.
-//	auflösung ist 1 für 8 Bit oder 2 für 16 Bit.
-//	kanaele   ist 1 für mono oder 2 für stereo.
-//	signal    gibt die Signalform an: 0: Sinus, 1: Rechteck, 2:Dreieck, 3: Sägezahn
-//	pulsweite (für Rechtecksignale) gibt den Prozentsatz (0<=p<=1) für den HIGH-Teil an.
-
 func MassivePulseSound() *klang {
-	fp := assets.MassivePulseDateipfad()
+	daten := assets.MassivePulseDaten()
 	return &klang{
 		titel: "Massive Pulse",
 		dauer: 16 * time.Second,
@@ -25,13 +16,12 @@ func MassivePulseSound() *klang {
 			for !gfx.FensterOffen() {
 				time.Sleep(100 * time.Millisecond)
 			}
-			gfx.SetzeKlangparameter(22050, 2, 2, 1, 0.3)
-			gfx.SpieleSound(fp)
+			gfx.SpieleSoundDaten(daten, "massivePulse")
 		}}
 }
 
 func CoolJazz2641SOUND() *klang {
-	fp := assets.CoolJazz2641Dateipfad()
+	daten := assets.CoolJazz2641Daten()
 	return &klang{
 		titel: "Cool Jazz 2641",
 		dauer: 2*time.Minute + 8*time.Second,
@@ -40,13 +30,12 @@ func CoolJazz2641SOUND() *klang {
 			for !gfx.FensterOffen() {
 				time.Sleep(100 * time.Millisecond)
 			}
-			gfx.SetzeKlangparameter(16000, 2, 2, 1, 0.3)
-			gfx.SpieleSound(fp)
+			gfx.SpieleSoundDaten(daten, "coolJazz2641")
 		}}
 }
 
 func BillardPubAmbienceSOUND() *klang {
-	fp := assets.BillardPubAmbienceDateipfad()
+	daten := assets.BillardPubAmbienceDaten()
 	return &klang{
 		titel: "Billard Pub Ambience",
 		dauer: time.Minute + 13*time.Second,
@@ -55,63 +44,50 @@ func BillardPubAmbienceSOUND() *klang {
 			for !gfx.FensterOffen() {
 				time.Sleep(100 * time.Millisecond)
 			}
-			gfx.SetzeKlangparameter(22050, 2, 2, 1, 0.3)
-			gfx.SpieleSound(fp)
+			gfx.SpieleSoundDaten(daten, "billardPubAmbience")
 		}}
 }
 
 func CueHitsBallSound() *klang {
-	fp := assets.CueHitsBallDateipfad()
+	daten := assets.CueHitsBallDaten()
 	return &klang{
 		dauer: 300 * time.Millisecond,
 		autor: "freesman (directory.audio)",
 		play: func() {
-			if !gfx.FensterOffen() {
-				return
-			}
-			gfx.SetzeKlangparameter(22050, 2, 2, 1, 1.0)
-			gfx.SpieleSound(fp)
+			if !gfx.FensterOffen() { return }
+			gfx.SpieleSoundDaten(daten, "cueHitsBall")
 		}}
 }
 
 func BallHitsBallSound() *klang {
-	fp := assets.BallHitsBallDateipfad()
+	daten := assets.BallHitsBallDaten()
 	return &klang{
 		dauer: 300 * time.Millisecond,
 		autor: "freesman (directory.audio)",
 		play: func() {
-			if !gfx.FensterOffen() {
-				return
-			}
-			gfx.SetzeKlangparameter(22050, 2, 2, 1, 1.0)
-			gfx.SpieleSound(fp)
+			if !gfx.FensterOffen() { return }
+			gfx.SpieleSoundDaten(daten, "ballHitsBall")
 		}}
 }
 
 func BallInPocketSound() *klang {
-	fp := assets.BallInPocketDateipfad()
+	daten := assets.BallInPocketDaten()
 	return &klang{
 		dauer: 300 * time.Millisecond,
 		autor: "freesman (directory.audio)",
 		play: func() {
-			if !gfx.FensterOffen() {
-				return
-			}
-			gfx.SetzeKlangparameter(22050, 2, 2, 1, 1.0)
-			gfx.SpieleSound(fp)
+			if !gfx.FensterOffen() { return }
+			gfx.SpieleSoundDaten(daten, "ballInPocket")
 		}}
 }
 
 func BallHitsRailSound() *klang {
-	fp := assets.BallHitsRailDateipfad()
+	daten := assets.BallHitsRailDaten()
 	return &klang{
 		dauer: 300 * time.Millisecond,
 		autor: "freesman (directory.audio)",
 		play: func() {
-			if !gfx.FensterOffen() {
-				return
-			}
-			gfx.SetzeKlangparameter(22050, 2, 2, 1, 1.0)
-			gfx.SpieleSound(fp)
+			if !gfx.FensterOffen() { return }
+			gfx.SpieleSoundDaten(daten, "ballHitsRail")
 		}}
 }

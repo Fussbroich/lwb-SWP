@@ -51,7 +51,7 @@ func (w *kugelZeichner) Zeichne() {
 		w.vollKreis(k.GibPos(), (k.GibRadius()-1)/2, gibKugelFarbe(0))
 		w.stiftfarbe(Schwarz())
 		numText := fmt.Sprintf("%d", k.GibWert())
-		gfx.SetzeFont(w.schreiber.font, w.schreiber.schriftgroesse)
+		gfx.SetzeFontDaten(w.schreiber.fontDaten, w.schreiber.fontName, w.schreiber.schriftgroesse)
 		tw := gfx.GibTextBreite("0") * float64(len(numText))
 		w.schreiber.Schreibe(
 			w.startX+uint16(k.GibPos().X()-tw/2+0.5),
