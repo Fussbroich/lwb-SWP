@@ -1,8 +1,6 @@
 """
 kugel — Eine Billardkugel mit Physik.
 
-Aufgabe für Schüler:
-    Implementiere die Klasse Kugel.
     Eine Kugel hat eine Position, eine Geschwindigkeit, einen Radius
     und eine Nummer (Wert). Sie kann sich bewegen, an Banden abprallen
     und mit anderen Kugeln kollidieren (elastischer Stoß).
