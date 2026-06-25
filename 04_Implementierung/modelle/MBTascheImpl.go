@@ -1,6 +1,6 @@
 package modelle
 
-import "../hilf"
+import "brainpool/hilf"
 
 type tasche struct {
 	pos hilf.Vec2

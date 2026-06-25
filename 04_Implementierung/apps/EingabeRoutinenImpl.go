@@ -2,9 +2,9 @@ package apps
 
 import (
 	"fmt"
-	"gfx"
+	"brainpool/gfx"
 
-	"../hilf"
+	"brainpool/hilf"
 )
 
 // Eine spezialisierte Routine für die

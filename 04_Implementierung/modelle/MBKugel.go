@@ -1,6 +1,6 @@
 package modelle
 
-import "../hilf"
+import "brainpool/hilf"
 
 // Eine MBKugel repräsentiert eine Billardkugel in 2 Dimensionen. Sie hat eine Position
 // (Ortsvektor der Mittelpunktskoordinaten), einen Radius, eine Bewegungs-Geschwindigkeit.

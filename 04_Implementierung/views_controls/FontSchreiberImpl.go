@@ -1,9 +1,9 @@
 package views_controls
 
 import (
-	"gfx"
+	"brainpool/gfx"
 
-	"../assets"
+	"brainpool/assets"
 )
 
 // Ein FontSchreiber ist ein Wrapper-Objekt für einen Schrifttyp und eine Schriftgröße und

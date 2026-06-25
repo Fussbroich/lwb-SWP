@@ -3,7 +3,8 @@ package views_controls
 import (
 	"fmt"
 
-	"../modelle"
+	"brainpool/gfx"
+	"brainpool/modelle"
 )
 
 // Schnell bewegte Objekte oder Objekte werden mit einem "Zeichner" innerhalb eines anderen Widgets dargestellt, statt mit eigenem Widget.
@@ -49,16 +50,12 @@ func (w *kugelZeichner) Zeichne() {
 	if k.GibWert() != 0 {
 		w.vollKreis(k.GibPos(), (k.GibRadius()-1)/2, gibKugelFarbe(0))
 		w.stiftfarbe(Schwarz())
-		if k.GibWert() < 10 {
-			w.schreiber.Schreibe(
-				w.startX-uint16(w.schreiber.GibSchriftgroesse())/4+uint16(k.GibPos().X()+0.5),
-				w.startY-uint16(w.schreiber.GibSchriftgroesse())/2+uint16(k.GibPos().Y()+0.5),
-				fmt.Sprintf("%d", k.GibWert()))
-		} else {
-			w.schreiber.Schreibe(
-				w.startX-uint16(w.schreiber.GibSchriftgroesse())/2+uint16(k.GibPos().X()+0.5),
-				w.startY-uint16(w.schreiber.GibSchriftgroesse())/2+uint16(k.GibPos().Y()+0.5),
-				fmt.Sprintf("%d", k.GibWert()))
-		}
+		numText := fmt.Sprintf("%d", k.GibWert())
+		gfx.SetzeFont(w.schreiber.font, w.schreiber.schriftgroesse)
+		tw := gfx.GibTextBreite("0") * float64(len(numText))
+		w.schreiber.Schreibe(
+			w.startX+uint16(k.GibPos().X()-tw/2+0.5),
+			w.startY-uint16(w.schreiber.GibSchriftgroesse())/2+uint16(k.GibPos().Y()+0.5),
+			numText)
 	}
 }

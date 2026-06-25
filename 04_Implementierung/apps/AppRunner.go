@@ -3,7 +3,7 @@ package apps
 import (
 	"time"
 
-	"../hilf"
+	"brainpool/hilf"
 )
 
 // Startet die Laufzeit-Elemente einer App.

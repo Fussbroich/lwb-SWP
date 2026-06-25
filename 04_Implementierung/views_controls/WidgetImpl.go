@@ -2,9 +2,9 @@ package views_controls
 
 import (
 	"fmt"
-	"gfx"
+	"brainpool/gfx"
 
-	"../hilf"
+	"brainpool/hilf"
 )
 
 type widget struct {

@@ -3,9 +3,9 @@ package apps
 import (
 	"time"
 
-	"../klaenge"
-	"../modelle"
-	vc "../views_controls"
+	"brainpool/klaenge"
+	"brainpool/modelle"
+	vc "brainpool/views_controls"
 )
 
 // Die Modelle und Views einer Brainpool-App

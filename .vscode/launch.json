@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "BrainPool",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/04_Implementierung/cmd/brainpool",
+            "cwd": "${workspaceFolder}/04_Implementierung"
+        },
+        {
+            "name": "Beispiel (Uhr)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/04_Implementierung/cmd/beispiel",
+            "cwd": "${workspaceFolder}/04_Implementierung"
+        }
+    ]
+}

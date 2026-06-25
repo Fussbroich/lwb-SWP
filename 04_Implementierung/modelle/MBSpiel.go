@@ -3,7 +3,7 @@ package modelle
 import (
 	"time"
 
-	"../hilf"
+	"brainpool/hilf"
 )
 
 // Ein MiniBillardSpiel besteht aus einem rechteckigen Tuch (Spieltisch)

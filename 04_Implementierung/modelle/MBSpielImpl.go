@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"../hilf"
-	"../klaenge"
+	"brainpool/hilf"
+	"brainpool/klaenge"
 )
 
 type mbspiel struct {

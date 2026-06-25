@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"strconv"
 
-	"../assets"
+	"brainpool/assets"
 )
 
 type quiz struct {

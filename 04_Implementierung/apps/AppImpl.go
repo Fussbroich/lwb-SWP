@@ -1,7 +1,7 @@
 package apps
 
 import (
-	vc "../views_controls"
+	vc "brainpool/views_controls"
 )
 
 // Die Variablen und Views einer App

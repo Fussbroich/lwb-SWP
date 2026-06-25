@@ -2,10 +2,10 @@ package apps
 
 import (
 	"fmt"
-	"gfx"
+	"brainpool/gfx"
 
-	"../hilf"
-	vc "../views_controls"
+	"brainpool/hilf"
+	vc "brainpool/views_controls"
 )
 
 // Eine spezialisierte Routine, die die Darstellungs-Methode einer App aufruft

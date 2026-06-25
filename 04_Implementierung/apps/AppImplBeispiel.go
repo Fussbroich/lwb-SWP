@@ -3,7 +3,7 @@ package apps
 import (
 	"time"
 
-	vc "../views_controls"
+	vc "brainpool/views_controls"
 )
 
 // Das Modell einer Uhr

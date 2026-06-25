@@ -20,7 +20,7 @@
 package main
 
 import (
-	. "./apps"
+	. "brainpool/apps"
 )
 
 // ####### der Startpunkt ##################################################

@@ -1,7 +1,7 @@
 package modelle
 
 import (
-	"../hilf"
+	"brainpool/hilf"
 )
 
 type mbkugel struct {

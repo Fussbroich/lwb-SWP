@@ -2,10 +2,10 @@ package views_controls
 
 import (
 	"fmt"
-	"gfx"
+	"brainpool/gfx"
 
-	"../hilf"
-	"../modelle"
+	"brainpool/hilf"
+	"brainpool/modelle"
 )
 
 type miniBSpielfeld struct {

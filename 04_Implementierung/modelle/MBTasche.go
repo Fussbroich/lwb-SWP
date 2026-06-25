@@ -1,6 +1,6 @@
 package modelle
 
-import "../hilf"
+import "brainpool/hilf"
 
 // Modelliert eine kreisrunde Tasche auf dem Billardtisch. Eine MBKugel
 // gilt als eingelocht, wenn ihr Mittelpunkt den Rand des Kreises

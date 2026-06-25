@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"../modelle"
+	"brainpool/modelle"
 )
 
 type miniBRestzeit struct {

@@ -1,10 +1,10 @@
 package klaenge
 
 import (
-	"gfx"
+	"brainpool/gfx"
 	"time"
 
-	"../assets"
+	"brainpool/assets"
 )
 
 // gfx.SetzeKlangparameter(rate uint32, aufloesung, kanaele, signal uint8, p float64)

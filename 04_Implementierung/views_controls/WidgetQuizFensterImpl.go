@@ -1,7 +1,7 @@
 package views_controls
 
 import (
-	"../modelle"
+	"brainpool/modelle"
 )
 
 type quizfenster struct {

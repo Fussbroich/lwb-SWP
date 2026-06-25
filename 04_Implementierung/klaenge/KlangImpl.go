@@ -3,7 +3,7 @@ package klaenge
 import (
 	"time"
 
-	"../hilf"
+	"brainpool/hilf"
 )
 
 type klang struct {
