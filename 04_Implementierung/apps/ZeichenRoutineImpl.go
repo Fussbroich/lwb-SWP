@@ -2,7 +2,7 @@ package apps
 
 import (
 	"fmt"
-	"brainpool/gfx"
+	"github.com/Fussbroich/gfx"
 
 	"brainpool/hilf"
 	vc "brainpool/views_controls"

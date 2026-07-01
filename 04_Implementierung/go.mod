@@ -1,8 +1,11 @@
 module brainpool
 
-go 1.25.0
+go 1.25.4
 
-require github.com/hajimehoshi/ebiten/v2 v2.9.9
+require (
+	github.com/Fussbroich/gfx v0.1.0
+	github.com/hajimehoshi/ebiten/v2 v2.9.9 // indirect
+)
 
 require (
 	github.com/ebitengine/gomobile v0.0.0-20250923094054-ea854a63cce1 // indirect

@@ -2,7 +2,7 @@ package views_controls
 
 import (
 	"fmt"
-	"brainpool/gfx"
+	"github.com/Fussbroich/gfx"
 
 	"brainpool/hilf"
 	"brainpool/modelle"

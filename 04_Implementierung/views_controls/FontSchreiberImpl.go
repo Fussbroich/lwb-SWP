@@ -2,7 +2,7 @@ package views_controls
 
 import (
 	"brainpool/assets"
-	"brainpool/gfx"
+	"github.com/Fussbroich/gfx"
 )
 
 type schreiber struct {

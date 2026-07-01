@@ -2,7 +2,7 @@ package klaenge
 
 import (
 	"brainpool/assets"
-	"brainpool/gfx"
+	"github.com/Fussbroich/gfx"
 	"time"
 )
 
